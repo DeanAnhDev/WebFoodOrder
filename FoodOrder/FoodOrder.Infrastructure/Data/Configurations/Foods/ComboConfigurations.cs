@@ -1,11 +1,6 @@
 ﻿using FoodOrder.Domain.Entities.Foods;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FoodOrder.Infrastructure.Data.Configurations.Foods
 {
@@ -14,6 +9,9 @@ namespace FoodOrder.Infrastructure.Data.Configurations.Foods
         public void Configure(EntityTypeBuilder<Combo> builder)
         {
             builder.HasKey(p => p.ComboId);
+
+            builder.HasOne(p => p.FoodCategorys).WithMany(f => f.Combos).HasForeignKey(p => p.FoodCategoryId).OnDelete(DeleteBehavior.Restrict);
+            ;
 
             builder.Property(p => p.ComboName)
                 .IsRequired()

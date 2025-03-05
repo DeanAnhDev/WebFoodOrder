@@ -9,7 +9,8 @@ namespace FoodOrder.Infrastructure.Data.Configurations.Foods
         public void Configure(EntityTypeBuilder<FoodCategory> builder)
         {
             builder.HasKey(p => p.FoodCategoryId);
-
+            builder.Property(p => p.ImageUrl)
+                .IsRequired();
             builder.Property(p => p.CategoryName)
                 .HasMaxLength(500)
                 .IsRequired();

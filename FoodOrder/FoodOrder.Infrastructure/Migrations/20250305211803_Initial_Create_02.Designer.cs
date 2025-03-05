@@ -4,6 +4,7 @@ using FoodOrder.Infrastructure.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FoodOrder.Infrastructure.Migrations
 {
     [DbContext(typeof(FoodOrderDbContext))]
-    partial class FoodOrderDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250305211803_Initial_Create_02")]
+    partial class Initial_Create_02
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -40,9 +43,6 @@ namespace FoodOrder.Infrastructure.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
-                    b.Property<int>("FoodCategoryId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Image")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -55,8 +55,6 @@ namespace FoodOrder.Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("ComboId");
-
-                    b.HasIndex("FoodCategoryId");
 
                     b.ToTable("Combos");
                 });
@@ -476,17 +474,6 @@ namespace FoodOrder.Infrastructure.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("FoodOrder.Domain.Entities.Foods.Combo", b =>
-                {
-                    b.HasOne("FoodOrder.Domain.Entities.Foods.FoodCategory", "FoodCategorys")
-                        .WithMany("Combos")
-                        .HasForeignKey("FoodCategoryId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("FoodCategorys");
-                });
-
             modelBuilder.Entity("FoodOrder.Domain.Entities.Foods.ComboDetail", b =>
                 {
                     b.HasOne("FoodOrder.Domain.Entities.Foods.Combo", "Combo")
@@ -660,8 +647,6 @@ namespace FoodOrder.Infrastructure.Migrations
 
             modelBuilder.Entity("FoodOrder.Domain.Entities.Foods.FoodCategory", b =>
                 {
-                    b.Navigation("Combos");
-
                     b.Navigation("Foods");
                 });
 
