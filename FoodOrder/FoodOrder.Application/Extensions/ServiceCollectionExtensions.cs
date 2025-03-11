@@ -14,7 +14,8 @@ namespace FoodOrder.Application.Extensions
             services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());
             // Add services
             services.AddScoped<IFoodCategoryServices, FoodCategoryServices>();
-
+            // Add services
+            services.AddScoped<IFoodServices, FoodServices>();
             return services;
         }
     }

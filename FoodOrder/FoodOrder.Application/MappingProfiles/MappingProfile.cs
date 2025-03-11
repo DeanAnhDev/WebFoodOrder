@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FoodOrder.Application.DTOs.Foods.Food;
 using FoodOrder.Application.DTOs.Foods.FoodCategory;
 using FoodOrder.Domain.Entities.Foods;
 
@@ -11,7 +12,8 @@ namespace FoodOrder.Application.MappingProfiles
             //Mapping from FoodCategory to FoodCategoryDto
             CreateMap<FoodCategory, FoodCategoryDto>().ReverseMap();
 
-
+            //Mapping from FoodCategory to FoodCategoryDto
+            CreateMap<Food, FoodDto>().ReverseMap();
         }
     }
 }

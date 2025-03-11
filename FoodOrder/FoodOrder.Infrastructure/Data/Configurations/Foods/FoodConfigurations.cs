@@ -13,16 +13,22 @@ namespace FoodOrder.Infrastructure.Data.Configurations.Foods
             builder.HasOne(p => p.FoodCategory)
                 .WithMany(c => c.Foods)
                 .HasForeignKey(p => p.FoodCategoryId);
+
             builder.Property(p => p.FoodName)
                 .HasMaxLength(500)
                 .IsRequired();
+
             builder.Property(p => p.Description)
                .HasMaxLength(500)
                .IsRequired();
+
             builder.Property(p => p.Price)
-               .IsRequired();
+               .IsRequired()
+               .HasPrecision(18, 2);
+
             builder.Property(p => p.Image)
                .IsRequired();
+
             builder.Property(p => p.Status)
                 .IsRequired();
         }
