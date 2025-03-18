@@ -1,9 +1,9 @@
+﻿using FoodOrder.Application.Extensions;
 using FoodOrder.Domain.Entities.Identity;
 using FoodOrder.Infrastructure.Data.Context;
+using FoodOrder.Infrastructure.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
-using FoodOrder.Infrastructure.Extensions;
-using FoodOrder.Application.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,11 +31,24 @@ builder.Services.AddAuthentication(options =>
     options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
 });
 
+var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: MyAllowSpecificOrigins,
+        policy =>
+        {
+            policy.AllowAnyOrigin() // Đổi thành URL của Vue.js
+                 .AllowAnyHeader()
+                  .AllowAnyMethod();
+        });
+});
 
 var app = builder.Build();
 
+
 // Configure the HTTP request pipeline.
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -44,6 +57,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseStaticFiles();
+
+app.UseCors(MyAllowSpecificOrigins);
 
 app.UseAuthentication();
 app.UseAuthorization();

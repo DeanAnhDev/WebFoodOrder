@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.13.35731.43 d17.13
+VisualStudioVersion = 17.13.35731.43
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FoodOrder.Domain", "FoodOrder.Domain\FoodOrder.Domain.csproj", "{9237718A-9009-4E65-8F88-4F9C9B0DC029}"
 EndProject
