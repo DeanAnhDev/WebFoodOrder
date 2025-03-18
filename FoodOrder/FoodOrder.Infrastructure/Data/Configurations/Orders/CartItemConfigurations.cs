@@ -14,6 +14,12 @@ namespace FoodOrder.Infrastructure.Data.Configurations.Orders
                 .WithMany(o => o.CartItems)
                 .HasForeignKey(p => p.FoodId);
 
+            builder.Property(c => c.TotalPrice)
+                .HasPrecision(18, 2);
+
+            builder.Property(c => c.UnitPrice)
+               .HasPrecision(18, 2);
+
             builder.HasOne(p => p.Combo)
               .WithMany(o => o.CartItems)
               .HasForeignKey(p => p.ComboId);

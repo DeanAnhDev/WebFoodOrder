@@ -18,6 +18,9 @@ namespace FoodOrder.Infrastructure.Data.Configurations.Orders
             builder.Property(p => p.OrderDate)
                 .IsRequired();
 
+            builder.Property(p => p.TotalAmount)
+                .HasPrecision(18, 2);
+
             builder.Property(p => p.Status)
               .IsRequired();
 
