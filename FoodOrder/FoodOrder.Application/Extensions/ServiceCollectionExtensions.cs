@@ -16,6 +16,8 @@ namespace FoodOrder.Application.Extensions
             services.AddScoped<IFoodCategoryServices, FoodCategoryServices>();
             // Add services
             services.AddScoped<IFoodServices, FoodServices>();
+            // Add services
+            services.AddScoped<IComboServices, ComboServices>();
             return services;
         }
     }
