@@ -1,0 +1,9 @@
+﻿using FoodOrder.Domain.Entities.Foods;
+
+namespace FoodOrder.Domain.Interfaces
+{
+    public interface IFoodCategoryRepository : IRepository<FoodCategory>
+    {
+        IQueryable<FoodCategory> GetFoodCategoriesWithFoods();
+    }
+}

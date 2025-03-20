@@ -20,8 +20,10 @@ namespace FoodOrder.Infrastructure.Extensions
 
             //add scoped
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
+            services.AddScoped<IFoodCategoryRepository, FoodCategoryRepository>();
 
 
             return services;

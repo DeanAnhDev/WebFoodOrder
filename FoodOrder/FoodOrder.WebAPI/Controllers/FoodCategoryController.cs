@@ -34,6 +34,27 @@ namespace FoodOrder.WebAPI.Controllers
             }
         }
 
+        [HttpGet("with-foods")]
+        public async Task<IActionResult> GetFoodCategoriesWithFoods()
+        {
+            try
+            {
+                var foodCategoriesWithFoods = await _foodCategoryService.GetFoodCategoriesWithFoodsAsync();
+
+                if (foodCategoriesWithFoods == null || !foodCategoriesWithFoods.Any())
+                {
+                    return NotFound(new { message = "Không tìm thấy danh mục nào." });
+                }
+
+                return Ok(foodCategoriesWithFoods);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Lỗi server!", error = ex.Message });
+            }
+        }
+
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetFoodCategoryById(int id)
         {

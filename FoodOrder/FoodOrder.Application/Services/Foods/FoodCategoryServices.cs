@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
+using FoodOrder.Application.DTOs.Foods.Food;
 using FoodOrder.Application.DTOs.Foods.FoodCategory;
 using FoodOrder.Application.Interfaces;
 using FoodOrder.Domain.Entities.Foods;
 using FoodOrder.Domain.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace FoodOrder.Application.Services.Foods
 {
@@ -30,12 +32,12 @@ namespace FoodOrder.Application.Services.Foods
         public async Task<bool> AddAsync(FoodCategoryDto foodCategoryDto)
         {
             var foodCategory = _mapper.Map<FoodCategory>(foodCategoryDto);
-            var result =  await _unitOfWork.FoodCategories.AddAsync(foodCategory);
-            if(result)
+            var result = await _unitOfWork.FoodCategories.AddAsync(foodCategory);
+            if (result)
             {
                 return true;
             }
-            return false;   
+            return false;
         }
 
         public async Task<bool> UpdateAsync(FoodCategoryDto foodCategoryDto)
@@ -59,5 +61,23 @@ namespace FoodOrder.Application.Services.Foods
             return false;
         }
 
+        public async Task<IEnumerable<FoodCategoryListFoodDto>> GetFoodCategoriesWithFoodsAsync()
+        {
+            return await _unitOfWork.FoodCategories.GetFoodCategoriesWithFoods()
+                 .Select(fc => new FoodCategoryListFoodDto
+                 {
+                     FoodCategoryId = fc.FoodCategoryId,
+                     CategoryName = fc.CategoryName,
+                     Foods = fc.Foods != null ? fc.Foods.Select(f => new FoodDto
+                     {
+                         FoodId = f.FoodId,
+                         FoodName = f.FoodName,
+                         Description = f.Description,
+                         Price = f.Price,
+                         Image = f.Image,
+                         Status = f.Status
+                     }).ToList() : new List<FoodDto>()
+                 }).ToListAsync();
+        }
     }
 }

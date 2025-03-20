@@ -11,7 +11,7 @@ namespace FoodOrder.Infrastructure.UnitOfWorks
     {
         private readonly FoodOrderDbContext _context;
         public IRepository<Food> Foods { get; private set; }
-        public IRepository<FoodCategory> FoodCategories { get; private set; }
+        public IFoodCategoryRepository FoodCategories { get; private set; }
         public IRepository<Combo> Combos { get; private set; }
         public IRepository<ComboDetail> ComboDetails { get; private set; }
         public IRepository<AppUser> AppUsers { get; private set; }
@@ -25,7 +25,7 @@ namespace FoodOrder.Infrastructure.UnitOfWorks
         {
             _context = context;
             Foods = new Repository<Food>(_context);
-            FoodCategories = new Repository<FoodCategory>(_context);
+            FoodCategories = new FoodCategoryRepository(_context);
             Combos = new Repository<Combo>(_context);
             ComboDetails = new Repository<ComboDetail>(_context);
             AppUsers = new Repository<AppUser>(_context);
