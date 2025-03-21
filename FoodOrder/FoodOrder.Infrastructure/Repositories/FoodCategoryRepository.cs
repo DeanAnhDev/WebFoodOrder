@@ -13,7 +13,8 @@ namespace FoodOrder.Infrastructure.Repositories
         {
             return _dbSet
                 .AsNoTracking()
-                .Include(fc => fc.Foods);
+                .Include(fc => fc.Foods)
+                .AsSplitQuery();
         }
     }
 }
