@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FoodOrder.Application.ApplicationService;
 using FoodOrder.Application.DTOs.Foods.Food;
 using FoodOrder.Application.DTOs.Foods.FoodCategory;
 using FoodOrder.Application.Interfaces;
@@ -12,10 +13,12 @@ namespace FoodOrder.Application.Services.Foods
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        public FoodCategoryServices(IUnitOfWork unitOfWork, IMapper mapper)
+        private readonly SlugService _slugService;
+        public FoodCategoryServices(IUnitOfWork unitOfWork, IMapper mapper, SlugService slugService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _slugService = slugService;
         }
         public async Task<IEnumerable<FoodCategoryDto>> GetAllAsync()
         {
@@ -29,26 +32,36 @@ namespace FoodOrder.Application.Services.Foods
             return _mapper.Map<FoodCategoryDto>(foodCategory);
         }
 
+        public async Task<FoodCategoryDto?> GetBySlugAsync(string slug)
+        {
+            var foodCategory = await _unitOfWork.FoodCategories.GetBySlugAsync(slug);
+            return _mapper.Map<FoodCategoryDto>(foodCategory);
+        }
+
         public async Task<bool> AddAsync(FoodCategoryDto foodCategoryDto)
         {
             var foodCategory = _mapper.Map<FoodCategory>(foodCategoryDto);
-            var result = await _unitOfWork.FoodCategories.AddAsync(foodCategory);
-            if (result)
+            if (foodCategory.CategoryName != null)
             {
-                return true;
+                foodCategory.Slug = await _slugService.GenerateUniqueSlug<FoodCategory>(foodCategory.CategoryName);
             }
-            return false;
+            var result = await _unitOfWork.FoodCategories.AddAsync(foodCategory);
+            if (!result) return false;
+
+            return await _unitOfWork.CompleteAsync() > 0;
         }
 
         public async Task<bool> UpdateAsync(FoodCategoryDto foodCategoryDto)
         {
             var foodCategory = _mapper.Map<FoodCategory>(foodCategoryDto);
-            var result = await _unitOfWork.FoodCategories.UpdateAsync(foodCategory);
-            if (result)
+            if (foodCategory.CategoryName != null)
             {
-                return true;
+                foodCategory.Slug = await _slugService.GenerateUniqueSlug<FoodCategory>(foodCategory.CategoryName);
             }
-            return false;
+            var result = await _unitOfWork.FoodCategories.UpdateAsync(foodCategory);
+            if (!result) return false;
+
+            return await _unitOfWork.CompleteAsync() > 0;
         }
 
         public async Task<bool> DeleteAsync(int id)
@@ -68,10 +81,14 @@ namespace FoodOrder.Application.Services.Foods
                  {
                      FoodCategoryId = fc.FoodCategoryId,
                      CategoryName = fc.CategoryName,
-                     Foods = fc.Foods != null ? fc.Foods.Select(f => new FoodDto
+                     Slug = fc.Slug,
+                     Foods = fc.Foods != null ? fc.Foods
+                     .Where(f => f.Status == "true")
+                     .Select(f => new FoodDto
                      {
                          FoodId = f.FoodId,
                          FoodName = f.FoodName,
+                         Slug = f.Slug,
                          Description = f.Description,
                          Price = f.Price,
                          Image = f.Image,

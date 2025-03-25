@@ -5,6 +5,6 @@ namespace FoodOrder.Application.Interfaces
 {
     public interface IFoodServices : IInterfaces<FoodDto>, IInterfaceForCreateUpdateDelete<FoodDto>
     {
-
+        Task<FoodDto?> GetBySlugAsync(string slug);
     }
 }

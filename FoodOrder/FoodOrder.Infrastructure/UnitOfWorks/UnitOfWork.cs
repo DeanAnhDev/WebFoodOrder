@@ -3,38 +3,49 @@ using FoodOrder.Domain.Entities.Identity;
 using FoodOrder.Domain.Entities.Orders;
 using FoodOrder.Domain.Interfaces;
 using FoodOrder.Infrastructure.Data.Context;
-using FoodOrder.Infrastructure.Repositories;
 
 namespace FoodOrder.Infrastructure.UnitOfWorks
 {
-    public class UnitOfWork : IUnitOfWork
+    public class UnitOfWork : IUnitOfWork, IDisposable
     {
         private readonly FoodOrderDbContext _context;
-        public IRepository<Food> Foods { get; private set; }
-        public IFoodCategoryRepository FoodCategories { get; private set; }
-        public IRepository<Combo> Combos { get; private set; }
-        public IRepository<ComboDetail> ComboDetails { get; private set; }
-        public IRepository<AppUser> AppUsers { get; private set; }
-        public IRepository<AppRole> AppRoles { get; private set; }
-        public IRepository<CartItem> CartItems { get; private set; }
-        public IRepository<Order> Orders { get; private set; }
-        public IRepository<Cart> Carts { get; private set; }
-        public IRepository<OrderDetail> OrderDetails { get; private set; }
 
-        public UnitOfWork(FoodOrderDbContext context)
+        public IRepository<Food> Foods { get; }
+        public IFoodCategoryRepository FoodCategories { get; }
+        public IRepository<Combo> Combos { get; }
+        public IRepository<ComboDetail> ComboDetails { get; }
+        public IRepository<AppUser> AppUsers { get; }
+        public IRepository<AppRole> AppRoles { get; }
+        public IRepository<CartItem> CartItems { get; }
+        public IRepository<Order> Orders { get; }
+        public IRepository<Cart> Carts { get; }
+        public IRepository<OrderDetail> OrderDetails { get; }
+
+        public UnitOfWork(FoodOrderDbContext context,
+                          IRepository<Food> foodRepo,
+                          IFoodCategoryRepository foodCategoryRepo,
+                          IRepository<Combo> comboRepo,
+                          IRepository<ComboDetail> comboDetailRepo,
+                          IRepository<AppUser> appUserRepo,
+                          IRepository<AppRole> appRoleRepo,
+                          IRepository<Cart> cartRepo,
+                          IRepository<CartItem> cartItemRepo,
+                          IRepository<Order> orderRepo,
+                          IRepository<OrderDetail> orderDetailRepo)
         {
             _context = context;
-            Foods = new Repository<Food>(_context);
-            FoodCategories = new FoodCategoryRepository(_context);
-            Combos = new Repository<Combo>(_context);
-            ComboDetails = new Repository<ComboDetail>(_context);
-            AppUsers = new Repository<AppUser>(_context);
-            AppRoles = new Repository<AppRole>(_context);
-            Carts = new Repository<Cart>(_context);
-            CartItems = new Repository<CartItem>(_context);
-            Orders = new Repository<Order>(_context);
-            OrderDetails = new Repository<OrderDetail>(_context);
+            Foods = foodRepo;
+            FoodCategories = foodCategoryRepo;
+            Combos = comboRepo;
+            ComboDetails = comboDetailRepo;
+            AppUsers = appUserRepo;
+            AppRoles = appRoleRepo;
+            Carts = cartRepo;
+            CartItems = cartItemRepo;
+            Orders = orderRepo;
+            OrderDetails = orderDetailRepo;
         }
+
         public async Task<int> CompleteAsync()
         {
             return await _context.SaveChangesAsync();
@@ -43,6 +54,7 @@ namespace FoodOrder.Infrastructure.UnitOfWorks
         public void Dispose()
         {
             _context.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }

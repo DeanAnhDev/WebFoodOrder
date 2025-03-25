@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FoodOrder.Application.ApplicationService;
 using FoodOrder.Application.DTOs.Foods.Food;
 using FoodOrder.Application.Interfaces;
 using FoodOrder.Domain.Entities.Foods;
@@ -10,11 +11,12 @@ namespace FoodOrder.Application.Services.Foods
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-
-        public FoodServices(IUnitOfWork unitOfWork, IMapper mapper)
+        private readonly SlugService _slugService;
+        public FoodServices(IUnitOfWork unitOfWork, IMapper mapper, SlugService slugService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _slugService = slugService;
         }
 
         public async Task<IEnumerable<FoodDto>> GetAllAsync()
@@ -29,26 +31,37 @@ namespace FoodOrder.Application.Services.Foods
             return _mapper.Map<FoodDto>(foods);
         }
 
+        public async Task<FoodDto?> GetBySlugAsync(string slug)
+        {
+            var foods = await _unitOfWork.Foods.GetBySlugAsync(slug);
+            return _mapper.Map<FoodDto>(foods);
+        }
+
         public async Task<bool> AddAsync(FoodDto foodDto)
         {
+
             var food = _mapper.Map<Food>(foodDto);
-            var result = await _unitOfWork.Foods.AddAsync(food);
-            if (result)
+            if (food.FoodName != null)
             {
-                return true;
+                food.Slug = await _slugService.GenerateUniqueSlug<Food>(food.FoodName);
             }
-            return false;
+            var result = await _unitOfWork.Foods.AddAsync(food);
+            if (!result) return false;
+
+            return await _unitOfWork.CompleteAsync() > 0;
         }
 
         public async Task<bool> UpdateAsync(FoodDto foodDto)
         {
             var food = _mapper.Map<Food>(foodDto);
-            var result = await _unitOfWork.Foods.UpdateAsync(food);
-            if (result)
+            if (food.FoodName != null)
             {
-                return true;
+                food.Slug = await _slugService.GenerateUniqueSlug<Food>(food.FoodName);
             }
-            return false;
+            var result = await _unitOfWork.Foods.UpdateAsync(food);
+            if (!result) return false;
+
+            return await _unitOfWork.CompleteAsync() > 0;
         }
 
         public async Task<bool> DeleteAsync(int id)

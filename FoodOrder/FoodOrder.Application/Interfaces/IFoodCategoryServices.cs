@@ -6,5 +6,6 @@ namespace FoodOrder.Application.Interfaces
     public interface IFoodCategoryServices : IInterfaces<FoodCategoryDto>, IInterfaceForCreateUpdateDelete<FoodCategoryDto>
     {
         Task<IEnumerable<FoodCategoryListFoodDto>> GetFoodCategoriesWithFoodsAsync();
+        Task<FoodCategoryDto?> GetBySlugAsync(string slug);
     }
 }

@@ -24,28 +24,29 @@ namespace FoodOrder.Infrastructure.Repositories
             return await _dbSet.FindAsync(id);
         }
 
+        public async Task<TEntity?> GetBySlugAsync(string slug)
+        {
+            return await _dbSet.FirstOrDefaultAsync(entity => EF.Property<string>(entity, "Slug") == slug);
+        }
+
         public async Task<bool> AddAsync(TEntity entity)
         {
             if (entity != null)
             {
                 await _dbSet.AddAsync(entity);
-                await _context.SaveChangesAsync();
                 return true;
             }
             return false;
         }
 
-        public async Task<bool> UpdateAsync(TEntity entity)
+        public Task<bool> UpdateAsync(TEntity entity)
         {
-            if (entity != null)
-            {
-                _dbSet.Update(entity);
-                await _context.SaveChangesAsync();
-                return true;
-            }
-            return false;
-          
+            if (entity == null) return Task.FromResult(false);
+
+            _dbSet.Update(entity);
+            return Task.FromResult(true);
         }
+
 
         public async Task<bool> DeleteAsync(int id)
         {

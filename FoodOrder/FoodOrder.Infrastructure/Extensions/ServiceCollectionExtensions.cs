@@ -23,8 +23,9 @@ namespace FoodOrder.Infrastructure.Extensions
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-            services.AddScoped<IFoodCategoryRepository, FoodCategoryRepository>();
-
+            services.AddScoped<IFoodCategoryRepository, FoodCategoryRepository>(); 
+            
+            services.AddScoped<ISlugRepository, SlugRepository>();
 
             return services;
         }

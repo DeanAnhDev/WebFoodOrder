@@ -31,6 +31,8 @@ namespace FoodOrder.Infrastructure.Data.Configurations.Foods
 
             builder.Property(p => p.Status)
                 .IsRequired();
+            builder.Property(p => p.Slug)
+           .IsRequired();
         }
     }
 }

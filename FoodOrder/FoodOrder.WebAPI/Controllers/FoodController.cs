@@ -60,6 +60,31 @@ namespace FoodOrder.WebAPI.Controllers
             }
         }
 
+        [HttpGet("slug/{slug}")]
+        public async Task<IActionResult> GetFoodBySlug(string slug)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(slug))
+                {
+                    return BadRequest(new { message = "Slug không hợp lệ!" });
+                }
+
+                var combo = await _foodService.GetBySlugAsync(slug);
+
+                if (combo == null)
+                {
+                    return NotFound(new { message = "Không tìm thấy food nào." });
+                }
+
+                return Ok(combo);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Lỗi server!", error = ex.Message });
+            }
+        }
+
         [HttpPost]
         public async Task<IActionResult> CreateFood([FromBody] FoodDto foodDto)
         {

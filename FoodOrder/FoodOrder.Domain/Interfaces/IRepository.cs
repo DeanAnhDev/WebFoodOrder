@@ -8,5 +8,6 @@ namespace FoodOrder.Domain.Interfaces
         Task<bool> AddAsync(TEntity entity);
         Task<bool> UpdateAsync(TEntity entity);
         Task<bool> DeleteAsync(int id);
+        Task<TEntity?> GetBySlugAsync(string slug);
     }
 }

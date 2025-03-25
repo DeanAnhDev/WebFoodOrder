@@ -18,7 +18,7 @@ namespace FoodOrder.WebAPI.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllCombo()
         {
-            try
+            try 
             {
                 var combos = await _comboServices.GetAllAsync();
 
@@ -47,6 +47,31 @@ namespace FoodOrder.WebAPI.Controllers
                 }
 
                 var combo = await _comboServices.GetByIdAsync(id);
+
+                if (combo == null)
+                {
+                    return NotFound(new { message = "Không tìm thấy combo nào." });
+                }
+
+                return Ok(combo);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Lỗi server!", error = ex.Message });
+            }
+        }
+
+        [HttpGet("slug/{slug}")]
+        public async Task<IActionResult> GetComboBySlug(string slug)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(slug))
+                {
+                    return BadRequest(new { message = "Slug không hợp lệ!" });
+                }
+
+                var combo = await _comboServices.GetBySlugAsync(slug);
 
                 if (combo == null)
                 {

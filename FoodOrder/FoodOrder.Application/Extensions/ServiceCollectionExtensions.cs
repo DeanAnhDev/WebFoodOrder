@@ -1,4 +1,5 @@
-﻿using FoodOrder.Application.Interfaces;
+﻿using FoodOrder.Application.ApplicationService;
+using FoodOrder.Application.Interfaces;
 using FoodOrder.Application.MappingProfiles;
 using FoodOrder.Application.Services.Foods;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,6 +19,9 @@ namespace FoodOrder.Application.Extensions
             services.AddScoped<IFoodServices, FoodServices>();
             // Add services
             services.AddScoped<IComboServices, ComboServices>();
+
+            services.AddScoped<SlugService>();
+
             return services;
         }
     }
