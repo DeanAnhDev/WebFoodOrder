@@ -10,7 +10,7 @@ namespace FoodOrder.Infrastructure.UnitOfWorks
     {
         private readonly FoodOrderDbContext _context;
 
-        public IRepository<Food> Foods { get; }
+        public IFoodRepository Foods { get; }
         public IFoodCategoryRepository FoodCategories { get; }
         public IRepository<Combo> Combos { get; }
         public IRepository<ComboDetail> ComboDetails { get; }
@@ -22,7 +22,7 @@ namespace FoodOrder.Infrastructure.UnitOfWorks
         public IRepository<OrderDetail> OrderDetails { get; }
 
         public UnitOfWork(FoodOrderDbContext context,
-                          IRepository<Food> foodRepo,
+                          IFoodRepository foodRepo,
                           IFoodCategoryRepository foodCategoryRepo,
                           IRepository<Combo> comboRepo,
                           IRepository<ComboDetail> comboDetailRepo,

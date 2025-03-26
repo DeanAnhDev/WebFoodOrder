@@ -1,4 +1,6 @@
-﻿using FoodOrder.Application.DTOs.Foods.Food;
+﻿using FoodOrder.Application.DTOs.Foods.Combo;
+using FoodOrder.Application.DTOs.Foods.Food;
+using FoodOrder.Application.DTOs.Foods.FoodCategory;
 using FoodOrder.Application.Interfaces.InterfacesGeneric;
 
 namespace FoodOrder.Application.Interfaces

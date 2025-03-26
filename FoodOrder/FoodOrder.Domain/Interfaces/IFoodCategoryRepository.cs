@@ -5,5 +5,6 @@ namespace FoodOrder.Domain.Interfaces
     public interface IFoodCategoryRepository : IRepository<FoodCategory>
     {
         IQueryable<FoodCategory> GetFoodCategoriesWithFoods();
+        IQueryable<FoodCategory> GetFoodsByCategorySlug(string categorySlug);
     }
 }

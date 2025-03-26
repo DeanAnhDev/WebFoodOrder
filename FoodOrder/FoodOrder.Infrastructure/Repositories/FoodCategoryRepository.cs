@@ -2,6 +2,7 @@
 using FoodOrder.Domain.Interfaces;
 using FoodOrder.Infrastructure.Data.Context;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 namespace FoodOrder.Infrastructure.Repositories
 {
@@ -14,7 +15,18 @@ namespace FoodOrder.Infrastructure.Repositories
             return _dbSet
                 .AsNoTracking()
                 .Include(fc => fc.Foods)
+                .Include(fc => fc.Combos)
                 .AsSplitQuery();
+        }
+
+        public IQueryable<FoodCategory> GetFoodsByCategorySlug(string categorySlug)
+        {
+             var result =  _dbSet
+                .AsNoTracking()
+                .Where(fc => fc.Slug == categorySlug)
+                .Include(fc => fc.Foods)
+                .AsSplitQuery();
+            return result;
         }
     }
 }

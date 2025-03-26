@@ -4,6 +4,6 @@ namespace FoodOrder.Domain.Interfaces
 {
     public interface IFoodRepository : IRepository<Food>
     {
-        IQueryable<Food> GetFoodsByCategorySlug(string categorySlug);
+        
     }
 }

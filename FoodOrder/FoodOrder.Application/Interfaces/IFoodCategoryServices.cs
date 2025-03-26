@@ -1,11 +1,14 @@
 ﻿using FoodOrder.Application.DTOs.Foods.FoodCategory;
 using FoodOrder.Application.Interfaces.InterfacesGeneric;
+using FoodOrder.Domain.Entities.Foods;
 
 namespace FoodOrder.Application.Interfaces
 {
     public interface IFoodCategoryServices : IInterfaces<FoodCategoryDto>, IInterfaceForCreateUpdateDelete<FoodCategoryDto>
     {
-        Task<IEnumerable<FoodCategoryListFoodDto>> GetFoodCategoriesWithFoodsAsync();
+        Task<IEnumerable<FoodCategoryListFoodDto?>> GetFoodCategoriesWithFoodsAsync();
         Task<FoodCategoryDto?> GetBySlugAsync(string slug);
+        Task<FoodCategoryListFoodDto?> GetFoodsByCategorySlugAsync(string categorySlug);
+
     }
 }

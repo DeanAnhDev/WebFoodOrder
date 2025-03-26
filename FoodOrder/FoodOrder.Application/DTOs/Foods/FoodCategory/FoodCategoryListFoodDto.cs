@@ -1,4 +1,5 @@
-﻿using FoodOrder.Application.DTOs.Foods.Food;
+﻿using FoodOrder.Application.DTOs.Foods.Combo;
+using FoodOrder.Application.DTOs.Foods.Food;
 
 namespace FoodOrder.Application.DTOs.Foods.FoodCategory
 {
@@ -8,5 +9,6 @@ namespace FoodOrder.Application.DTOs.Foods.FoodCategory
         public string? CategoryName { get; set; }
         public string? Slug { get; set; }
         public List<FoodDto>? Foods { get; set; }
+        public List<ComboDto>? Combos { get; set; }
     }
 }
