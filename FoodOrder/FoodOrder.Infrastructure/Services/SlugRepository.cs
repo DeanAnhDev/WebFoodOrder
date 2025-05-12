@@ -2,7 +2,7 @@
 using FoodOrder.Infrastructure.Data.Context;
 using Microsoft.EntityFrameworkCore;
 
-namespace FoodOrder.Infrastructure.Repositories
+namespace FoodOrder.Infrastructure.Services
 {
     public class SlugRepository : ISlugRepository
     {

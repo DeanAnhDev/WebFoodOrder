@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace FoodOrder.Application.ApplicationService
+namespace FoodOrder.Application.Services
 {
     public class SlugService
     {

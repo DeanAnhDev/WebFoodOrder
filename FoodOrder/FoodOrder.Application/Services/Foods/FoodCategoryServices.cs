@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using FoodOrder.Application.ApplicationService;
 using FoodOrder.Application.DTOs.Foods.Combo;
 using FoodOrder.Application.DTOs.Foods.Food;
 using FoodOrder.Application.DTOs.Foods.FoodCategory;

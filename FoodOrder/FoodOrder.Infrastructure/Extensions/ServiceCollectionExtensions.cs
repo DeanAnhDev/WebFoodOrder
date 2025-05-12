@@ -1,6 +1,10 @@
-﻿using FoodOrder.Domain.Interfaces;
+﻿using FoodOrder.Application.Common.Interfaces;
+using FoodOrder.Application.Interfaces;
+using FoodOrder.Domain.Interfaces;
 using FoodOrder.Infrastructure.Data.Context;
+using FoodOrder.Infrastructure.Identity;
 using FoodOrder.Infrastructure.Repositories;
+using FoodOrder.Infrastructure.Services;
 using FoodOrder.Infrastructure.UnitOfWorks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -28,6 +32,10 @@ namespace FoodOrder.Infrastructure.Extensions
             services.AddScoped<IFoodRepository, FoodRepository>();
 
             services.AddScoped<ISlugRepository, SlugRepository>();
+
+            services.AddScoped<IEmailService, EmailService>();
+
+            services.AddScoped<IIdentityService, IdentityService>();
 
             return services;
         }

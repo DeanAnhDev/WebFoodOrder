@@ -1,11 +1,8 @@
 ﻿using AutoMapper;
-using FoodOrder.Application.ApplicationService;
 using FoodOrder.Application.DTOs.Foods.Food;
-using FoodOrder.Application.DTOs.Foods.FoodCategory;
 using FoodOrder.Application.Interfaces;
 using FoodOrder.Domain.Entities.Foods;
 using FoodOrder.Domain.Interfaces;
-using Microsoft.EntityFrameworkCore;
 
 namespace FoodOrder.Application.Services.Foods
 {
@@ -75,11 +72,6 @@ namespace FoodOrder.Application.Services.Foods
             }
             return false;
         }
-
-
-
-
-
 
 
     }
