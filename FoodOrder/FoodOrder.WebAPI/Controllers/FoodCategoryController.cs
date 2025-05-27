@@ -167,10 +167,30 @@ namespace FoodOrder.WebAPI.Controllers
 
                 if (foodsByCategorySlug == null)
                 {
-                    return NotFound(new { message = "Không tìm thấy danh mục nào." });
+                    return NotFound(new { message = "Không tìm thấy món ăn nào." });
                 }
 
                 return Ok(foodsByCategorySlug);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Lỗi server!", error = ex.Message });
+            }
+        }
+
+        [HttpGet("combos-by-category/{slug}")]
+        public async Task<IActionResult> GetCombosByCategorySlug(string slug)
+        {
+            try
+            {
+                var combosByCategorySlug = await _foodCategoryService.GetCombosByCategorySlugAsync(slug);
+
+                if (combosByCategorySlug == null)
+                {
+                    return NotFound(new { message = "Không tìm thấy combo nào." });
+                }
+
+                return Ok(combosByCategorySlug);
             }
             catch (Exception ex)
             {

@@ -107,11 +107,11 @@ namespace FoodOrder.Application.Services.Foods
             return foodCategoriesWithFoods;
         }
 
-        public async Task<FoodCategoryListFoodDto?> GetFoodsByCategorySlugAsync(string categorySlug)
+        public async Task<FoodsByCategory?> GetFoodsByCategorySlugAsync(string categorySlug)
         {
             var foodsByCategorySlug = await _unitOfWork.FoodCategories
                 .GetFoodsByCategorySlug(categorySlug)
-                .Select(fc => new FoodCategoryListFoodDto
+                .Select(fc => new FoodsByCategory
                 {
                     FoodCategoryId = fc.FoodCategoryId,
                     CategoryName = fc.CategoryName,
@@ -130,6 +130,31 @@ namespace FoodOrder.Application.Services.Foods
                 .FirstOrDefaultAsync();
 
             return foodsByCategorySlug;
+        }
+
+        public async Task<CombosByCategory?> GetCombosByCategorySlugAsync(string categorySlug)
+        {
+            var combosByCategorySlug = await _unitOfWork.FoodCategories
+                .GetCombosByCategorySlug(categorySlug)
+                .Select(fc => new CombosByCategory
+                {
+                    FoodCategoryId = fc.FoodCategoryId,
+                    CategoryName = fc.CategoryName,
+                    Slug = fc.Slug,
+                    Combos = fc.Combos != null ? fc.Combos.Select(f => new ComboDto
+                    {
+                        ComboId = f.ComboId,
+                        ComboName = f.ComboName,
+                        Slug = f.Slug,
+                        Description = f.Description,
+                        Price = f.Price,
+                        Image = f.Image,
+                        Status = f.Status
+                    }).ToList() : new List<ComboDto>()
+                })
+                .FirstOrDefaultAsync();
+
+            return combosByCategorySlug;
         }
 
 

@@ -28,5 +28,15 @@ namespace FoodOrder.Infrastructure.Repositories
                 .AsSplitQuery();
             return result;
         }
+
+        public IQueryable<FoodCategory> GetCombosByCategorySlug(string categorySlug)
+        {
+            var result = _dbSet
+               .AsNoTracking()
+               .Where(fc => fc.Slug == categorySlug)
+               .Include(fc => fc.Foods)
+               .AsSplitQuery();
+            return result;
+        }
     }
 }

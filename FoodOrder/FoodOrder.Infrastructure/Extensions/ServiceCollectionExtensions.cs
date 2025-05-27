@@ -1,5 +1,6 @@
 ﻿using FoodOrder.Application.Common.Interfaces;
 using FoodOrder.Application.Interfaces;
+using FoodOrder.Application.Services;
 using FoodOrder.Domain.Interfaces;
 using FoodOrder.Infrastructure.Data.Context;
 using FoodOrder.Infrastructure.Identity;
@@ -36,6 +37,10 @@ namespace FoodOrder.Infrastructure.Extensions
             services.AddScoped<IEmailService, EmailService>();
 
             services.AddScoped<IIdentityService, IdentityService>();
+
+            services.AddScoped<IRedisService, RedisService>();
+
+
 
             return services;
         }
