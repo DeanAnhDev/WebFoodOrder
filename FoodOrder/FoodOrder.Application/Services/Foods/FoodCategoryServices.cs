@@ -1,8 +1,11 @@
 ﻿using AutoMapper;
+using FoodOrder.Application.DTOs.Foods.Combo;
+using FoodOrder.Application.DTOs.Foods.Food;
 using FoodOrder.Application.DTOs.Foods.FoodCategory;
 using FoodOrder.Application.Interfaces;
 using FoodOrder.Domain.Entities.Foods;
 using FoodOrder.Domain.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace FoodOrder.Application.Services.Foods
 {
@@ -10,10 +13,12 @@ namespace FoodOrder.Application.Services.Foods
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        public FoodCategoryServices(IUnitOfWork unitOfWork, IMapper mapper)
+        private readonly SlugService _slugService;
+        public FoodCategoryServices(IUnitOfWork unitOfWork, IMapper mapper, SlugService slugService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _slugService = slugService;
         }
         public async Task<IEnumerable<FoodCategoryDto>> GetAllAsync()
         {
@@ -27,26 +32,36 @@ namespace FoodOrder.Application.Services.Foods
             return _mapper.Map<FoodCategoryDto>(foodCategory);
         }
 
+        public async Task<FoodCategoryDto?> GetBySlugAsync(string slug)
+        {
+            var foodCategory = await _unitOfWork.FoodCategories.GetBySlugAsync(slug);
+            return _mapper.Map<FoodCategoryDto>(foodCategory);
+        }
+
         public async Task<bool> AddAsync(FoodCategoryDto foodCategoryDto)
         {
             var foodCategory = _mapper.Map<FoodCategory>(foodCategoryDto);
-            var result =  await _unitOfWork.FoodCategories.AddAsync(foodCategory);
-            if(result)
+            if (foodCategory.CategoryName != null)
             {
-                return true;
+                foodCategory.Slug = await _slugService.GenerateUniqueSlug<FoodCategory>(foodCategory.CategoryName);
             }
-            return false;   
+            var result = await _unitOfWork.FoodCategories.AddAsync(foodCategory);
+            if (!result) return false;
+
+            return await _unitOfWork.CompleteAsync() > 0;
         }
 
         public async Task<bool> UpdateAsync(FoodCategoryDto foodCategoryDto)
         {
             var foodCategory = _mapper.Map<FoodCategory>(foodCategoryDto);
-            var result = await _unitOfWork.FoodCategories.UpdateAsync(foodCategory);
-            if (result)
+            if (foodCategory.CategoryName != null)
             {
-                return true;
+                foodCategory.Slug = await _slugService.GenerateUniqueSlug<FoodCategory>(foodCategory.CategoryName);
             }
-            return false;
+            var result = await _unitOfWork.FoodCategories.UpdateAsync(foodCategory);
+            if (!result) return false;
+
+            return await _unitOfWork.CompleteAsync() > 0;
         }
 
         public async Task<bool> DeleteAsync(int id)
@@ -58,6 +73,90 @@ namespace FoodOrder.Application.Services.Foods
             }
             return false;
         }
+
+        public async Task<IEnumerable<FoodCategoryListFoodDto?>> GetFoodCategoriesWithFoodsAsync()
+        {
+            var foodCategoriesWithFoods = await _unitOfWork.FoodCategories.GetFoodCategoriesWithFoods()
+                .Select(fc => new FoodCategoryListFoodDto
+                {
+                    FoodCategoryId = fc.FoodCategoryId,
+                    CategoryName = fc.CategoryName,
+                    Slug = fc.Slug,
+                    Foods = fc.Foods != null ? fc.Foods
+                    .Select(f => new FoodDto
+                    {
+                        FoodId = f.FoodId,
+                        FoodName = f.FoodName,
+                        Slug = f.Slug,
+                        Description = f.Description,
+                        Price = f.Price,
+                        Image = f.Image,
+                        Status = f.Status
+                    }).ToList() : new List<FoodDto>(),
+                    Combos = fc.Combos != null ? fc.Combos
+                    .Select(c => new ComboDto
+                    {
+                        ComboId = c.ComboId,
+                        ComboName = c.ComboName,
+                        Slug = c.Slug,
+                        Price = c.Price,
+                        Image = c.Image,
+                        Status = c.Status
+                    }).ToList() : new List<ComboDto>()
+                }).ToListAsync();
+            return foodCategoriesWithFoods;
+        }
+
+        public async Task<FoodsByCategory?> GetFoodsByCategorySlugAsync(string categorySlug)
+        {
+            var foodsByCategorySlug = await _unitOfWork.FoodCategories
+                .GetFoodsByCategorySlug(categorySlug)
+                .Select(fc => new FoodsByCategory
+                {
+                    FoodCategoryId = fc.FoodCategoryId,
+                    CategoryName = fc.CategoryName,
+                    Slug = fc.Slug,
+                    Foods = fc.Foods != null ? fc.Foods.Select(f => new FoodDto
+                    {
+                        FoodId = f.FoodId,
+                        FoodName = f.FoodName,
+                        Slug = f.Slug,
+                        Description = f.Description,
+                        Price = f.Price,
+                        Image = f.Image,
+                        Status = f.Status
+                    }).ToList() : new List<FoodDto>()
+                })
+                .FirstOrDefaultAsync();
+
+            return foodsByCategorySlug;
+        }
+
+        public async Task<CombosByCategory?> GetCombosByCategorySlugAsync(string categorySlug)
+        {
+            var combosByCategorySlug = await _unitOfWork.FoodCategories
+                .GetCombosByCategorySlug(categorySlug)
+                .Select(fc => new CombosByCategory
+                {
+                    FoodCategoryId = fc.FoodCategoryId,
+                    CategoryName = fc.CategoryName,
+                    Slug = fc.Slug,
+                    Combos = fc.Combos != null ? fc.Combos.Select(f => new ComboDto
+                    {
+                        ComboId = f.ComboId,
+                        ComboName = f.ComboName,
+                        Slug = f.Slug,
+                        Description = f.Description,
+                        Price = f.Price,
+                        Image = f.Image,
+                        Status = f.Status
+                    }).ToList() : new List<ComboDto>()
+                })
+                .FirstOrDefaultAsync();
+
+            return combosByCategorySlug;
+        }
+
 
     }
 }

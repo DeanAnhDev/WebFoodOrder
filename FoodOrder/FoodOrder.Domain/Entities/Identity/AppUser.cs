@@ -5,6 +5,8 @@ namespace FoodOrder.Domain.Entities.Identity
 {
     public class AppUser : IdentityUser<int>
     {
+        public string? FullName { get; set; }
+        public string? Location { get; set; }
         public ICollection<Order>? Orders { get; set; }
         public Cart? Cart { get; set; }
     }

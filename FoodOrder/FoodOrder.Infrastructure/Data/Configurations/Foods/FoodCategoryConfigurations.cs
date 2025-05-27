@@ -17,6 +17,8 @@ namespace FoodOrder.Infrastructure.Data.Configurations.Foods
             builder.Property(p => p.Description)
                .HasMaxLength(500)
                .IsRequired();
+            builder.Property(p => p.Slug)
+           .IsRequired();
         }
     }
 }

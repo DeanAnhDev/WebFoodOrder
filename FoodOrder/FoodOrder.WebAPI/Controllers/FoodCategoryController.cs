@@ -34,6 +34,27 @@ namespace FoodOrder.WebAPI.Controllers
             }
         }
 
+        [HttpGet("with-foods")]
+        public async Task<IActionResult> GetFoodsAndCombosCategoriesWithFoods()
+        {
+            try
+            {
+                var foodCategoriesWithFoods = await _foodCategoryService.GetFoodCategoriesWithFoodsAsync();
+
+                if (foodCategoriesWithFoods == null || !foodCategoriesWithFoods.Any())
+                {
+                    return NotFound(new { message = "Không tìm thấy danh mục nào." });
+                }
+
+                return Ok(foodCategoriesWithFoods);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Lỗi server!", error = ex.Message });
+            }
+        }
+
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetFoodCategoryById(int id)
         {
@@ -85,7 +106,7 @@ namespace FoodOrder.WebAPI.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> UpdateFoodCategory( [FromBody] FoodCategoryDto categoryDto)
+        public async Task<IActionResult> UpdateFoodCategory([FromBody] FoodCategoryDto categoryDto)
         {
             try
             {
@@ -137,7 +158,45 @@ namespace FoodOrder.WebAPI.Controllers
             }
         }
 
+        [HttpGet("foods-by-category/{slug}")]
+        public async Task<IActionResult> GetFoodsByCategorySlug(string slug)
+        {
+            try
+            {
+                var foodsByCategorySlug = await _foodCategoryService.GetFoodsByCategorySlugAsync(slug);
 
+                if (foodsByCategorySlug == null)
+                {
+                    return NotFound(new { message = "Không tìm thấy món ăn nào." });
+                }
+
+                return Ok(foodsByCategorySlug);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Lỗi server!", error = ex.Message });
+            }
+        }
+
+        [HttpGet("combos-by-category/{slug}")]
+        public async Task<IActionResult> GetCombosByCategorySlug(string slug)
+        {
+            try
+            {
+                var combosByCategorySlug = await _foodCategoryService.GetCombosByCategorySlugAsync(slug);
+
+                if (combosByCategorySlug == null)
+                {
+                    return NotFound(new { message = "Không tìm thấy combo nào." });
+                }
+
+                return Ok(combosByCategorySlug);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Lỗi server!", error = ex.Message });
+            }
+        }
 
 
     }

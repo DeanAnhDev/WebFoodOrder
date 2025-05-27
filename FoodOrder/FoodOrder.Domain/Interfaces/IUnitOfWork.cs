@@ -7,8 +7,8 @@ namespace FoodOrder.Domain.Interfaces
 {
     public interface IUnitOfWork : IDisposable
     {
-        IRepository<Food> Foods { get; }
-        IRepository<FoodCategory> FoodCategories { get; }
+        IFoodRepository Foods { get; }
+        IFoodCategoryRepository FoodCategories { get; }
         IRepository<Combo> Combos { get; }
         IRepository<ComboDetail> ComboDetails { get; }
         IRepository<AppUser> AppUsers { get; }

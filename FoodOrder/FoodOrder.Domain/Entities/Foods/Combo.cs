@@ -6,6 +6,7 @@ namespace FoodOrder.Domain.Entities.Foods
     {
         public int ComboId { get; set; }
         public string? ComboName { get; set; }
+        public string? Slug { get; set; }
         public int FoodCategoryId { get; set; }
         public FoodCategory? FoodCategorys { get; set; }
         public decimal Price { get; set; }
