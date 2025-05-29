@@ -32,6 +32,8 @@ namespace FoodOrder.Infrastructure.Extensions
 
             services.AddScoped<IFoodRepository, FoodRepository>();
 
+            services.AddScoped<IComboDetailRepository, ComboDetailRepository>();
+
             services.AddScoped<ISlugRepository, SlugRepository>();
 
             services.AddScoped<IEmailService, EmailService>();

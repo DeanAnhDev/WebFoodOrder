@@ -20,6 +20,8 @@ namespace FoodOrder.Application.Extensions
             services.AddScoped<IFoodServices, FoodServices>();
             // Add services
             services.AddScoped<IComboServices, ComboServices>();
+            // Add services
+            services.AddScoped<IComboDetailServices, ComboDetailServices>();
 
             services.AddScoped<SlugService>();
 

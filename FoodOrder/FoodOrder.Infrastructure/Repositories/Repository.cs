@@ -7,7 +7,7 @@ namespace FoodOrder.Infrastructure.Repositories
 {
     public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
     {
-        private readonly FoodOrderDbContext _context;
+        protected readonly FoodOrderDbContext _context;
         protected readonly DbSet<TEntity> _dbSet;
         public Repository(FoodOrderDbContext context)
         {
@@ -54,6 +54,7 @@ namespace FoodOrder.Infrastructure.Repositories
             if (entity != null)
             {
                 _dbSet.Remove(entity);
+                
                 return true;
             }
             return false;
