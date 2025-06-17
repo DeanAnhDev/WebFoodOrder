@@ -18,6 +18,9 @@ namespace FoodOrder.Application.MappingProfiles
 
             //Mapping from ComBo to ComboDto
             CreateMap<Combo, ComboDto>().ReverseMap();
+
+            //Mapping from ComboDetail to ComboDetailDto
+            CreateMap<ComboDetail, ComboDetailDto>().ReverseMap();
         }
     }
 }

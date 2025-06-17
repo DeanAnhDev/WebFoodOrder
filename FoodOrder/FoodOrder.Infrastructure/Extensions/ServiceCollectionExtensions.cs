@@ -6,6 +6,7 @@ using FoodOrder.Infrastructure.Data.Context;
 using FoodOrder.Infrastructure.Identity;
 using FoodOrder.Infrastructure.Repositories;
 using FoodOrder.Infrastructure.Services;
+using FoodOrder.Infrastructure.Services.VnPayServices;
 using FoodOrder.Infrastructure.UnitOfWorks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -32,6 +33,10 @@ namespace FoodOrder.Infrastructure.Extensions
 
             services.AddScoped<IFoodRepository, FoodRepository>();
 
+            services.AddScoped<IComboDetailRepository, ComboDetailRepository>();
+
+            services.AddScoped<IComboRepository, ComboRepository>();
+
             services.AddScoped<ISlugRepository, SlugRepository>();
 
             services.AddScoped<IEmailService, EmailService>();
@@ -40,7 +45,7 @@ namespace FoodOrder.Infrastructure.Extensions
 
             services.AddScoped<IRedisService, RedisService>();
 
-
+            services.AddScoped<IVNPayService, VNPayService>();
 
             return services;
         }

@@ -22,6 +22,21 @@ namespace FoodOrder.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("ComboFood", b =>
+                {
+                    b.Property<int>("CombosComboId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FoodsFoodId")
+                        .HasColumnType("int");
+
+                    b.HasKey("CombosComboId", "FoodsFoodId");
+
+                    b.HasIndex("FoodsFoodId");
+
+                    b.ToTable("ComboFood");
+                });
+
             modelBuilder.Entity("FoodOrder.Domain.Entities.Foods.Combo", b =>
                 {
                     b.Property<int>("ComboId")
@@ -513,6 +528,21 @@ namespace FoodOrder.Infrastructure.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("ComboFood", b =>
+                {
+                    b.HasOne("FoodOrder.Domain.Entities.Foods.Combo", null)
+                        .WithMany()
+                        .HasForeignKey("CombosComboId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("FoodOrder.Domain.Entities.Foods.Food", null)
+                        .WithMany()
+                        .HasForeignKey("FoodsFoodId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("FoodOrder.Domain.Entities.Foods.Combo", b =>

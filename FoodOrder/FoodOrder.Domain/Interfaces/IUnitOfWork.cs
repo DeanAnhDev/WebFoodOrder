@@ -9,8 +9,8 @@ namespace FoodOrder.Domain.Interfaces
     {
         IFoodRepository Foods { get; }
         IFoodCategoryRepository FoodCategories { get; }
-        IRepository<Combo> Combos { get; }
-        IRepository<ComboDetail> ComboDetails { get; }
+        IComboRepository Combos { get; }
+        IComboDetailRepository ComboDetails { get; }
         IRepository<AppUser> AppUsers { get; }
         IRepository<AppRole> AppRoles { get; }
         IRepository<Cart> Carts { get; }

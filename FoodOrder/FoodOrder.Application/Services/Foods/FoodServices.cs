@@ -68,7 +68,7 @@ namespace FoodOrder.Application.Services.Foods
             var result = await _unitOfWork.Foods.DeleteAsync(id);
             if (result)
             {
-                return true;
+                return await _unitOfWork.CompleteAsync() > 0;
             }
             return false;
         }

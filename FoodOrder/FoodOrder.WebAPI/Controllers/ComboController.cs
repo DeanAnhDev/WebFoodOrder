@@ -85,6 +85,33 @@ namespace FoodOrder.WebAPI.Controllers
             }
         }
 
+
+        [HttpGet("get-combo-with-food/slug/{slug}")]
+        public async Task<IActionResult> GetComboWithFoodsBySlug(string slug)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(slug))
+                {
+                    return BadRequest(new { message = "Slug không hợp lệ!" });
+                }
+
+                var combo = await _comboServices.GetComboWithFoodsBySlugAsync(slug);
+
+                if (combo == null)
+                {
+                    return NotFound(new { message = "Không tìm thấy combo nào." });
+                }
+
+                return Ok(combo);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Lỗi server!", error = ex.Message });
+            }
+        }
+
+
         [HttpPost]
         public async Task<IActionResult> CreateCombo([FromBody] ComboDto comboDto)
         {

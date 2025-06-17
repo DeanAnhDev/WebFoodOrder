@@ -2,7 +2,7 @@
 using FoodOrder.Domain.Interfaces;
 using FoodOrder.Infrastructure.Data.Context;
 using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
+
 
 namespace FoodOrder.Infrastructure.Repositories
 {
