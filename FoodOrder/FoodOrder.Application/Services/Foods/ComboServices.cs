@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
 using FoodOrder.Application.DTOs.Foods.Combo;
+using FoodOrder.Application.DTOs.Foods.Food;
 using FoodOrder.Application.Interfaces;
 using FoodOrder.Domain.Entities.Foods;
 using FoodOrder.Domain.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace FoodOrder.Application.Services.Foods
 {
@@ -34,6 +36,46 @@ namespace FoodOrder.Application.Services.Foods
             var combo = await _unitOfWork.Combos.GetBySlugAsync(slug);
             return _mapper.Map<ComboDto>(combo);
         }
+
+        public async Task<ComboWithFoodDto?> GetComboWithFoodsBySlugAsync(string slug)
+        {
+            var comboWithFoods = await _unitOfWork.Combos
+                .GetComboWithFoodsBySlug(slug)
+                .Select(cb => new ComboWithFoodDto
+                {
+                    ComboId = cb.ComboId,
+                    ComboName = cb.ComboName,
+                    Slug = cb.Slug,
+                    FoodCategoryId = cb.FoodCategoryId,
+                    Price = cb.Price,
+                    Description = cb.Description,
+                    Image = cb.Image,
+                    Status = cb.Status,
+                    ComboDetails = cb.ComboDetails != null
+                        ? cb.ComboDetails.Select(cd => new ComboDetailDto
+                        {
+                            ComboId = cd.ComboId,
+                            FoodId = cd.FoodId,
+                            Quantity = cd.Quantity,
+                            Food = cd.Food != null ? new FoodDto
+                            {
+                                FoodId = cd.Food.FoodId,
+                                FoodName = cd.Food.FoodName,
+                                Slug = cd.Food.Slug,
+                                Description = cd.Food.Description,
+                                Price = cd.Food.Price,
+                                Image = cd.Food.Image,
+                                Status = cd.Food.Status
+                            } : new FoodDto()
+                        }).ToList()
+                        : new List<ComboDetailDto>()
+                })
+                .FirstOrDefaultAsync();
+
+            return comboWithFoods;
+        }
+
+
 
         public async Task<bool> AddAsync(ComboDto comboDto)
         {

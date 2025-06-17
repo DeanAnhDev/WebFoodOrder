@@ -6,7 +6,7 @@ namespace FoodOrder.Domain.Interfaces
     {
         Task<bool> DeleteAsync(int comboId, int foodId);
 
-        Task<ComboDetail> GetByIdAsync(int comboId, int foodId);
+        Task<ComboDetail?> GetByIdAsync(int comboId, int foodId);
 
         Task<IEnumerable<ComboDetail>> GetComboDetailsByComboIdAsync(int comboId);
     }

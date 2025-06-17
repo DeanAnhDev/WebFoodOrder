@@ -11,7 +11,8 @@ namespace FoodOrder.Infrastructure.Data.Configurations.Foods
             builder.HasKey(p => p.ComboId);
 
             builder.HasOne(p => p.FoodCategorys).WithMany(f => f.Combos).HasForeignKey(p => p.FoodCategoryId).OnDelete(DeleteBehavior.Restrict);
-            ;
+
+  
 
             builder.Property(p => p.ComboName)
                 .IsRequired()

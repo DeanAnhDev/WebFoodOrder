@@ -6,5 +6,7 @@ namespace FoodOrder.Application.Interfaces
     public interface IComboServices: IInterfaces<ComboDto>, IInterfaceForCreateUpdateDelete<ComboDto>
     {
         Task<ComboDto?> GetBySlugAsync(string slug);
+
+        Task<ComboWithFoodDto?> GetComboWithFoodsBySlugAsync(string slug);
     }
 }

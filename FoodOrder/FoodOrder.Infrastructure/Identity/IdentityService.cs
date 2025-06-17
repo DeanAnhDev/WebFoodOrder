@@ -98,6 +98,14 @@ namespace FoodOrder.Infrastructure.Identity
 
         public async Task<AuthResponse> LoginUserAsync(LoginUser loginUser)
         {
+            if (string.IsNullOrEmpty(loginUser.UserName))
+            {
+                return new AuthResponse { Status = false, Message = "UserName is required" };
+            }
+            if (string.IsNullOrEmpty(loginUser.Password))
+            {
+                return new AuthResponse { Status = false, Message = "UserName is required" };
+            }
             //checking the user  
             var user = await _userManager.FindByNameAsync(loginUser.UserName);
             if (user == null || !await _userManager.CheckPasswordAsync(user, loginUser.Password))

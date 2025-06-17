@@ -1,5 +1,4 @@
-﻿
-using FoodOrder.Domain.Entities.Foods;
+﻿using FoodOrder.Domain.Entities.Foods;
 using FoodOrder.Domain.Interfaces;
 using FoodOrder.Infrastructure.Data.Context;
 using Microsoft.EntityFrameworkCore;
@@ -27,7 +26,7 @@ namespace FoodOrder.Infrastructure.Repositories
             return await _dbSet.Where(cd => cd.ComboId == comboId).ToListAsync();
         }
 
-        public async Task<ComboDetail> GetByIdAsync(int comboId, int foodId)
+        public async Task<ComboDetail?> GetByIdAsync(int comboId, int foodId)
         {
             return await _dbSet
                 .Where(cd => cd.ComboId == comboId && cd.FoodId == foodId)
