@@ -44,6 +44,16 @@ namespace FoodOrder.WebAPI.Controllers
             return Ok(new { message = response.Message });
         }
 
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginUser request)
+        {
+            var result = await _authService.LoginAsync(request);
+
+            if (!result.Status)
+                return Unauthorized(new { message = result.Message });
+
+            return Ok(result);
+        }
 
     }
 }

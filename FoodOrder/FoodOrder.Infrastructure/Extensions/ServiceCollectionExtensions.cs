@@ -1,6 +1,7 @@
 ﻿using FoodOrder.Application.Common.Interfaces;
 using FoodOrder.Application.Interfaces;
 using FoodOrder.Application.Services;
+using FoodOrder.Application.Services.Auth;
 using FoodOrder.Domain.Interfaces;
 using FoodOrder.Infrastructure.Data.Context;
 using FoodOrder.Infrastructure.Identity;
@@ -46,6 +47,10 @@ namespace FoodOrder.Infrastructure.Extensions
             services.AddScoped<IRedisService, RedisService>();
 
             services.AddScoped<IVNPayService, VNPayService>();
+
+            services.AddScoped<IJwtTokenServices, JwtTokenServices>();
+
+            services.AddScoped<IRedisService, RedisService>();
 
             return services;
         }

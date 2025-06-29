@@ -2,9 +2,12 @@
 using FoodOrder.Application.Common.Models;
 using FoodOrder.Application.DTOs.Authentication;
 using FoodOrder.Application.Interfaces;
+using FoodOrder.Application.Services.Auth;
 using FoodOrder.Domain.Entities.Identity;
+using FoodOrder.Infrastructure.Services.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace FoodOrder.Infrastructure.Identity
 {
@@ -14,13 +17,18 @@ namespace FoodOrder.Infrastructure.Identity
         private readonly RoleManager<AppRole> _roleManager;
         private readonly IEmailService _emailService;
         private readonly IConfiguration _configuration;
+        private readonly IJwtTokenServices _jwtTokenService;
+        private readonly JwtOptions _jwtOptions;
 
-        public IdentityService(UserManager<AppUser> userManager, RoleManager<AppRole> roleManager, IConfiguration configuration, IEmailService emailService)
+
+        public IdentityService(UserManager<AppUser> userManager, RoleManager<AppRole> roleManager, IConfiguration configuration, IEmailService emailService, IJwtTokenServices jwtTokenService, IOptions<JwtOptions> jwtOptions)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _configuration = configuration;
             _emailService = emailService;
+            _jwtTokenService = jwtTokenService;
+            _jwtOptions = jwtOptions.Value;
         }
 
         public async Task<AuthResponse> ConfirmEmailAsync(string token, string email)
@@ -98,22 +106,38 @@ namespace FoodOrder.Infrastructure.Identity
 
         public async Task<AuthResponse> LoginUserAsync(LoginUser loginUser)
         {
-            if (string.IsNullOrEmpty(loginUser.UserName))
+            if (string.IsNullOrWhiteSpace(loginUser.UserName))
             {
                 return new AuthResponse { Status = false, Message = "UserName is required" };
             }
-            if (string.IsNullOrEmpty(loginUser.Password))
+
+            if (string.IsNullOrWhiteSpace(loginUser.Password))
             {
-                return new AuthResponse { Status = false, Message = "UserName is required" };
+                return new AuthResponse { Status = false, Message = "Password is required" };
             }
-            //checking the user  
-            var user = await _userManager.FindByNameAsync(loginUser.UserName);
+
+            // Tìm user theo username hoặc email
+            var user = await _userManager.FindByNameAsync(loginUser.UserName)
+                       ?? await _userManager.FindByEmailAsync(loginUser.UserName);
+
             if (user == null || !await _userManager.CheckPasswordAsync(user, loginUser.Password))
             {
-                return new AuthResponse { Status = false, Message = "Tài khoản không tồn tại" };
+                return new AuthResponse { Status = false, Message = "Tài khoản hoặc mật khẩu không đúng" };
             }
-            // Add additional logic for successful login if needed  
-            return new AuthResponse { Status = true, Message = "Đăng nhập thành công" };
+
+            // Sinh access & refresh token
+            var accessToken = await _jwtTokenService.GenerateAccessTokenAsync(user);
+            var refreshToken = await _jwtTokenService.GenerateRefreshTokenAsync(user);
+
+            return new AuthResponse
+            {
+                Status = true,
+                Message = "Đăng nhập thành công",
+                AccessToken = accessToken,
+                RefreshToken = refreshToken,
+                ExpiresIn = _jwtOptions.ExpiryMinutes
+            };
         }
+
     }
 }

@@ -3,6 +3,7 @@ using FoodOrder.Application.Services.Auth;
 using FoodOrder.Domain.Entities.Identity;
 using FoodOrder.Infrastructure.Services.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -18,12 +19,12 @@ namespace FoodOrder.Infrastructure.Identity
         private readonly IRedisService _redisService;
 
         public JwtTokenServices(
-            UserManager<AppUser> userManager
-            , JwtOptions jwtOptions
-            , IRedisService redisService)
+              UserManager<AppUser> userManager,
+              IOptions<JwtOptions> jwtOptions,
+              IRedisService redisService)
         {
             _userManager = userManager;
-            _jwtOptions = jwtOptions;
+            _jwtOptions = jwtOptions.Value; 
             _redisService = redisService;
         }
         public async Task<string> GenerateTokenAsync(AppUser user, DateTime expiryTime, bool isAccessToken)
@@ -72,6 +73,11 @@ namespace FoodOrder.Infrastructure.Identity
         public async Task<string> GenerateAccessTokenAsync(AppUser user)
         {
             return await GenerateTokenAsync(user, DateTime.Now.AddMinutes(_jwtOptions.ExpiryMinutes), true);
+        }
+
+        public async Task<string> GenerateRefreshTokenAsync(AppUser user)
+        {
+            return await GenerateTokenAsync(user, DateTime.Now.AddMinutes(_jwtOptions.ExpiryMinutes * 7), false);
         }
     }
 }
