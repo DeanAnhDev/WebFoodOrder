@@ -1,7 +1,12 @@
 ﻿using FoodOrder.Application.Common.Interfaces;
 using FoodOrder.Application.DTOs.Authentication;
 using FoodOrder.Application.Services.Auth;
+using FoodOrder.Infrastructure.Identity;
+using FoodOrder.Infrastructure.Services.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 
 namespace FoodOrder.WebAPI.Controllers
@@ -54,6 +59,23 @@ namespace FoodOrder.WebAPI.Controllers
 
             return Ok(result);
         }
+
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
+        {
+            var result = await _authService.RefreshTokenAsync(request.AccessToken, request.RefreshToken);
+            return result.Status ? Ok(result) : BadRequest(result);
+        }
+
+        [Authorize]
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout([FromBody] LogoutRequest request)
+        {
+            var result = await _authService.LogoutAsync(request.AccessToken, request.RefreshToken);
+            return result ? Ok(new { message = "Đã đăng xuất" }) : BadRequest(new { message = "Đăng xuất thất bại" });
+        }
+
+
 
     }
 }

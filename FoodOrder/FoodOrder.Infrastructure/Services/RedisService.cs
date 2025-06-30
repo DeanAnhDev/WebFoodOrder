@@ -29,5 +29,21 @@ namespace FoodOrder.Infrastructure.Services
             var isDeleted = await _db.KeyDeleteAsync($"jti:{userId}:{jti}");
             return isDeleted;
         }
+
+        public async Task<bool> SaveRefreshTokenAsync(string userId, string refreshToken, double expiryDays)
+        {
+            return await _db.StringSetAsync($"refresh:{userId}:{refreshToken}", "true", TimeSpan.FromDays(expiryDays));
+        }
+
+        public async Task<bool> ValidateRefreshTokenAsync(string userId, string refreshToken)
+        {
+            return await _db.KeyExistsAsync($"refresh:{userId}:{refreshToken}");
+        }
+
+        public async Task<bool> DeleteRefreshTokenAsync(string userId, string refreshToken)
+        {
+            return await _db.KeyDeleteAsync($"refresh:{userId}:{refreshToken}");
+        }
+
     }
 }

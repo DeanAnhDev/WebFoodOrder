@@ -1,5 +1,6 @@
 ﻿using FoodOrder.Application.Common.Settings;
 using FoodOrder.Application.Extensions;
+using FoodOrder.Application.Services;
 using FoodOrder.Domain.Entities.Identity;
 using FoodOrder.Infrastructure.Data.Context;
 using FoodOrder.Infrastructure.Extensions;
@@ -9,6 +10,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using StackExchange.Redis;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -75,7 +78,25 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SecretKey)),
         ClockSkew = TimeSpan.Zero
     };
+    options.Events = new JwtBearerEvents
+    {
+        OnTokenValidated = async context =>
+        {
+            var userId = context.Principal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var jti = context.Principal?.FindFirst(JwtRegisteredClaimNames.Jti)?.Value;
+
+            var redisService = context.HttpContext.RequestServices.GetRequiredService<IRedisService>();
+            var storedJti = await redisService.GetJtiAsync(userId, jti);
+
+            if (storedJti == null)
+            {
+                context.Fail("Token đã bị thu hồi hoặc hết hạn.");
+            }
+        }
+    };
 });
+
+
 
 builder.Services.AddSwaggerGen(c =>
 {
