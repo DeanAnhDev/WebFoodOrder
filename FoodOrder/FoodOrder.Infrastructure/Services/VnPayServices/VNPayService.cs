@@ -4,7 +4,6 @@ using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 
-
 namespace FoodOrder.Infrastructure.Services.VnPayServices
 {
     public class VNPayService(IConfiguration configuration) : IVNPayService
@@ -20,8 +19,8 @@ namespace FoodOrder.Infrastructure.Services.VnPayServices
             vnpay.Add("vnp_Locale", "vn");
             vnpay.Add("vnp_OrderInfo", orderInfo);
             vnpay.Add("vnp_OrderType", "other");
-            vnpay.Add("vnp_ReturnUrl", configuration.GetValue<string>("VnPay:ReturnUrl"));
-            vnpay.Add("vnp_TmnCode", configuration.GetValue<string>("VnPay:TmnCode"));
+            vnpay.Add("vnp_TmnCode", configuration.GetValue<string>("VnPay:TmnCode") ?? throw new ArgumentNullException("VnPay:TmnCode configuration value is missing."));
+            vnpay.Add("vnp_ReturnUrl", configuration.GetValue<string>("VnPay:ReturnUrl") ?? throw new ArgumentNullException("VnPay:ReturnUrl configuration value is missing."));
             vnpay.Add("vnp_TxnRef", orderId);
             vnpay.Add("vnp_Version", "2.1.0");
             var signData = new StringBuilder();
@@ -31,7 +30,9 @@ namespace FoodOrder.Infrastructure.Services.VnPayServices
                     signData.Append(WebUtility.UrlEncode(kv.Key) + "=" + WebUtility.UrlEncode(kv.Value) + "&");
             }
             signData.Length -= 1;
-            var hash = HmacSHA512(configuration.GetValue<string>("VnPay:HashSecret"), signData.ToString());
+            var hashSecret = configuration.GetValue<string>("VnPay:HashSecret")
+            ?? throw new ArgumentNullException(nameof(configuration), "VnPay:HashSecret configuration value is missing.");
+            var hash = HmacSHA512(hashSecret, signData.ToString());
             var queryString = string.Join("&", vnpay.Select(kvp => $"{kvp.Key}={Uri.EscapeDataString(kvp.Value)}"));
             queryString += "&vnp_SecureHash=" + hash;
             var url = $"{configuration.GetValue<string>("VnPay:BaseUrl")}?{queryString}";
@@ -55,7 +56,9 @@ namespace FoodOrder.Infrastructure.Services.VnPayServices
             vnpay.Remove("vnp_SecureHash");
 
             var signData = string.Join("&", vnpay.Select(kvp => $"{kvp.Key}={kvp.Value}"));
-            var hash = HmacSHA512(configuration.GetValue<string>("VnPay:HashSecret"), signData);
+            var hashSecret = configuration.GetValue<string>("VnPay:HashSecret")
+            ?? throw new ArgumentNullException(nameof(configuration), "VnPay:HashSecret configuration value is missing.");
+            var hash = HmacSHA512(hashSecret, signData.ToString());
 
             return secureHash == hash;
         }
@@ -75,12 +78,13 @@ namespace FoodOrder.Infrastructure.Services.VnPayServices
             }
             return hash.ToString();
         }
-        public class VnPayCompare : IComparer<string>
+        
+    }
+    public class VnPayCompare : IComparer<string>
+    {
+        public int Compare(string? x, string? y)
         {
-            public int Compare(string x, string y)
-            {
-                return CompareInfo.GetCompareInfo("en-US").Compare(x, y, CompareOptions.Ordinal);
-            }
+            return CompareInfo.GetCompareInfo("en-US").Compare(x ?? string.Empty, y ?? string.Empty, CompareOptions.Ordinal);
         }
     }
 }

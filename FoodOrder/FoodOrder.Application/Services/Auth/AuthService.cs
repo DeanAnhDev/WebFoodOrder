@@ -24,9 +24,19 @@ namespace FoodOrder.Application.Services.Auth
             return await _identityService.ConfirmEmailAsync(token, email);
         }
 
-        public Task<AuthResponse> LoginAsync(LoginUser request)
+        public async Task<AuthResponse> LoginAsync(LoginUser request)
         {
-            throw new NotImplementedException();
+            return await _identityService.LoginUserAsync(request);
+        }
+
+        public async Task<AuthResponse> RefreshTokenAsync(string accessToken, string refreshToken)
+        {
+            return await _identityService.RefreshTokenAsync(accessToken, refreshToken);
+        }
+
+        public async Task<bool> LogoutAsync(string accessToken, string refreshToken)
+        {
+            return await _identityService.LogoutAsync(accessToken, refreshToken);
         }
     }
 }

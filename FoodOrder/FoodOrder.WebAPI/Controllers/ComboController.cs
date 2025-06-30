@@ -1,5 +1,6 @@
 ﻿using FoodOrder.Application.DTOs.Foods.Combo;
 using FoodOrder.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FoodOrder.WebAPI.Controllers
@@ -14,6 +15,7 @@ namespace FoodOrder.WebAPI.Controllers
             _comboServices = comboServices;
         }
 
+        [Authorize(Roles = "Customer")]
         [HttpGet]
         public async Task<IActionResult> GetAllCombo()
         {

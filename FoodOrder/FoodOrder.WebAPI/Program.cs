@@ -1,12 +1,18 @@
 ﻿using FoodOrder.Application.Common.Settings;
 using FoodOrder.Application.Extensions;
+using FoodOrder.Application.Services;
 using FoodOrder.Domain.Entities.Identity;
 using FoodOrder.Infrastructure.Data.Context;
 using FoodOrder.Infrastructure.Extensions;
 using FoodOrder.Infrastructure.Services.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using StackExchange.Redis;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -56,7 +62,72 @@ builder.Services.AddAuthentication(options =>
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(options =>
+{
+    var jwtOptions = builder.Configuration.GetSection("JwtOptions").Get<JwtOptions>();
+
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+
+        ValidIssuer = jwtOptions.Issuer,
+        ValidAudience = jwtOptions.Audience,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SecretKey)),
+        ClockSkew = TimeSpan.Zero
+    };
+    options.Events = new JwtBearerEvents
+    {
+        OnTokenValidated = async context =>
+        {
+            var userId = context.Principal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var jti = context.Principal?.FindFirst(JwtRegisteredClaimNames.Jti)?.Value;
+
+            var redisService = context.HttpContext.RequestServices.GetRequiredService<IRedisService>();
+            var storedJti = await redisService.GetJtiAsync(userId, jti);
+
+            if (storedJti == null)
+            {
+                context.Fail("Token đã bị thu hồi hoặc hết hạn.");
+            }
+        }
+    };
 });
+
+
+
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Your API", Version = "v1" });
+
+    var jwtSecurityScheme = new OpenApiSecurityScheme
+    {
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Description = "Nhập token vào đây: Bearer {token}",
+        Reference = new OpenApiReference
+        {
+            Id = JwtBearerDefaults.AuthenticationScheme,
+            Type = ReferenceType.SecurityScheme
+        }
+    };
+
+    c.AddSecurityDefinition(jwtSecurityScheme.Reference.Id, jwtSecurityScheme);
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            jwtSecurityScheme,
+            Array.Empty<string>()
+        }
+    });
+});
+
 
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 

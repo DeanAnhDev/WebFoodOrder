@@ -3,6 +3,7 @@ using FoodOrder.Application.Services.Auth;
 using FoodOrder.Domain.Entities.Identity;
 using FoodOrder.Infrastructure.Services.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -18,12 +19,12 @@ namespace FoodOrder.Infrastructure.Identity
         private readonly IRedisService _redisService;
 
         public JwtTokenServices(
-            UserManager<AppUser> userManager
-            , JwtOptions jwtOptions
-            , IRedisService redisService)
+              UserManager<AppUser> userManager,
+              IOptions<JwtOptions> jwtOptions,
+              IRedisService redisService)
         {
             _userManager = userManager;
-            _jwtOptions = jwtOptions;
+            _jwtOptions = jwtOptions.Value; 
             _redisService = redisService;
         }
         public async Task<string> GenerateTokenAsync(AppUser user, DateTime expiryTime, bool isAccessToken)
@@ -73,5 +74,53 @@ namespace FoodOrder.Infrastructure.Identity
         {
             return await GenerateTokenAsync(user, DateTime.Now.AddMinutes(_jwtOptions.ExpiryMinutes), true);
         }
+
+        public async Task<string> GenerateRefreshTokenAsync(AppUser user)
+        {
+            // Tạo chuỗi ngẫu nhiên làm refresh token
+            var refreshToken = Guid.NewGuid().ToString("N");
+
+            var success = await _redisService.SaveRefreshTokenAsync(
+                user.Id.ToString(),
+                refreshToken,
+                7 
+            );
+
+            if (!success)
+            {
+                throw new Exception("Không thể lưu refresh token vào Redis");
+            }
+
+            return refreshToken;
+        }
+
+        public ClaimsPrincipal? ValidateToken(string token)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.UTF8.GetBytes(_jwtOptions.SecretKey);
+
+            try
+            {
+                var principal = tokenHandler.ValidateToken(token, new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateIssuer = true,
+                    ValidIssuer = _jwtOptions.Issuer,
+                    ValidateAudience = true,
+                    ValidAudience = _jwtOptions.Audience,
+                    ValidateLifetime = false, // Không check thời gian ở đây, vì token có thể đã hết hạn
+                    ClockSkew = TimeSpan.Zero
+                }, out _);
+
+                return principal;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+
     }
 }
