@@ -4,6 +4,7 @@ using FoodOrder.Infrastructure.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FoodOrder.Infrastructure.Migrations
 {
     [DbContext(typeof(FoodOrderDbContext))]
-    partial class FoodOrderDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250702071546_Initial_Create_10")]
+    partial class Initial_Create_10
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -530,8 +533,8 @@ namespace FoodOrder.Infrastructure.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<float?>("DiscountPercent")
-                        .HasColumnType("real");
+                    b.Property<decimal?>("DiscountPercent")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");

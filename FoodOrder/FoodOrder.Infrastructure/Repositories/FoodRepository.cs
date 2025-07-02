@@ -9,7 +9,16 @@ namespace FoodOrder.Infrastructure.Repositories
     {
         public FoodRepository(FoodOrderDbContext context) : base(context) { }
 
-     
+        public Task<IEnumerable<Food>> GetAllAsync()
+        {
+            throw new NotImplementedException();
+        }
 
+        public async Task<Food> GetByIdAsync(int id)
+        {
+            return await _dbSet
+                .Include(fc => fc.Images)
+                .FirstOrDefaultAsync(fc => fc.FoodCategoryId == id);
+        }
     }
 }

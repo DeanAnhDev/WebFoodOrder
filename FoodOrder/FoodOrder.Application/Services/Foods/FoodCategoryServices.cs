@@ -2,10 +2,13 @@
 using FoodOrder.Application.DTOs.Foods.Combo;
 using FoodOrder.Application.DTOs.Foods.Food;
 using FoodOrder.Application.DTOs.Foods.FoodCategory;
+using FoodOrder.Application.DTOs.Foods.FoodCategory.Commands;
 using FoodOrder.Application.Interfaces;
 using FoodOrder.Domain.Entities.Foods;
+using FoodOrder.Domain.Entities.Image;
 using FoodOrder.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
+
 
 namespace FoodOrder.Application.Services.Foods
 {
@@ -38,31 +41,88 @@ namespace FoodOrder.Application.Services.Foods
             return _mapper.Map<FoodCategoryDto>(foodCategory);
         }
 
-        public async Task<bool> AddAsync(FoodCategoryDto foodCategoryDto)
+        public async Task<bool> AddAsync(FoodCategoryDtoCreate foodCategoryDto)
         {
+
+            if (foodCategoryDto.Images == null || string.IsNullOrEmpty(foodCategoryDto.Images.Id))
+            {
+                return false;
+            }
+
             var foodCategory = _mapper.Map<FoodCategory>(foodCategoryDto);
             if (foodCategory.CategoryName != null)
             {
                 foodCategory.Slug = await _slugService.GenerateUniqueSlug<FoodCategory>(foodCategory.CategoryName);
             }
+
             var result = await _unitOfWork.FoodCategories.AddAsync(foodCategory);
             if (!result) return false;
 
             return await _unitOfWork.CompleteAsync() > 0;
         }
 
-        public async Task<bool> UpdateAsync(FoodCategoryDto foodCategoryDto)
+        public async Task<bool> UpdateAsync(FoodCategoryDtoUpdate dto)
         {
-            var foodCategory = _mapper.Map<FoodCategory>(foodCategoryDto);
-            if (foodCategory.CategoryName != null)
+            try
             {
-                foodCategory.Slug = await _slugService.GenerateUniqueSlug<FoodCategory>(foodCategory.CategoryName);
-            }
-            var result = await _unitOfWork.FoodCategories.UpdateAsync(foodCategory);
-            if (!result) return false;
+                var existing = await _unitOfWork.FoodCategories.GetByIdAsync(dto.FoodCategoryId);
+                if (existing == null)
+                    throw new ArgumentException("Category not found");
 
-            return await _unitOfWork.CompleteAsync() > 0;
+                if (!string.IsNullOrWhiteSpace(dto.CategoryName))
+                {
+                    existing.CategoryName = dto.CategoryName;
+                    existing.Slug = await _slugService.GenerateUniqueSlug<FoodCategory>(dto.CategoryName);
+                }
+
+                existing.Description = dto.Description;
+
+                var dbImage = await _unitOfWork.Images
+                    .FirstOrDefaultAsync(i => i.CategoryId == dto.FoodCategoryId);
+
+                var newImage = dto.Images;
+
+                if (newImage != null)
+                {
+
+                    if (dbImage == null || dbImage.Id != newImage.Id)
+                    {
+                        if (dbImage != null)
+                        {
+                          var imageId = dbImage.Id;
+                            await _unitOfWork.Images.DeleteAsync(imageId!);
+                        }
+
+                        var imageEntity = new Images
+                        {
+                            Id = newImage.Id,
+                            Url = newImage.Url,
+                            ThumbnailUrl = newImage.ThumbnailUrl,
+                            Name = newImage.Name,
+                            CategoryId = dto.FoodCategoryId
+                        };
+
+                        await _unitOfWork.Images.AddAsync(imageEntity);
+                    }
+                    else
+                    {
+                        dbImage.Url = newImage.Url;
+                        dbImage.ThumbnailUrl = newImage.ThumbnailUrl;
+                        dbImage.Name = newImage.Name;
+                    }
+                }
+
+                var updated = await _unitOfWork.FoodCategories.UpdateAsync(existing);
+                if (!updated) return false;
+
+                return await _unitOfWork.CompleteAsync() > 0;
+            }
+            catch (DbUpdateException dbEx)
+            {
+                throw new Exception($"EF Save Error: {dbEx.InnerException?.Message ?? dbEx.Message}");
+            }
         }
+
 
         public async Task<bool> DeleteAsync(int id)
         {

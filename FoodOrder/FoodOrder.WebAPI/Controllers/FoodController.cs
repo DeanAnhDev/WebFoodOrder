@@ -1,4 +1,5 @@
 ﻿using FoodOrder.Application.DTOs.Foods.Food;
+using FoodOrder.Application.DTOs.Foods.Food.Commands;
 using FoodOrder.Application.DTOs.Foods.FoodCategory;
 using FoodOrder.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -86,7 +87,7 @@ namespace FoodOrder.WebAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateFood([FromBody] FoodDto foodDto)
+        public async Task<IActionResult> CreateFood([FromBody] FoodDtoCreate foodDto)
         {
             try
             {
@@ -111,7 +112,7 @@ namespace FoodOrder.WebAPI.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> UpdateFood([FromBody] FoodDto foodDto)
+        public async Task<IActionResult> UpdateFood([FromBody] FoodDtoUpdate foodDto)
         {
             try
             {

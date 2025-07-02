@@ -1,4 +1,5 @@
 ﻿using FoodOrder.Application.DTOs.Foods.FoodCategory;
+using FoodOrder.Application.DTOs.Foods.FoodCategory.Commands;
 using FoodOrder.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -81,7 +82,7 @@ namespace FoodOrder.WebAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateFoodCategory([FromBody] FoodCategoryDto categoryDto)
+        public async Task<IActionResult> CreateFoodCategory([FromBody] FoodCategoryDtoCreate categoryDto)
         {
             try
             {
@@ -89,7 +90,6 @@ namespace FoodOrder.WebAPI.Controllers
                 {
                     return BadRequest(ModelState);
                 }
-
                 bool isCreated = await _foodCategoryService.AddAsync(categoryDto);
 
                 if (!isCreated)
@@ -106,7 +106,7 @@ namespace FoodOrder.WebAPI.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> UpdateFoodCategory([FromBody] FoodCategoryDto categoryDto)
+        public async Task<IActionResult> UpdateFoodCategory([FromBody] FoodCategoryDtoUpdate categoryDto)
         {
             try
             {

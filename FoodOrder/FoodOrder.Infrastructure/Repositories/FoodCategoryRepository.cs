@@ -3,7 +3,6 @@ using FoodOrder.Domain.Interfaces;
 using FoodOrder.Infrastructure.Data.Context;
 using Microsoft.EntityFrameworkCore;
 
-
 namespace FoodOrder.Infrastructure.Repositories
 {
     public class FoodCategoryRepository : Repository<FoodCategory>, IFoodCategoryRepository
@@ -38,5 +37,22 @@ namespace FoodOrder.Infrastructure.Repositories
                .AsSplitQuery();
             return result;
         }
+
+        public async Task<IEnumerable<FoodCategory>> GetAllAsync()
+        {
+            var result = await _dbSet
+                .Include(fc => fc.Images)
+                .ToListAsync();
+
+            return result;
+        }
+
+        public async Task<FoodCategory> GetByIdAsync(int id)
+        {
+            return await _dbSet
+                .Include(fc => fc.Images)
+                .FirstOrDefaultAsync(fc => fc.FoodCategoryId == id);
+        }
+
     }
 }

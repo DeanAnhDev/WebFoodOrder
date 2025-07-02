@@ -13,6 +13,8 @@ namespace FoodOrder.Domain.Entities.Foods
         public string? Description { get; set; }
         public decimal Price { get; set; }
         public string Status { get; set; } = "true";
+        public bool IsOutOfStock { get; set; } = false;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public ICollection<ComboDetail>? ComboDetails { get; set; }
         public OrderDetail? OrderDetail { get; set; }
         public ICollection<CartItem>? CartItems { get; set; }

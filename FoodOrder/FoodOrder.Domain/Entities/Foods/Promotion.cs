@@ -6,7 +6,7 @@ namespace FoodOrder.Domain.Entities.Foods
         public int PromotionId { get; set; }
 
         public string PromotionName { get; set; } = string.Empty;
-        public decimal? DiscountPercent { get; set; }
+        public float? DiscountPercent { get; set; }
         public decimal? DiscountAmount { get; set; }
 
         public bool IsActive { get; set; } = true;

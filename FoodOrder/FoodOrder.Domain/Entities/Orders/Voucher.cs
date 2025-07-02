@@ -8,7 +8,7 @@ namespace FoodOrder.Domain.Entities.Orders
         public string Code { get; set; } = string.Empty;
         public string? Description { get; set; }
 
-        public decimal? DiscountPercent { get; set; }   // Giảm theo %
+        public float? DiscountPercent { get; set; }   // Giảm theo %
         public decimal? DiscountAmount { get; set; }    // Giảm cố định
 
         public bool IsActive { get; set; } = true;

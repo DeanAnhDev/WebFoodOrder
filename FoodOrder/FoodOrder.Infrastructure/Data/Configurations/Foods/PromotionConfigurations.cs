@@ -24,6 +24,7 @@ namespace FoodOrder.Infrastructure.Data.Configurations.Foods
 
             builder.Property(p => p.DiscountAmount)
                     .HasPrecision(18, 2);
+
         }
     }
 }

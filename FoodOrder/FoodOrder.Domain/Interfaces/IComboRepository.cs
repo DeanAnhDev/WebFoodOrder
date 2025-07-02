@@ -6,5 +6,7 @@ namespace FoodOrder.Domain.Interfaces
     public interface IComboRepository : IRepository<Combo>
     {
         IQueryable<Combo> GetComboWithFoodsBySlug(string slug);
+        Task<IEnumerable<Combo>> GetAllAsync();
+        Task<Combo> GetByIdAsync( int id);
     }
 }

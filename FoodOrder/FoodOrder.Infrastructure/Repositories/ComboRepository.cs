@@ -9,6 +9,16 @@ namespace FoodOrder.Infrastructure.Repositories
     {
         public ComboRepository(FoodOrderDbContext context) : base(context) { }
 
+        public Task<IEnumerable<Combo>> GetAllAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Combo> GetByIdAsync(int id)
+        {
+            throw new NotImplementedException();
+        }
+
         public IQueryable<Combo> GetComboWithFoodsBySlug(string comboSlug)
         {
             var result = _dbSet
