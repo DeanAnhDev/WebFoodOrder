@@ -4,6 +4,7 @@ using FoodOrder.Infrastructure.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FoodOrder.Infrastructure.Migrations
 {
     [DbContext(typeof(FoodOrderDbContext))]
-    partial class FoodOrderDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250701171335_Initial_Create_07")]
+    partial class Initial_Create_07
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -42,6 +45,10 @@ namespace FoodOrder.Infrastructure.Migrations
 
                     b.Property<int>("FoodCategoryId")
                         .HasColumnType("int");
+
+                    b.Property<string>("Image")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("Price")
                         .HasPrecision(18, 2)
@@ -101,6 +108,10 @@ namespace FoodOrder.Infrastructure.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+                    b.Property<string>("Image")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<decimal>("Price")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
@@ -137,6 +148,10 @@ namespace FoodOrder.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Slug")
                         .IsRequired()
@@ -304,49 +319,6 @@ namespace FoodOrder.Infrastructure.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
-                });
-
-            modelBuilder.Entity("FoodOrder.Domain.Entities.Image.Images", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int?>("CategoryId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("ComboId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("FoodId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ThumbnailUrl")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Url")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CategoryId")
-                        .IsUnique()
-                        .HasFilter("[CategoryId] IS NOT NULL");
-
-                    b.HasIndex("ComboId")
-                        .IsUnique()
-                        .HasFilter("[ComboId] IS NOT NULL");
-
-                    b.HasIndex("FoodId")
-                        .IsUnique()
-                        .HasFilter("[FoodId] IS NOT NULL");
-
-                    b.ToTable("Images");
                 });
 
             modelBuilder.Entity("FoodOrder.Domain.Entities.Orders.Cart", b =>
@@ -697,30 +669,6 @@ namespace FoodOrder.Infrastructure.Migrations
                     b.Navigation("Food");
                 });
 
-            modelBuilder.Entity("FoodOrder.Domain.Entities.Image.Images", b =>
-                {
-                    b.HasOne("FoodOrder.Domain.Entities.Foods.FoodCategory", "FoodCategory")
-                        .WithOne("Images")
-                        .HasForeignKey("FoodOrder.Domain.Entities.Image.Images", "CategoryId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("FoodOrder.Domain.Entities.Foods.Combo", "Combos")
-                        .WithOne("Images")
-                        .HasForeignKey("FoodOrder.Domain.Entities.Image.Images", "ComboId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("FoodOrder.Domain.Entities.Foods.Food", "Foods")
-                        .WithOne("Images")
-                        .HasForeignKey("FoodOrder.Domain.Entities.Image.Images", "FoodId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("Combos");
-
-                    b.Navigation("FoodCategory");
-
-                    b.Navigation("Foods");
-                });
-
             modelBuilder.Entity("FoodOrder.Domain.Entities.Orders.Cart", b =>
                 {
                     b.HasOne("FoodOrder.Domain.Entities.Identity.AppUser", "AppUser")
@@ -853,8 +801,6 @@ namespace FoodOrder.Infrastructure.Migrations
 
                     b.Navigation("ComboDetails");
 
-                    b.Navigation("Images");
-
                     b.Navigation("OrderDetail");
 
                     b.Navigation("Promotion");
@@ -866,8 +812,6 @@ namespace FoodOrder.Infrastructure.Migrations
 
                     b.Navigation("ComboDetails");
 
-                    b.Navigation("Images");
-
                     b.Navigation("OrderDetail");
 
                     b.Navigation("Promotion");
@@ -878,8 +822,6 @@ namespace FoodOrder.Infrastructure.Migrations
                     b.Navigation("Combos");
 
                     b.Navigation("Foods");
-
-                    b.Navigation("Images");
                 });
 
             modelBuilder.Entity("FoodOrder.Domain.Entities.Identity.AppUser", b =>

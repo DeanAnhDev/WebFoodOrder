@@ -17,6 +17,7 @@ namespace FoodOrder.Infrastructure.Data.Configurations.Foods
             builder.HasOne(p => p.Food)
               .WithMany(c => c.ComboDetails)
               .HasForeignKey(p => p.FoodId);
+
             builder.HasOne(p => p.Combo)
              .WithMany(c => c.ComboDetails)
              .HasForeignKey(p => p.ComboId);

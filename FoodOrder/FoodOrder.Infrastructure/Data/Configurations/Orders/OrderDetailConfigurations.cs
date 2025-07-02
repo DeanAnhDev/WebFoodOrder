@@ -26,14 +26,20 @@ namespace FoodOrder.Infrastructure.Data.Configurations.Orders
             builder.Property(p => p.Quantity)
                 .IsRequired();
 
-            builder.Property(c => c.TotalPrice)
-                .IsRequired()
+
+            builder.Property(c => c.DiscountedPrice)
                 .HasPrecision(18, 2);
 
-            builder.Property(c => c.UnitPrice)
-                .IsRequired()
-                .HasPrecision(18, 2);
-  
+            builder.Property(c => c.OriginalPrice)
+              .IsRequired()
+              .HasPrecision(18, 2);
+
+            builder.Property(c => c.TotalPrice)
+              .IsRequired()
+              .HasPrecision(18, 2);
+
+            builder.Property(c => c.ItemName)
+             .IsRequired();
         }
     }
 }

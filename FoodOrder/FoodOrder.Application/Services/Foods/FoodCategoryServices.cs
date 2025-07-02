@@ -90,7 +90,7 @@ namespace FoodOrder.Application.Services.Foods
                         Slug = f.Slug,
                         Description = f.Description,
                         Price = f.Price,
-                        Image = f.Image,
+                        //Image = f.Image,
                         Status = f.Status
                     }).ToList() : new List<FoodDto>(),
                     Combos = fc.Combos != null ? fc.Combos
@@ -100,7 +100,7 @@ namespace FoodOrder.Application.Services.Foods
                         ComboName = c.ComboName,
                         Slug = c.Slug,
                         Price = c.Price,
-                        Image = c.Image,
+                        //Image = c.Image,
                         Status = c.Status
                     }).ToList() : new List<ComboDto>()
                 }).ToListAsync();
@@ -123,7 +123,7 @@ namespace FoodOrder.Application.Services.Foods
                         Slug = f.Slug,
                         Description = f.Description,
                         Price = f.Price,
-                        Image = f.Image,
+                        //Image = f.Image,
                         Status = f.Status
                     }).ToList() : new List<FoodDto>()
                 })
@@ -148,7 +148,7 @@ namespace FoodOrder.Application.Services.Foods
                         Slug = f.Slug,
                         Description = f.Description,
                         Price = f.Price,
-                        Image = f.Image,
+                        //Image = f.Image,
                         Status = f.Status
                     }).ToList() : new List<ComboDto>()
                 })

@@ -49,7 +49,7 @@ namespace FoodOrder.Application.Services.Foods
                     FoodCategoryId = cb.FoodCategoryId,
                     Price = cb.Price,
                     Description = cb.Description,
-                    Image = cb.Image,
+                    //Image = cb.Image,
                     Status = cb.Status,
                     ComboDetails = cb.ComboDetails != null
                         ? cb.ComboDetails.Select(cd => new ComboDetailDto
@@ -64,7 +64,7 @@ namespace FoodOrder.Application.Services.Foods
                                 Slug = cd.Food.Slug,
                                 Description = cd.Food.Description,
                                 Price = cd.Food.Price,
-                                Image = cd.Food.Image,
+                                //Image = cd.Food.Image,
                                 Status = cd.Food.Status
                             } : new FoodDto()
                         }).ToList()

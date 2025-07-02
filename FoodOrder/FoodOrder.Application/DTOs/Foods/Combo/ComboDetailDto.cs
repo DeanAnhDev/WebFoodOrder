@@ -8,5 +8,6 @@ namespace FoodOrder.Application.DTOs.Foods.Combo
         public int FoodId { get; set; }
         public int Quantity { get; set; }
         public FoodDto Food { get; set; } = new FoodDto();
+
     }
 }

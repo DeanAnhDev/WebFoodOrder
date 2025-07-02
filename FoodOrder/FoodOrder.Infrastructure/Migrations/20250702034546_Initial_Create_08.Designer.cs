@@ -4,6 +4,7 @@ using FoodOrder.Infrastructure.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FoodOrder.Infrastructure.Migrations
 {
     [DbContext(typeof(FoodOrderDbContext))]
-    partial class FoodOrderDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250702034546_Initial_Create_08")]
+    partial class Initial_Create_08
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -311,13 +314,13 @@ namespace FoodOrder.Infrastructure.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int?>("CategoryId")
+                    b.Property<int>("CategoryId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("ComboId")
+                    b.Property<int>("ComboId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("FoodId")
+                    b.Property<int>("FoodId")
                         .HasColumnType("int");
 
                     b.Property<string>("Name")
@@ -335,16 +338,13 @@ namespace FoodOrder.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CategoryId")
-                        .IsUnique()
-                        .HasFilter("[CategoryId] IS NOT NULL");
+                        .IsUnique();
 
                     b.HasIndex("ComboId")
-                        .IsUnique()
-                        .HasFilter("[ComboId] IS NOT NULL");
+                        .IsUnique();
 
                     b.HasIndex("FoodId")
-                        .IsUnique()
-                        .HasFilter("[FoodId] IS NOT NULL");
+                        .IsUnique();
 
                     b.ToTable("Images");
                 });
@@ -702,17 +702,20 @@ namespace FoodOrder.Infrastructure.Migrations
                     b.HasOne("FoodOrder.Domain.Entities.Foods.FoodCategory", "FoodCategory")
                         .WithOne("Images")
                         .HasForeignKey("FoodOrder.Domain.Entities.Image.Images", "CategoryId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("FoodOrder.Domain.Entities.Foods.Combo", "Combos")
                         .WithOne("Images")
                         .HasForeignKey("FoodOrder.Domain.Entities.Image.Images", "ComboId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("FoodOrder.Domain.Entities.Foods.Food", "Foods")
                         .WithOne("Images")
                         .HasForeignKey("FoodOrder.Domain.Entities.Image.Images", "FoodId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("Combos");
 

@@ -1,6 +1,4 @@
-﻿
-
-using FoodOrder.Domain.Entities.Identity;
+﻿using FoodOrder.Domain.Entities.Identity;
 using System.Security.Claims;
 
 namespace FoodOrder.Application.Services.Auth
