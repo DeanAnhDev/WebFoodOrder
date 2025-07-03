@@ -37,6 +37,14 @@ namespace FoodOrder.Application.Services.Foods
                     f.FoodName != null &&
                     f.FoodName.Contains(query.Name));
             }
+            if (query.Status.HasValue)
+            {
+                foodsQuery = foodsQuery.Where(f => f.Status == query.Status.Value);
+            }
+            if (query.IsOutOfStock.HasValue)
+            {
+                foodsQuery = foodsQuery.Where(f => f.IsOutOfStock == query.IsOutOfStock.Value);
+            }
             // Sắp xếp theo CreatedAt
             foodsQuery = query.SortOrder.ToLower() switch
             {

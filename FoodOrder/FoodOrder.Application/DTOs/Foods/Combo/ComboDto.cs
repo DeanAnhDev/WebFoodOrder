@@ -1,5 +1,6 @@
 ﻿
 
+using FoodOrder.Application.DTOs.Foods.FoodCategory.Queries;
 using FoodOrder.Application.DTOs.Foods.Image;
 
 namespace FoodOrder.Application.DTOs.Foods.Combo
@@ -12,7 +13,11 @@ namespace FoodOrder.Application.DTOs.Foods.Combo
         public int FoodCategoryId { get; set; }
         public decimal Price { get; set; }
         public string? Description { get; set; }
-        public string Status { get; set; } = "true";
+        public bool Status { get; set; }
+        public bool IsOutOfStock { get; set; }
+        public int Sold { get; set; } 
+        public DateTime CreatedAt { get; set; }
         public ImageDto? Images { get; set; }
+        public FoodCategoryDto? FoodCategory { get; set; }
     }
 }

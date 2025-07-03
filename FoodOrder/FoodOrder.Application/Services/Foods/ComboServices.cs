@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using FoodOrder.Application.DTOs.Foods.Combo;
 using FoodOrder.Application.DTOs.Foods.Combo.Commands;
-using FoodOrder.Application.DTOs.Foods.Food.Queries;
 using FoodOrder.Application.Interfaces;
 using FoodOrder.Application.Services.Foods.Filter;
 using FoodOrder.Domain.Entities.Foods;
@@ -30,13 +29,19 @@ namespace FoodOrder.Application.Services.Foods
             {
                 comboQuery = comboQuery.Where(f => f.FoodCategorys.CategoryName.Contains(query.CategoryName));
             }
-            // Lọc theo tên combo
+
             if (!string.IsNullOrWhiteSpace(query.Name))
             {
                 comboQuery = comboQuery.Where(c => c.ComboName.Contains(query.Name));
             }
-
-            // Sắp xếp theo thời gian tạo
+            if (query.Status.HasValue)
+            {
+                comboQuery = comboQuery.Where(f => f.Status == query.Status.Value);
+            }
+            if (query.IsOutOfStock.HasValue)
+            {
+                comboQuery = comboQuery.Where(f => f.IsOutOfStock == query.IsOutOfStock.Value);
+            }
             comboQuery = query.SortOrder.ToLower() switch
             {
                 "asc" => comboQuery.OrderBy(c => c.CreatedAt),
@@ -118,7 +123,7 @@ namespace FoodOrder.Application.Services.Foods
                 FoodCategoryId = dto.FoodCategoryId,
                 CreatedAt = DateTime.UtcNow,
                 Slug = await _slugService.GenerateUniqueSlug<Combo>(dto.ComboName!),
-                Status = "true",
+                Status = true,
                 IsOutOfStock = false
             };
 
