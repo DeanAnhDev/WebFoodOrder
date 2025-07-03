@@ -1,8 +1,9 @@
 ﻿using AutoMapper;
 using FoodOrder.Application.DTOs.Foods.Combo;
-using FoodOrder.Application.DTOs.Foods.Food;
-using FoodOrder.Application.DTOs.Foods.FoodCategory;
+using FoodOrder.Application.DTOs.Foods.Food.Queries;
 using FoodOrder.Application.DTOs.Foods.FoodCategory.Commands;
+using FoodOrder.Application.DTOs.Foods.FoodCategory.Queries;
+using FoodOrder.Application.DTOs.Foods.Image;
 using FoodOrder.Application.Interfaces;
 using FoodOrder.Domain.Entities.Foods;
 using FoodOrder.Domain.Entities.Image;
@@ -41,6 +42,7 @@ namespace FoodOrder.Application.Services.Foods
             return _mapper.Map<FoodCategoryDto>(foodCategory);
         }
 
+        #region crud
         public async Task<bool> AddAsync(FoodCategoryDtoCreate foodCategoryDto)
         {
 
@@ -134,37 +136,12 @@ namespace FoodOrder.Application.Services.Foods
             return false;
         }
 
+        #endregion
+
         public async Task<IEnumerable<FoodCategoryListFoodDto?>> GetFoodCategoriesWithFoodsAsync()
         {
-            var foodCategoriesWithFoods = await _unitOfWork.FoodCategories.GetFoodCategoriesWithFoods()
-                .Select(fc => new FoodCategoryListFoodDto
-                {
-                    FoodCategoryId = fc.FoodCategoryId,
-                    CategoryName = fc.CategoryName,
-                    Slug = fc.Slug,
-                    Foods = fc.Foods != null ? fc.Foods
-                    .Select(f => new FoodDto
-                    {
-                        FoodId = f.FoodId,
-                        FoodName = f.FoodName,
-                        Slug = f.Slug,
-                        Description = f.Description,
-                        Price = f.Price,
-                        //Image = f.Image,
-                        Status = f.Status
-                    }).ToList() : new List<FoodDto>(),
-                    Combos = fc.Combos != null ? fc.Combos
-                    .Select(c => new ComboDto
-                    {
-                        ComboId = c.ComboId,
-                        ComboName = c.ComboName,
-                        Slug = c.Slug,
-                        Price = c.Price,
-                        //Image = c.Image,
-                        Status = c.Status
-                    }).ToList() : new List<ComboDto>()
-                }).ToListAsync();
-            return foodCategoriesWithFoods;
+            var foodCategoriesWithFoods = await _unitOfWork.FoodCategories.GetFoodCategoriesWithFoods().ToListAsync();
+            return _mapper.Map<IEnumerable<FoodCategoryListFoodDto>>(foodCategoriesWithFoods);
         }
 
         public async Task<FoodsByCategory?> GetFoodsByCategorySlugAsync(string categorySlug)
@@ -183,14 +160,22 @@ namespace FoodOrder.Application.Services.Foods
                         Slug = f.Slug,
                         Description = f.Description,
                         Price = f.Price,
-                        //Image = f.Image,
-                        Status = f.Status
+                        IsOutOfStock = f.IsOutOfStock,
+                        Status = f.Status,
+                        Images = f.Images != null ? new ImageDto
+                        {
+                            Id = f.Images.Id,
+                            Url = f.Images.Url,
+                            ThumbnailUrl = f.Images.ThumbnailUrl,
+                            Name = f.Images.Name
+                        } : null
                     }).ToList() : new List<FoodDto>()
                 })
                 .FirstOrDefaultAsync();
 
             return foodsByCategorySlug;
         }
+
 
         public async Task<CombosByCategory?> GetCombosByCategorySlugAsync(string categorySlug)
         {
@@ -208,7 +193,6 @@ namespace FoodOrder.Application.Services.Foods
                         Slug = f.Slug,
                         Description = f.Description,
                         Price = f.Price,
-                        //Image = f.Image,
                         Status = f.Status
                     }).ToList() : new List<ComboDto>()
                 })

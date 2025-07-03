@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
-using FoodOrder.Application.DTOs.Foods.Food;
 using FoodOrder.Application.DTOs.Foods.Food.Commands;
-using FoodOrder.Application.DTOs.Foods.FoodCategory;
+using FoodOrder.Application.DTOs.Foods.Food.Queries;
 using FoodOrder.Application.Interfaces;
+using FoodOrder.Application.Services.Foods.Filter;
 using FoodOrder.Domain.Entities.Foods;
 using FoodOrder.Domain.Entities.Image;
 using FoodOrder.Domain.Interfaces;
@@ -22,11 +22,41 @@ namespace FoodOrder.Application.Services.Foods
             _slugService = slugService;
         }
 
-        public async Task<IEnumerable<FoodDto>> GetAllAsync()
+        public async Task<PagedResult<FoodDto>> GetPagedFoodsAsync(PagedQuery query)
         {
-            var foods = await _unitOfWork.Foods.GetAllAsync();
-            return _mapper.Map<IEnumerable<FoodDto>>(foods);
+            var foodsQuery = _unitOfWork.Foods.GetQueryableWithIncludes();
+
+            if (!string.IsNullOrWhiteSpace(query.CategoryName))
+            {
+                foodsQuery = foodsQuery.Where(f => f.FoodCategory.CategoryName.Contains(query.CategoryName));
+            }
+            // Lọc theo tên món ăn nếu có
+            if (!string.IsNullOrWhiteSpace(query.Name))
+            {
+                foodsQuery = foodsQuery.Where(f =>
+                    f.FoodName != null &&
+                    f.FoodName.Contains(query.Name));
+            }
+            // Sắp xếp theo CreatedAt
+            foodsQuery = query.SortOrder.ToLower() switch
+            {
+                "asc" => foodsQuery.OrderBy(f => f.CreatedAt),
+                _ => foodsQuery.OrderByDescending(f => f.CreatedAt)
+            };
+
+            var totalCount = await foodsQuery.CountAsync();
+
+            var items = await foodsQuery
+                .Skip((query.Page - 1) * query.PageSize)
+                .Take(query.PageSize)
+                .ToListAsync();
+
+            var foodDtos = _mapper.Map<List<FoodDto>>(items);
+
+            return new PagedResult<FoodDto>(foodDtos, totalCount, query.Page, query.PageSize);
         }
+
+
 
         public async Task<FoodDto> GetByIdAsync(int id)
         {
@@ -34,7 +64,7 @@ namespace FoodOrder.Application.Services.Foods
             return _mapper.Map<FoodDto>(foods);
         }
 
-        public async Task<FoodDto?> GetBySlugAsync(string slug)
+        public async Task<FoodDto> GetBySlugAsync(string slug)
         {
             var foods = await _unitOfWork.Foods.GetBySlugAsync(slug);
             return _mapper.Map<FoodDto>(foods);

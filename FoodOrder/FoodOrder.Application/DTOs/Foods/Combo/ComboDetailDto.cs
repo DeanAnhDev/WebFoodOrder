@@ -1,4 +1,4 @@
-﻿using FoodOrder.Application.DTOs.Foods.Food;
+﻿using FoodOrder.Application.DTOs.Foods.Food.Queries;
 
 namespace FoodOrder.Application.DTOs.Foods.Combo
 {

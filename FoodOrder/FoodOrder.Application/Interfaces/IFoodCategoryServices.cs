@@ -1,5 +1,5 @@
-﻿using FoodOrder.Application.DTOs.Foods.FoodCategory;
-using FoodOrder.Application.DTOs.Foods.FoodCategory.Commands;
+﻿using FoodOrder.Application.DTOs.Foods.FoodCategory.Commands;
+using FoodOrder.Application.DTOs.Foods.FoodCategory.Queries;
 using FoodOrder.Application.Interfaces.InterfacesGeneric;
 
 namespace FoodOrder.Application.Interfaces

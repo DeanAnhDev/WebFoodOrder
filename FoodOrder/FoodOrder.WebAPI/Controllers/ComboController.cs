@@ -1,5 +1,7 @@
 ﻿using FoodOrder.Application.DTOs.Foods.Combo;
+using FoodOrder.Application.DTOs.Foods.Combo.Commands;
 using FoodOrder.Application.Interfaces;
+using FoodOrder.Application.Services.Foods.Filter;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,26 +17,27 @@ namespace FoodOrder.WebAPI.Controllers
             _comboServices = comboServices;
         }
 
-        [Authorize(Roles = "Customer")]
-        [HttpGet]
-        public async Task<IActionResult> GetAllCombo()
+        //[Authorize(Roles = "Customer")]
+        [HttpGet("combos")]
+        public async Task<IActionResult> GetAllCombos([FromQuery] PagedQuery query)
         {
-            try 
+            try
             {
-                var combos = await _comboServices.GetAllAsync();
+                var result = await _comboServices.GetPagedCombosAsync(query);
 
-                if (combos == null || !combos.Any())
+                if (result == null || !result.Items.Any())
                 {
                     return NotFound(new { message = "Không tìm thấy combo nào." });
                 }
 
-                return Ok(combos);
+                return Ok(result);
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = "Lỗi server!", error = ex.Message });
             }
         }
+
 
 
         [HttpGet("{id}")]
@@ -115,7 +118,7 @@ namespace FoodOrder.WebAPI.Controllers
 
 
         [HttpPost]
-        public async Task<IActionResult> CreateCombo([FromBody] ComboDto comboDto)
+        public async Task<IActionResult> CreateCombo([FromBody] ComboDtoCreate comboDto)
         {
             try
             {
@@ -140,7 +143,7 @@ namespace FoodOrder.WebAPI.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> UpdateCombo([FromBody] ComboDto comboDto)
+        public async Task<IActionResult> UpdateCombo([FromBody] ComboDtoUpdate comboDto)
         {
             try
             {

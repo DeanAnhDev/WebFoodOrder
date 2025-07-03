@@ -14,7 +14,7 @@ namespace FoodOrder.Domain.Entities.Foods
         public Images? Images { get; set; }
         public string? Description { get; set; }
         public string Status { get; set; } = "true";
-        public bool IsOutOfStock { get; set; }
+        public bool IsOutOfStock { get; set; } = false;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public ICollection<ComboDetail>? ComboDetails { get; set; }
         public OrderDetail? OrderDetail { get; set; }

@@ -1,5 +1,4 @@
 ﻿using FoodOrder.Infrastructure.Services.CloudinaryServices;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FoodOrder.WebAPI.Controllers

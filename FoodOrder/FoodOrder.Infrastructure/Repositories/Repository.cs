@@ -21,11 +21,6 @@ namespace FoodOrder.Infrastructure.Repositories
             return await _dbSet.FindAsync(id);
         }
 
-        public async Task<TEntity?> GetBySlugAsync(string slug)
-        {
-            return await _dbSet.FirstOrDefaultAsync(entity => EF.Property<string>(entity, "Slug") == slug);
-        }
-
         public async Task<bool> AddAsync(TEntity entity)
         {
             if (entity != null)

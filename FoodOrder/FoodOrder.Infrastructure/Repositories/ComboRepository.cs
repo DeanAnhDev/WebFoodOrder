@@ -9,14 +9,37 @@ namespace FoodOrder.Infrastructure.Repositories
     {
         public ComboRepository(FoodOrderDbContext context) : base(context) { }
 
-        public Task<IEnumerable<Combo>> GetAllAsync()
+        public IQueryable<Combo> GetQueryableWithIncludes()
         {
-            throw new NotImplementedException();
+            return _dbSet
+                .Include(c => c.Images)
+                .Include(c => c.FoodCategorys)
+                .AsQueryable();
         }
 
-        public Task<Combo> GetByIdAsync(int id)
+
+        public async Task<Combo?> GetByIdWithDataAsync(int id)
         {
-            throw new NotImplementedException();
+            return await _dbSet
+                 .Include(cb => cb.Images)
+                 .Include(cb => cb.ComboDetails).ThenInclude(cd => cd.Food)
+                 .Include(cb => cb.ComboDetails).ThenInclude(cd => cd.Combo)
+                 .FirstOrDefaultAsync(cb => cb.ComboId == id);
+        }
+
+        public async Task<Combo?> GetByIdAsync(int id)
+        {
+            return await _dbSet.Include(cb => cb.Images).FirstOrDefaultAsync(cb => cb.ComboId == id);
+        }
+
+
+
+
+        public async Task<Combo?> GetBySlugAsync(string slug)
+        {
+            return await _dbSet
+                 .Include(fc => fc.Images)
+                 .FirstOrDefaultAsync(fc => fc.Slug == slug);
         }
 
         public IQueryable<Combo> GetComboWithFoodsBySlug(string comboSlug)
@@ -24,8 +47,9 @@ namespace FoodOrder.Infrastructure.Repositories
             var result = _dbSet
                .AsNoTracking()
                .Where(c => c.Slug == comboSlug)
+               .Include(c => c.Images)
                .Include(c => c.ComboDetails!)
-               .ThenInclude(cd => cd.Food)
+               .ThenInclude(cd => cd.Food).ThenInclude(f => f.Images)
                .AsSplitQuery();
             return result;
         }

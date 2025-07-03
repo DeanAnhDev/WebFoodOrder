@@ -4,7 +4,8 @@ namespace FoodOrder.Domain.Interfaces
 {
     public interface IFoodRepository : IRepository<Food>
     {
-        Task<IEnumerable<Food>> GetAllAsync();
-        Task<Food> GetByIdAsync(int id);
+        IQueryable<Food> GetQueryableWithIncludes();
+        Task<Food?> GetByIdAsync(int id);
+        Task<Food?> GetBySlugAsync(string slug);
     }
 }
