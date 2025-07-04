@@ -11,8 +11,7 @@ namespace FoodOrder.Application.Interfaces
         Task<bool> DeleteAsync(int id);
         Task<IEnumerable<FoodCategoryListFoodDto?>> GetFoodCategoriesWithFoodsAsync();
         Task<FoodCategoryDto?> GetBySlugAsync(string slug);
-        Task<FoodsByCategory?> GetFoodsByCategorySlugAsync(string categorySlug);
-        Task<CombosByCategory?> GetCombosByCategorySlugAsync(string categorySlug);
+        Task<FoodCategoryListFoodDto?> GetFoodsByCategorySlugAsync(string categorySlug);
         Task<IEnumerable<FoodCategoryDto>> GetAllAsync();
         Task<FoodCategoryDto?> GetByIdAsync(int id);
     }

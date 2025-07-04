@@ -20,7 +20,7 @@ namespace FoodOrder.Application.MappingProfiles
             CreateMap<FoodCategory, FoodCategoryDtoUpdate>().ReverseMap();
             CreateMap<FoodCategory, FoodCategoryDtoCreate>().ReverseMap();
             CreateMap<FoodCategory, FoodCategoryListFoodDto>().ReverseMap();
-
+        
             //Mapping from Food to FoodDto
             CreateMap<Food, FoodDto>().ReverseMap();
             CreateMap<Food, FoodDtoCreate>().ReverseMap();

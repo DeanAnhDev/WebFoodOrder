@@ -123,7 +123,7 @@ namespace FoodOrder.Application.Services.Foods
             if (string.IsNullOrWhiteSpace(dto.ComboName))
                 throw new ArgumentException("Tên combo không được để trống.");
 
-            if (dto.Price <= 0)
+            if (dto.Price < 0)
                 throw new ArgumentException("Giá combo phải lớn hơn 0.");
 
             if (dto.FoodCategoryId <= 0)
@@ -206,7 +206,7 @@ namespace FoodOrder.Application.Services.Foods
                 // 1. VALIDATE cơ bản
                 if (dto.ComboId <= 0) throw new ArgumentException("ComboId không hợp lệ.");
                 if (string.IsNullOrWhiteSpace(dto.ComboName)) throw new ArgumentException("Tên combo không được để trống.");
-                if (dto.Price <= 0) throw new ArgumentException("Giá combo phải lớn hơn 0.");
+                if (dto.Price < 0) throw new ArgumentException("Giá combo phải lớn hơn 0.");
                 if (dto.FoodCategoryId <= 0) throw new ArgumentException("Danh mục món ăn không hợp lệ.");
                 if (dto.Foods == null || !dto.Foods.Any()) throw new ArgumentException("Combo cần ít nhất một món ăn.");
 

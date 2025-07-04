@@ -144,62 +144,23 @@ namespace FoodOrder.Application.Services.Foods
             return _mapper.Map<IEnumerable<FoodCategoryListFoodDto>>(foodCategoriesWithFoods);
         }
 
-        public async Task<FoodsByCategory?> GetFoodsByCategorySlugAsync(string categorySlug)
+        public async Task<FoodCategoryListFoodDto?> GetFoodsByCategorySlugAsync(string categorySlug)
         {
-            var foodsByCategorySlug = await _unitOfWork.FoodCategories
+            var entity = await _unitOfWork.FoodCategories
                 .GetFoodsByCategorySlug(categorySlug)
-                .Select(fc => new FoodsByCategory
-                {
-                    FoodCategoryId = fc.FoodCategoryId,
-                    CategoryName = fc.CategoryName,
-                    Slug = fc.Slug,
-                    Foods = fc.Foods != null ? fc.Foods.Select(f => new FoodDto
-                    {
-                        FoodId = f.FoodId,
-                        FoodName = f.FoodName,
-                        Slug = f.Slug,
-                        Description = f.Description,
-                        Price = f.Price,
-                        IsOutOfStock = f.IsOutOfStock,
-                        Status = f.Status,
-                        Images = f.Images != null ? new ImageDto
-                        {
-                            Id = f.Images.Id,
-                            Url = f.Images.Url,
-                            ThumbnailUrl = f.Images.ThumbnailUrl,
-                            Name = f.Images.Name
-                        } : null
-                    }).ToList() : new List<FoodDto>()
-                })
                 .FirstOrDefaultAsync();
 
-            return foodsByCategorySlug;
+            if (entity == null)
+                return null;
+
+            var dto = _mapper.Map<FoodCategoryListFoodDto>(entity);
+            return dto;
         }
 
 
-        public async Task<CombosByCategory?> GetCombosByCategorySlugAsync(string categorySlug)
-        {
-            var combosByCategorySlug = await _unitOfWork.FoodCategories
-                .GetCombosByCategorySlug(categorySlug)
-                .Select(fc => new CombosByCategory
-                {
-                    FoodCategoryId = fc.FoodCategoryId,
-                    CategoryName = fc.CategoryName,
-                    Slug = fc.Slug,
-                    Combos = fc.Combos != null ? fc.Combos.Select(f => new ComboDto
-                    {
-                        ComboId = f.ComboId,
-                        ComboName = f.ComboName,
-                        Slug = f.Slug,
-                        Description = f.Description,
-                        Price = f.Price,
-                        Status = f.Status
-                    }).ToList() : new List<ComboDto>()
-                })
-                .FirstOrDefaultAsync();
 
-            return combosByCategorySlug;
-        }
+
+
 
 
     }

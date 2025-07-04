@@ -6,7 +6,6 @@ namespace FoodOrder.Domain.Interfaces
     {
         IQueryable<FoodCategory> GetFoodCategoriesWithFoods();
         IQueryable<FoodCategory> GetFoodsByCategorySlug(string categorySlug);
-        IQueryable<FoodCategory> GetCombosByCategorySlug(string categorySlug);
         Task<IEnumerable<FoodCategory>> GetAllAsync();
         Task<FoodCategory?> GetByIdAsync(int id);
         Task<FoodCategory?> GetBySlugAsync(string slug);

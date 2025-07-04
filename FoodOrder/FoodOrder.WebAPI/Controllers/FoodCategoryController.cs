@@ -153,7 +153,7 @@ namespace FoodOrder.WebAPI.Controllers
             }
         }
 
-        [HttpGet("foods-by-category/{slug}")]
+        [HttpGet("slug/{slug}")]
         public async Task<IActionResult> GetFoodsByCategorySlug(string slug)
         {
             try
@@ -166,26 +166,6 @@ namespace FoodOrder.WebAPI.Controllers
                 }
 
                 return Ok(foodsByCategorySlug);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Lỗi server!", error = ex.Message });
-            }
-        }
-
-        [HttpGet("combos-by-category/{slug}")]
-        public async Task<IActionResult> GetCombosByCategorySlug(string slug)
-        {
-            try
-            {
-                var combosByCategorySlug = await _foodCategoryService.GetCombosByCategorySlugAsync(slug);
-
-                if (combosByCategorySlug == null)
-                {
-                    return NotFound(new { message = "Không tìm thấy combo nào." });
-                }
-
-                return Ok(combosByCategorySlug);
             }
             catch (Exception ex)
             {

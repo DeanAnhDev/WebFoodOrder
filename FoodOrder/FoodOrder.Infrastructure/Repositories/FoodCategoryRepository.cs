@@ -26,19 +26,11 @@ namespace FoodOrder.Infrastructure.Repositories
                 .AsNoTracking()
                 .Where(fc => fc.Slug == categorySlug)
                 .Include(fc => fc.Foods!).ThenInclude(f => f.Images)
+                .Include(fc => fc.Combos!).ThenInclude(cb => cb.Images)
                 .AsSplitQuery();
             return result;
         }
 
-        public IQueryable<FoodCategory> GetCombosByCategorySlug(string categorySlug)
-        {
-            var result = _dbSet
-               .AsNoTracking()
-               .Where(fc => fc.Slug == categorySlug)
-               .Include(fc => fc.Combos!).ThenInclude(c => c.Images)
-               .AsSplitQuery();
-            return result;
-        }
 
         public async Task<IEnumerable<FoodCategory>> GetAllAsync()
         {
