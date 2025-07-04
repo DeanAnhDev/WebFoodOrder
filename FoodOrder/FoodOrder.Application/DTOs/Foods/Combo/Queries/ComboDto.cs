@@ -1,9 +1,7 @@
-﻿
-
-using FoodOrder.Application.DTOs.Foods.FoodCategory.Queries;
+﻿using FoodOrder.Application.DTOs.Foods.FoodCategory.Queries;
 using FoodOrder.Application.DTOs.Foods.Image;
 
-namespace FoodOrder.Application.DTOs.Foods.Combo
+namespace FoodOrder.Application.DTOs.Foods.Combo.Queries
 {
     public class ComboDto
     {
@@ -18,6 +16,7 @@ namespace FoodOrder.Application.DTOs.Foods.Combo
         public int Sold { get; set; } 
         public DateTime CreatedAt { get; set; }
         public ImageDto? Images { get; set; }
-        public FoodCategoryDto? FoodCategory { get; set; }
+        public FoodCategoryDto? FoodCategorys { get; set; }
+
     }
 }

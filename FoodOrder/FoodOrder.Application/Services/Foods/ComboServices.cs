@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
-using FoodOrder.Application.DTOs.Foods.Combo;
 using FoodOrder.Application.DTOs.Foods.Combo.Commands;
+using FoodOrder.Application.DTOs.Foods.Combo.Queries;
+using FoodOrder.Application.DTOs.Foods.Food.Queries;
 using FoodOrder.Application.Interfaces;
 using FoodOrder.Application.Services.Foods.Filter;
 using FoodOrder.Domain.Entities.Foods;
@@ -61,11 +62,12 @@ namespace FoodOrder.Application.Services.Foods
         }
 
 
-        public async Task<ComboDto?> GetByIdAsync(int id)
+        public async Task<ComboDtoById?> GetByIdAsync(int id)
         {
             var combo = await _unitOfWork.Combos.GetByIdAsync(id);
-            return _mapper.Map<ComboDto>(combo);
+            return _mapper.Map<ComboDtoById>(combo);
         }
+
         public async Task<ComboDto?> GetBySlugAsync(string slug)
         {
             var combo = await _unitOfWork.Combos.GetBySlugAsync(slug);
@@ -81,7 +83,39 @@ namespace FoodOrder.Application.Services.Foods
             return _mapper.Map<ComboWithFoodDto>(comboWithFoods);
         }
 
+        public async Task<List<FoodDto>> GetFoodsNotInComboAsync()
+        {
+            var allFoods = await _unitOfWork.Foods.GetAllAsync();
+            return _mapper.Map<List<FoodDto>>(allFoods);
+        }
 
+
+        public async Task UpdateCombosByFoodIdAsync(int foodId)
+        {
+            var food = await _unitOfWork.Foods.GetByIdAsync(foodId);
+            if (food == null) throw new ArgumentException("Food not found");
+
+            var combos = await _unitOfWork.Combos.GetCombosByFoodIdAsync(foodId);
+
+            foreach (var combo in combos)
+            {
+                if (!food.Status || food.IsOutOfStock)
+                {
+                    combo.Status = false;
+                    combo.IsOutOfStock = true;
+                }
+                else
+                {
+                    var allFoods = await _unitOfWork.Combos.GetFoodsInComboAsync(combo.ComboId);
+                    bool allAvailable = allFoods.All(f => f.Status && !f.IsOutOfStock);
+
+                    combo.Status = allAvailable;
+                    combo.IsOutOfStock = !allAvailable;
+                }
+            }
+        }
+
+        #region crud
 
         public async Task<bool> AddAsync(ComboDtoCreate dto)
         {
@@ -186,6 +220,8 @@ namespace FoodOrder.Application.Services.Foods
                 combo.Description = dto.Description;
                 combo.Price = dto.Price;
                 combo.FoodCategoryId = dto.FoodCategoryId;
+                combo.Status = dto.Status;
+                combo.IsOutOfStock = dto.IsOutOfStock;
 
                 // 4. Cập nhật ảnh
                 if (dto.Images != null)
@@ -250,5 +286,7 @@ namespace FoodOrder.Application.Services.Foods
             }
             return false;
         }
+
+        #endregion
     }
 }

@@ -1,6 +1,6 @@
 ﻿using FoodOrder.Application.DTOs.Foods.Food.Queries;
 
-namespace FoodOrder.Application.DTOs.Foods.Combo
+namespace FoodOrder.Application.DTOs.Foods.Combo.Queries
 {
     public class ComboDetailDto
     {

@@ -1,7 +1,6 @@
-﻿
-using FoodOrder.Application.DTOs.Foods.Image;
+﻿using FoodOrder.Application.DTOs.Foods.Image;
 
-namespace FoodOrder.Application.DTOs.Foods.Combo
+namespace FoodOrder.Application.DTOs.Foods.Combo.Queries
 {
     public class ComboWithFoodDto
     {

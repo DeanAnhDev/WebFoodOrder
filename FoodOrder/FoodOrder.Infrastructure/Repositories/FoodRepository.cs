@@ -16,6 +16,11 @@ namespace FoodOrder.Infrastructure.Repositories
                 .Include(f => f.FoodCategory)
                 .AsQueryable();
         }
+        public async Task<List<Food>> GetAllAsync()
+        {
+            return await _dbSet
+                .Include(f => f.Images).ToListAsync();
+        }
 
         public async Task<Food?> GetByIdAsync(int id)
         {

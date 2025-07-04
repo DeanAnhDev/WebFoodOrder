@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
-using FoodOrder.Application.DTOs.Foods.Combo;
 using FoodOrder.Application.DTOs.Foods.Combo.Commands;
+using FoodOrder.Application.DTOs.Foods.Combo.Queries;
 using FoodOrder.Application.DTOs.Foods.Food.Commands;
 using FoodOrder.Application.DTOs.Foods.Food.Queries;
 using FoodOrder.Application.DTOs.Foods.FoodCategory.Commands;
@@ -31,6 +31,7 @@ namespace FoodOrder.Application.MappingProfiles
             CreateMap<Combo, ComboDtoCreate>().ReverseMap();
             CreateMap<Combo, ComboDtoUpdate>().ReverseMap();
             CreateMap<Combo, ComboWithFoodDto>().ReverseMap();
+            CreateMap<Combo, ComboDtoById>().ReverseMap();
 
             //Mapping from ComboDetail to ComboDetailDto
             CreateMap<ComboDetail, ComboDetailDto>().ReverseMap();

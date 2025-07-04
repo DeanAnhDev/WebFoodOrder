@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using FoodOrder.Application.DTOs.Foods.Combo;
+using FoodOrder.Application.DTOs.Foods.Combo.Queries;
 using FoodOrder.Application.Interfaces;
 using FoodOrder.Domain.Entities.Foods;
 using FoodOrder.Domain.Interfaces;

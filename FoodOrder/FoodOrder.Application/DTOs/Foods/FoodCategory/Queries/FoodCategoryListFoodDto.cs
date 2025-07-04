@@ -1,4 +1,4 @@
-﻿using FoodOrder.Application.DTOs.Foods.Combo;
+﻿using FoodOrder.Application.DTOs.Foods.Combo.Queries;
 using FoodOrder.Application.DTOs.Foods.Food.Queries;
 
 namespace FoodOrder.Application.DTOs.Foods.FoodCategory.Queries

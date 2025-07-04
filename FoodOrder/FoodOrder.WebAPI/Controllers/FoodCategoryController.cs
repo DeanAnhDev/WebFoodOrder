@@ -22,11 +22,6 @@ namespace FoodOrder.WebAPI.Controllers
             {
                 var foodCategories = await _foodCategoryService.GetAllAsync();
 
-                if (foodCategories == null || !foodCategories.Any())
-                {
-                    return NotFound(new { message = "Không tìm thấy danh mục nào." });
-                }
-
                 return Ok(foodCategories);
             }
             catch (Exception ex)

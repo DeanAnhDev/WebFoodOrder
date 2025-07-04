@@ -1,6 +1,5 @@
-﻿using FoodOrder.Application.DTOs.Foods.Food;
+﻿
 using FoodOrder.Application.DTOs.Foods.Food.Commands;
-using FoodOrder.Application.DTOs.Foods.FoodCategory;
 using FoodOrder.Application.Interfaces;
 using FoodOrder.Application.Services.Foods.Filter;
 using Microsoft.AspNetCore.Mvc;
@@ -23,11 +22,6 @@ namespace FoodOrder.WebAPI.Controllers
             try
             {
                 var result = await _foodService.GetPagedFoodsAsync(query);
-
-                if (result == null || !result.Items.Any())
-                {
-                    return NotFound(new { message = "Không tìm thấy món ăn nào." });
-                }
 
                 return Ok(result);
             }

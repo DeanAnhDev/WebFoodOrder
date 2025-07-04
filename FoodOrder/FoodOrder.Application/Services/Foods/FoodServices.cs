@@ -15,11 +15,13 @@ namespace FoodOrder.Application.Services.Foods
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly SlugService _slugService;
-        public FoodServices(IUnitOfWork unitOfWork, IMapper mapper, SlugService slugService)
+        private readonly IComboServices _comboService; 
+        public FoodServices(IUnitOfWork unitOfWork, IMapper mapper, SlugService slugService, IComboServices comboService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _slugService = slugService;
+            _comboService = comboService;
         }
 
         public async Task<PagedResult<FoodDto>> GetPagedFoodsAsync(PagedQuery query)
@@ -158,7 +160,7 @@ namespace FoodOrder.Application.Services.Foods
 
                 var updated = await _unitOfWork.Foods.UpdateAsync(existing);
                 if (!updated) return false;
-
+                await _comboService.UpdateCombosByFoodIdAsync(dto.FoodId);
                 return await _unitOfWork.CompleteAsync() > 0;
             }
             catch (DbUpdateException dbEx)

@@ -7,5 +7,6 @@ namespace FoodOrder.Domain.Interfaces
         IQueryable<Food> GetQueryableWithIncludes();
         Task<Food?> GetByIdAsync(int id);
         Task<Food?> GetBySlugAsync(string slug);
+        Task<List<Food>> GetAllAsync();
     }
 }

@@ -18,17 +18,12 @@ namespace FoodOrder.WebAPI.Controllers
         }
 
         //[Authorize(Roles = "Customer")]
-        [HttpGet("combos")]
+        [HttpGet]
         public async Task<IActionResult> GetAllCombos([FromQuery] PagedQuery query)
         {
             try
             {
                 var result = await _comboServices.GetPagedCombosAsync(query);
-
-                if (result == null || !result.Items.Any())
-                {
-                    return NotFound(new { message = "Không tìm thấy combo nào." });
-                }
 
                 return Ok(result);
             }
@@ -195,6 +190,13 @@ namespace FoodOrder.WebAPI.Controllers
             }
         }
 
+        [HttpGet("foods")]
+        public async Task<IActionResult> GetAvailableFoodsForCombo()
+        {
+
+            var foods = await _comboServices.GetFoodsNotInComboAsync();
+            return Ok(foods);
+        }
 
 
     }
