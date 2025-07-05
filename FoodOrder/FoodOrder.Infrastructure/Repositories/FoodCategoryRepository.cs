@@ -13,20 +13,76 @@ namespace FoodOrder.Infrastructure.Repositories
         {
             return _dbSet
                 .AsNoTracking()
-                .Include(fc => fc.Foods!)
-                .ThenInclude((Food f) => f.Images)
-                .Include(fc => fc.Combos!)
-                .ThenInclude((Combo cb) => cb.Images)
+                .Select(fc => new FoodCategory
+                {
+                    FoodCategoryId = fc.FoodCategoryId,
+                    CategoryName = fc.CategoryName,
+                    Slug = fc.Slug,
+
+                    Foods = fc.Foods
+                        .Where(f => f.Status)
+                        .Select(f => new Food
+                        {
+                            FoodId = f.FoodId,
+                            FoodName = f.FoodName,
+                            Slug = f.Slug,
+                            Status = f.Status,
+                            Price = f.Price,
+                            Images = f.Images
+                        }).ToList(),
+
+                    Combos = fc.Combos
+                        .Where(c => c.Status)
+                        .Select(c => new Combo
+                        {
+                            ComboId = c.ComboId,
+                            ComboName = c.ComboName,
+                            Slug = c.Slug,
+                            Status = c.Status,
+                            Price = c.Price,
+                            Images = c.Images
+                        }).ToList()
+                })
                 .AsSplitQuery();
         }
+
+
 
         public IQueryable<FoodCategory> GetFoodsByCategorySlug(string categorySlug)
         {
              var result =  _dbSet
                 .AsNoTracking()
                 .Where(fc => fc.Slug == categorySlug)
-                .Include(fc => fc.Foods!).ThenInclude(f => f.Images)
-                .Include(fc => fc.Combos!).ThenInclude(cb => cb.Images)
+               .Select(fc => new FoodCategory
+               {
+                   FoodCategoryId = fc.FoodCategoryId,
+                   CategoryName = fc.CategoryName,
+                   Slug = fc.Slug,
+
+                   Foods = fc.Foods
+                        .Where(f => f.Status)
+                        .Select(f => new Food
+                        {
+                            FoodId = f.FoodId,
+                            FoodName = f.FoodName,
+                            Slug = f.Slug,
+                            Status = f.Status,
+                            Price = f.Price,
+                            Images = f.Images
+                        }).ToList(),
+
+                   Combos = fc.Combos
+                        .Where(c => c.Status)
+                        .Select(c => new Combo
+                        {
+                            ComboId = c.ComboId,
+                            ComboName = c.ComboName,
+                            Slug = c.Slug,
+                            Status = c.Status,
+                            Price = c.Price,
+                            Images = c.Images
+                        }).ToList()
+               })
                 .AsSplitQuery();
             return result;
         }

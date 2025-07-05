@@ -1,5 +1,6 @@
 ﻿using FoodOrder.Application.DTOs.Foods.Combo;
 using FoodOrder.Application.DTOs.Foods.Combo.Commands;
+using FoodOrder.Application.DTOs.Foods.Combo.Queries;
 using FoodOrder.Application.Interfaces;
 using FoodOrder.Application.Services.Foods.Filter;
 using Microsoft.AspNetCore.Authorization;
@@ -32,6 +33,22 @@ namespace FoodOrder.WebAPI.Controllers
                 return StatusCode(500, new { message = "Lỗi server!", error = ex.Message });
             }
         }
+
+        [HttpGet("Combos")]
+        public async Task<IActionResult> GetAllCombosStatusTrue()
+        {
+            try
+            {
+                var result = await _comboServices.GetAllComboAsync();
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Lỗi server!", error = ex.Message });
+            }
+        }
+
 
 
 

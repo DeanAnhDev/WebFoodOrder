@@ -18,6 +18,8 @@ namespace FoodOrder.Infrastructure.Repositories
         }
 
 
+
+
         public async Task<Combo?> GetByIdWithDataAsync(int id)
         {
             return await _dbSet
@@ -75,5 +77,9 @@ namespace FoodOrder.Infrastructure.Repositories
                 .ToListAsync();
         }
 
+        public async Task<List<Combo>> GetAllComboAsync()
+        {
+            return await _dbSet.Include(cb => cb.Images).Where(cb => cb.Status).ToListAsync();
+        }
     }
 }

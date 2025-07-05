@@ -12,6 +12,9 @@ namespace FoodOrder.Domain.Interfaces
 
         Task<List<Combo>> GetCombosByFoodIdAsync(int foodId);
         Task<List<Food>> GetFoodsInComboAsync(int comboId);
+
+
+        Task<List<Combo>> GetAllComboAsync();
     }
 }
 

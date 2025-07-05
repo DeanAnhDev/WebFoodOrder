@@ -89,6 +89,12 @@ namespace FoodOrder.Application.Services.Foods
             return _mapper.Map<List<FoodDto>>(allFoods);
         }
 
+        public async Task<List<ComboDto>> GetAllComboAsync()
+        {
+            var allCombos = await _unitOfWork.Combos.GetAllComboAsync();
+            return _mapper.Map<List<ComboDto>>(allCombos);
+        }
+
 
         public async Task UpdateCombosByFoodIdAsync(int foodId)
         {
@@ -286,6 +292,8 @@ namespace FoodOrder.Application.Services.Foods
             }
             return false;
         }
+
+      
 
         #endregion
     }
