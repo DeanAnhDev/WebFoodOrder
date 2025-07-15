@@ -1,6 +1,5 @@
-﻿using FoodOrder.Application.DTOs.Foods.Combo;
+﻿
 using FoodOrder.Application.DTOs.Foods.Combo.Commands;
-using FoodOrder.Application.DTOs.Foods.Combo.Queries;
 using FoodOrder.Application.Interfaces;
 using FoodOrder.Application.Services.Foods.Filter;
 using Microsoft.AspNetCore.Authorization;
@@ -18,7 +17,7 @@ namespace FoodOrder.WebAPI.Controllers
             _comboServices = comboServices;
         }
 
-        //[Authorize(Roles = "Customer")]
+        [Authorize(Roles = "Customer")]
         [HttpGet]
         public async Task<IActionResult> GetAllCombos([FromQuery] PagedQuery query)
         {
@@ -34,6 +33,7 @@ namespace FoodOrder.WebAPI.Controllers
             }
         }
 
+        [Authorize(Roles = "Customer")]
         [HttpGet("Combos")]
         public async Task<IActionResult> GetAllCombosStatusTrue()
         {

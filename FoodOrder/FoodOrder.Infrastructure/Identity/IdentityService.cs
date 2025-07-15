@@ -7,6 +7,7 @@ using FoodOrder.Application.Services.Auth;
 using FoodOrder.Domain.Entities.Identity;
 using FoodOrder.Infrastructure.Services.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using System.IdentityModel.Tokens.Jwt;
@@ -68,9 +69,20 @@ namespace FoodOrder.Infrastructure.Identity
                 return new AuthResponse { Status = false, Message = "Email đã được sử dụng" };
             }
 
+            if (string.IsNullOrEmpty(registerUser.PhoneNumber))
+            {
+                return new AuthResponse { Status = false, Message = "Email is required" };
+            }
+
+            var userExistPhone = await _userManager.FindByEmailAsync(registerUser.PhoneNumber);
+            if (userExistPhone != null)
+            {
+                return new AuthResponse { Status = false, Message = "Số điện thoại đã được sử dụng" };
+            }
+
             var user = new AppUser
             {
-                UserName = registerUser.UserName,
+                UserName = registerUser.Email,
                 FullName = registerUser.FullName,
                 Email = registerUser.Email,
                 PhoneNumber = registerUser.PhoneNumber,
@@ -123,7 +135,7 @@ namespace FoodOrder.Infrastructure.Identity
             }
 
             // Tìm user theo username hoặc email
-            var user = await _userManager.FindByNameAsync(loginUser.UserName)
+            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == loginUser.UserName)
                        ?? await _userManager.FindByEmailAsync(loginUser.UserName);
 
             if (user == null || !await _userManager.CheckPasswordAsync(user, loginUser.Password))
