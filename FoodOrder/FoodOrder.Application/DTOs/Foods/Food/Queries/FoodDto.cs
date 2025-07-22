@@ -13,7 +13,7 @@ namespace FoodOrder.Application.DTOs.Foods.Food.Queries
         public string? Description { get; set; }
         public decimal Price { get; set; }
         public bool Status { get; set; }
-        public bool IsOutOfStock { get; set; }
+        public int Quantity { get; set; }
         public int Sold { get; set; }
         public DateTime CreatedAt { get; set; }
         public ImageDto? Images { get; set; }

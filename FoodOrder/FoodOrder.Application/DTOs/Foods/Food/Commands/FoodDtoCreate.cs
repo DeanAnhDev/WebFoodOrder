@@ -9,6 +9,7 @@ namespace FoodOrder.Application.DTOs.Foods.Food.Commands
         public string? Description { get; set; }
         public decimal Price { get; set; }
         public ImageDto? Images { get; set; }
+        public int Quantity { get; set; }
 
     }
 }

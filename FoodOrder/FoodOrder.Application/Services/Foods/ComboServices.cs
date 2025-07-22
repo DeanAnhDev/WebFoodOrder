@@ -41,8 +41,18 @@ namespace FoodOrder.Application.Services.Foods
             }
             if (query.IsOutOfStock.HasValue)
             {
-                comboQuery = comboQuery.Where(f => f.IsOutOfStock == query.IsOutOfStock.Value);
+                if (query.IsOutOfStock.Value)
+                {
+                    // Lấy những combo đã hết hàng
+                    comboQuery = comboQuery.Where(f => f.Quantity == 0);
+                }
+                else
+                {
+                    // Lấy những combo còn hàng
+                    comboQuery = comboQuery.Where(f => f.Quantity > 0);
+                }
             }
+
             comboQuery = query.SortOrder.ToLower() switch
             {
                 "asc" => comboQuery.OrderBy(c => c.CreatedAt),
@@ -105,19 +115,19 @@ namespace FoodOrder.Application.Services.Foods
 
             foreach (var combo in combos)
             {
-                if (!food.Status || food.IsOutOfStock)
-                {
-                    combo.Status = false;
-                    combo.IsOutOfStock = true;
-                }
-                else
-                {
-                    var allFoods = await _unitOfWork.Combos.GetFoodsInComboAsync(combo.ComboId);
-                    bool allAvailable = allFoods.All(f => f.Status && !f.IsOutOfStock);
+                //if (!food.Status || food.IsOutOfStock)
+                //{
+                //    combo.Status = false;
+                //    combo.IsOutOfStock = true;
+                //}
+                //else
+                //{
+                //    var allFoods = await _unitOfWork.Combos.GetFoodsInComboAsync(combo.ComboId);
+                //    bool allAvailable = allFoods.All(f => f.Status && !f.IsOutOfStock);
 
-                    combo.Status = allAvailable;
-                    combo.IsOutOfStock = !allAvailable;
-                }
+                //    combo.Status = allAvailable;
+                //    combo.IsOutOfStock = !allAvailable;
+                //}
             }
         }
 
@@ -164,7 +174,7 @@ namespace FoodOrder.Application.Services.Foods
                 CreatedAt = DateTime.UtcNow,
                 Slug = await _slugService.GenerateUniqueSlug<Combo>(dto.ComboName!),
                 Status = true,
-                IsOutOfStock = false
+                Quantity = dto.Quantity,
             };
 
             // 3. Gán ảnh nếu có
@@ -227,7 +237,7 @@ namespace FoodOrder.Application.Services.Foods
                 combo.Price = dto.Price;
                 combo.FoodCategoryId = dto.FoodCategoryId;
                 combo.Status = dto.Status;
-                combo.IsOutOfStock = dto.IsOutOfStock;
+                combo.Quantity = dto.Quantity;
 
                 // 4. Cập nhật ảnh
                 if (dto.Images != null)

@@ -17,7 +17,7 @@ namespace FoodOrder.WebAPI.Controllers
             _comboServices = comboServices;
         }
 
-        [Authorize(Roles = "Customer")]
+        //[Authorize(Roles = "Customer")]
         [HttpGet]
         public async Task<IActionResult> GetAllCombos([FromQuery] PagedQuery query)
         {
@@ -33,7 +33,7 @@ namespace FoodOrder.WebAPI.Controllers
             }
         }
 
-        [Authorize(Roles = "Customer")]
+        //[Authorize(Roles = "Customer")]
         [HttpGet("Combos")]
         public async Task<IActionResult> GetAllCombosStatusTrue()
         {

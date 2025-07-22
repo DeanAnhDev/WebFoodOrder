@@ -12,6 +12,10 @@ namespace FoodOrder.Infrastructure.Data.Configurations.Identity
                 .WithOne(o => o.Users)
                 .HasForeignKey(p => p.UserId);
 
+            builder.HasMany(p => p.Localtions)
+               .WithOne(o => o.Users)
+               .HasForeignKey(p => p.UserId);
+
         }
     }
 }

@@ -45,7 +45,16 @@ namespace FoodOrder.Application.Services.Foods
             }
             if (query.IsOutOfStock.HasValue)
             {
-                foodsQuery = foodsQuery.Where(f => f.IsOutOfStock == query.IsOutOfStock.Value);
+                if (query.IsOutOfStock.Value)
+                {
+                    // Lấy những combo đã hết hàng
+                    foodsQuery = foodsQuery.Where(f => f.Quantity == 0);
+                }
+                else
+                {
+                    // Lấy những combo còn hàng
+                    foodsQuery = foodsQuery.Where(f => f.Quantity > 0);
+                }
             }
             // Sắp xếp theo CreatedAt
             foodsQuery = query.SortOrder.ToLower() switch
@@ -121,7 +130,7 @@ namespace FoodOrder.Application.Services.Foods
                 existing.Price = dto.Price;
                 existing.Status = dto.Status;
                 existing.FoodCategoryId = dto.FoodCategoryId;
-                existing.IsOutOfStock = dto.IsOutOfStock;
+                existing.Quantity = dto.Quantity;
 
                 // Quản lý ảnh
                 var dbImage = await _unitOfWork.Images

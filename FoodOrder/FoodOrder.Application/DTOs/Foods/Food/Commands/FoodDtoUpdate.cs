@@ -10,7 +10,7 @@ namespace FoodOrder.Application.DTOs.Foods.Food.Commands
         public decimal Price { get; set; }
         public int FoodCategoryId { get; set; }
         public bool Status { get; set; }
-        public bool IsOutOfStock { get; set; }
+        public int Quantity { get; set; }
         public ImageDto? Images { get; set; }
        
     }
