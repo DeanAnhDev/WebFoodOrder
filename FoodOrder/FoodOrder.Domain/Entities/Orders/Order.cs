@@ -1,6 +1,4 @@
-﻿
-
-using FoodOrder.Domain.Entities.Identity;
+﻿using FoodOrder.Domain.Entities.Identity;
 
 namespace FoodOrder.Domain.Entities.Orders
 {

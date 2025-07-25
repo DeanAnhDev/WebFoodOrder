@@ -2,6 +2,7 @@
 using FoodOrder.Application.MappingProfiles;
 using FoodOrder.Application.Services;
 using FoodOrder.Application.Services.Auth;
+using FoodOrder.Application.Services.Carts;
 using FoodOrder.Application.Services.Foods;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -27,6 +28,7 @@ namespace FoodOrder.Application.Extensions
 
             services.AddScoped<IAuthService, AuthService>();
 
+            services.AddScoped<ICartService, CartService>();
 
             return services;
         }

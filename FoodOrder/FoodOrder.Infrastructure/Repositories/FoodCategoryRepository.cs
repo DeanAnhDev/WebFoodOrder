@@ -28,7 +28,8 @@ namespace FoodOrder.Infrastructure.Repositories
                             Slug = f.Slug,
                             Status = f.Status,
                             Price = f.Price,
-                            Images = f.Images
+                            Images = f.Images,
+                            Quantity = f.Quantity
                         }).ToList(),
 
                     Combos = fc.Combos
@@ -40,7 +41,8 @@ namespace FoodOrder.Infrastructure.Repositories
                             Slug = c.Slug,
                             Status = c.Status,
                             Price = c.Price,
-                            Images = c.Images
+                            Images = c.Images,
+                            Quantity = c.Quantity
                         }).ToList()
                 })
                 .AsSplitQuery();
@@ -68,7 +70,8 @@ namespace FoodOrder.Infrastructure.Repositories
                             Slug = f.Slug,
                             Status = f.Status,
                             Price = f.Price,
-                            Images = f.Images
+                            Images = f.Images,
+                            Quantity = f.Quantity
                         }).ToList(),
 
                    Combos = fc.Combos
@@ -80,7 +83,8 @@ namespace FoodOrder.Infrastructure.Repositories
                             Slug = c.Slug,
                             Status = c.Status,
                             Price = c.Price,
-                            Images = c.Images
+                            Images = c.Images,
+                            Quantity = c.Quantity
                         }).ToList()
                })
                 .AsSplitQuery();

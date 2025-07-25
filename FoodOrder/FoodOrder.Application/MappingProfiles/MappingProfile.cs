@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FoodOrder.Application.DTOs.Carts;
 using FoodOrder.Application.DTOs.Foods.Combo.Commands;
 using FoodOrder.Application.DTOs.Foods.Combo.Queries;
 using FoodOrder.Application.DTOs.Foods.Food.Commands;
@@ -8,6 +9,7 @@ using FoodOrder.Application.DTOs.Foods.FoodCategory.Queries;
 using FoodOrder.Application.DTOs.Foods.Image;
 using FoodOrder.Domain.Entities.Foods;
 using FoodOrder.Domain.Entities.Image;
+using FoodOrder.Domain.Entities.Orders;
 
 namespace FoodOrder.Application.MappingProfiles
 {
@@ -38,6 +40,13 @@ namespace FoodOrder.Application.MappingProfiles
 
             //Mapping from ImageDto to Image
             CreateMap<ImageDto, Images>().ReverseMap();
+
+            //Mapping from Cart to CartDto
+            CreateMap<Cart, CartCreateDto>().ReverseMap();
+            CreateMap<Cart, CartDto>().ReverseMap();
+
+            //Mapping from CartItem to CartItemDto
+            CreateMap<CartItem, CartItemDto>().ReverseMap();
         }
     }
 }

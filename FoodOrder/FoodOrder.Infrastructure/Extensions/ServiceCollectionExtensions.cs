@@ -39,11 +39,15 @@ namespace FoodOrder.Infrastructure.Extensions
 
             services.AddScoped<IComboRepository, ComboRepository>();
 
+            services.AddScoped<ICartItemRepository, CartItemRepository>();
+
             services.AddScoped<ISlugRepository, SlugRepository>();
 
             services.AddScoped<IEmailService, EmailService>();
 
             services.AddScoped<IIdentityService, IdentityService>();
+
+            services.AddScoped<ICartRepository, CartRepository>();
 
             services.AddScoped<IRedisService, RedisService>();
 
