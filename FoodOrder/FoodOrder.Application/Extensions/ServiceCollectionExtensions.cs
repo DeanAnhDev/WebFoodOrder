@@ -4,6 +4,7 @@ using FoodOrder.Application.Services;
 using FoodOrder.Application.Services.Auth;
 using FoodOrder.Application.Services.Carts;
 using FoodOrder.Application.Services.Foods;
+using FoodOrder.Application.Services.Identity;
 using Microsoft.Extensions.DependencyInjection;
 
 
@@ -30,6 +31,7 @@ namespace FoodOrder.Application.Extensions
 
             services.AddScoped<ICartService, CartService>();
 
+            services.AddScoped<IUserService, UserServices>();
             return services;
         }
     }

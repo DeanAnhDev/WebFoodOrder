@@ -7,7 +7,9 @@ using FoodOrder.Application.DTOs.Foods.Food.Queries;
 using FoodOrder.Application.DTOs.Foods.FoodCategory.Commands;
 using FoodOrder.Application.DTOs.Foods.FoodCategory.Queries;
 using FoodOrder.Application.DTOs.Foods.Image;
+using FoodOrder.Application.DTOs.Identity;
 using FoodOrder.Domain.Entities.Foods;
+using FoodOrder.Domain.Entities.Identity;
 using FoodOrder.Domain.Entities.Image;
 using FoodOrder.Domain.Entities.Orders;
 
@@ -47,6 +49,9 @@ namespace FoodOrder.Application.MappingProfiles
 
             //Mapping from CartItem to CartItemDto
             CreateMap<CartItem, CartItemDto>().ReverseMap();
+
+            //Mapping from AppUser to UserDto
+            CreateMap<AppUser, UserDto>().ReverseMap();
         }
     }
 }

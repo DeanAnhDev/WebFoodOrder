@@ -19,6 +19,7 @@ namespace FoodOrder.WebAPI.Controllers
             _cartService = cartService;
         }
 
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> GetCart()
         {
@@ -30,7 +31,7 @@ namespace FoodOrder.WebAPI.Controllers
             return Ok(cart);
         }
 
-
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> AddToCart([FromBody] AddToCartRequest dto)
         {
@@ -62,6 +63,7 @@ namespace FoodOrder.WebAPI.Controllers
             }
         }
 
+        [Authorize]
         [HttpPut]
         public async Task<IActionResult> UpdateCartItem([FromBody] UpdateCartItemDto dto)
         {
@@ -87,7 +89,7 @@ namespace FoodOrder.WebAPI.Controllers
         }
 
 
-
+        [Authorize]
         [HttpDelete]
         public async Task<IActionResult> RemoveCartItem([FromBody] RemoveCartItemDto dto)
         {
