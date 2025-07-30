@@ -12,7 +12,7 @@ namespace FoodOrder.Domain.Interfaces
         IFoodCategoryRepository FoodCategories { get; }
         IComboRepository Combos { get; }
         IComboDetailRepository ComboDetails { get; }
-        IRepository<AppUser> AppUsers { get; }
+        IUserRepository AppUsers { get; }
         IRepository<AppRole> AppRoles { get; }
         ICartRepository Carts { get; }
         ICartItemRepository CartItems { get; }
