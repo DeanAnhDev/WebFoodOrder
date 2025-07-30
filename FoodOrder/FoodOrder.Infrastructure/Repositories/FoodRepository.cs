@@ -9,7 +9,31 @@ namespace FoodOrder.Infrastructure.Repositories
     {
         public FoodRepository(FoodOrderDbContext context) : base(context) { }
 
-     
+        public IQueryable<Food> GetQueryableWithIncludes()
+        {
+            return _dbSet
+                .Include(f => f.Images)
+                .Include(f => f.FoodCategory)
+                .AsQueryable();
+        }
+        public async Task<List<Food>> GetAllAsync()
+        {
+            return await _dbSet
+                .Include(f => f.Images).ToListAsync();
+        }
 
+        public async Task<Food?> GetByIdAsync(int id)
+        {
+            return await _dbSet
+                .Include(fc => fc.Images)
+                .FirstOrDefaultAsync(fc => fc.FoodId == id);
+        }
+
+        public async Task<Food?> GetBySlugAsync(string slug)
+        {
+            return await _dbSet
+                .Include(f => f.Images)
+                .FirstOrDefaultAsync(f => f.Slug == slug);
+        }
     }
 }

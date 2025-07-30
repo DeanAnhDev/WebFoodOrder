@@ -4,8 +4,6 @@ namespace FoodOrder.Application.DTOs.Authentication
 {
     public class RegisterUser
     {
-        [Required(ErrorMessage = "UserName is required")]
-        public string? UserName { get; set; }
 
         [Required(ErrorMessage ="Name is required")]
         public string? FullName { get; set; }

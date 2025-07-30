@@ -9,15 +9,77 @@ namespace FoodOrder.Infrastructure.Repositories
     {
         public ComboRepository(FoodOrderDbContext context) : base(context) { }
 
+        public IQueryable<Combo> GetQueryableWithIncludes()
+        {
+            return _dbSet
+                .Include(c => c.Images)
+                .Include(c => c.FoodCategorys)
+                .AsQueryable();
+        }
+
+
+
+
+        public async Task<Combo?> GetByIdWithDataAsync(int id)
+        {
+            return await _dbSet
+                 .Include(cb => cb.Images)
+                 .Include(cb => cb.ComboDetails!).ThenInclude(cd => cd.Food)
+                 .Include(cb => cb.ComboDetails!).ThenInclude(cd => cd.Combo)
+                 .FirstOrDefaultAsync(cb => cb.ComboId == id);
+        }
+
+        public async Task<Combo?> GetByIdAsync(int id)
+        {
+            return await _dbSet.Include(cb => cb.Images)
+                .Include(cb => cb.ComboDetails!).ThenInclude(cbd => cbd.Food).ThenInclude(f => f.Images)
+                .FirstOrDefaultAsync(cb => cb.ComboId == id);
+        }
+
+
+
+
+        public async Task<Combo?> GetBySlugAsync(string slug)
+        {
+            return await _dbSet
+                 .Include(fc => fc.Images)
+                 .FirstOrDefaultAsync(fc => fc.Slug == slug);
+        }
+
         public IQueryable<Combo> GetComboWithFoodsBySlug(string comboSlug)
         {
             var result = _dbSet
                .AsNoTracking()
                .Where(c => c.Slug == comboSlug)
+               .Include(c => c.Images)
                .Include(c => c.ComboDetails!)
-               .ThenInclude(cd => cd.Food)
+               .ThenInclude(cd => cd.Food).ThenInclude(f => f.Images)
                .AsSplitQuery();
             return result;
+        }
+
+
+        public async Task<List<Combo>> GetCombosByFoodIdAsync(int foodId)
+        {
+            return await _context.ComboDetails
+                .Where(cd => cd.FoodId == foodId)
+                .Include(cd => cd.Combo)
+                .Select(cd => cd.Combo)
+                .Distinct()
+                .ToListAsync();
+        }
+
+        public async Task<List<Food>> GetFoodsInComboAsync(int comboId)
+        {
+            return await _context.ComboDetails
+                .Where(cd => cd.ComboId == comboId)
+                .Select(cd => cd.Food)
+                .ToListAsync();
+        }
+
+        public async Task<List<Combo>> GetAllComboAsync()
+        {
+            return await _dbSet.Include(cb => cb.Images).Where(cb => cb.Status).ToListAsync();
         }
     }
 }

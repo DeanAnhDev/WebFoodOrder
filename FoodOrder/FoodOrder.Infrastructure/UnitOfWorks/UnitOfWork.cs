@@ -1,5 +1,6 @@
 ﻿using FoodOrder.Domain.Entities.Foods;
 using FoodOrder.Domain.Entities.Identity;
+using FoodOrder.Domain.Entities.Image;
 using FoodOrder.Domain.Entities.Orders;
 using FoodOrder.Domain.Interfaces;
 using FoodOrder.Infrastructure.Data.Context;
@@ -16,10 +17,11 @@ namespace FoodOrder.Infrastructure.UnitOfWorks
         public IComboDetailRepository ComboDetails { get; }
         public IRepository<AppUser> AppUsers { get; }
         public IRepository<AppRole> AppRoles { get; }
-        public IRepository<CartItem> CartItems { get; }
+        public ICartItemRepository CartItems { get; }
         public IRepository<Order> Orders { get; }
-        public IRepository<Cart> Carts { get; }
+        public ICartRepository Carts { get; }
         public IRepository<OrderDetail> OrderDetails { get; }
+        public IRepository<Images> Images { get; }
 
         public UnitOfWork(FoodOrderDbContext context,
                           IFoodRepository foodRepo,
@@ -28,10 +30,11 @@ namespace FoodOrder.Infrastructure.UnitOfWorks
                           IComboDetailRepository comboDetailRepo,
                           IRepository<AppUser> appUserRepo,
                           IRepository<AppRole> appRoleRepo,
-                          IRepository<Cart> cartRepo,
-                          IRepository<CartItem> cartItemRepo,
+                          ICartRepository cartRepo,
+                          ICartItemRepository cartItemRepo,
                           IRepository<Order> orderRepo,
-                          IRepository<OrderDetail> orderDetailRepo)
+                          IRepository<OrderDetail> orderDetailRepo,
+                          IRepository<Images> orderImageRepo)
         {
             _context = context;
             Foods = foodRepo;
@@ -44,6 +47,7 @@ namespace FoodOrder.Infrastructure.UnitOfWorks
             CartItems = cartItemRepo;
             Orders = orderRepo;
             OrderDetails = orderDetailRepo;
+            Images = orderImageRepo;
         }
 
         public async Task<int> CompleteAsync()

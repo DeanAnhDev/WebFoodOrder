@@ -1,4 +1,4 @@
-﻿using FoodOrder.Application.DTOs.Foods.Combo;
+﻿using FoodOrder.Application.DTOs.Foods.Combo.Queries;
 using FoodOrder.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 

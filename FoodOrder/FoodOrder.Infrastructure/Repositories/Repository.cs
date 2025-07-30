@@ -1,6 +1,7 @@
 ﻿using FoodOrder.Domain.Interfaces;
 using FoodOrder.Infrastructure.Data.Context;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 
 namespace FoodOrder.Infrastructure.Repositories
@@ -14,19 +15,10 @@ namespace FoodOrder.Infrastructure.Repositories
             _context = context;
             _dbSet = context.Set<TEntity>();
         }
-        public async Task<IEnumerable<TEntity>> GetAllAsync()
-        {
-            return await _dbSet.ToListAsync();
-        }
 
-        public async Task<TEntity?> GetByIdAsync(int id)
+        public async Task<TEntity?> GetByIdAsync(dynamic id)
         {
             return await _dbSet.FindAsync(id);
-        }
-
-        public async Task<TEntity?> GetBySlugAsync(string slug)
-        {
-            return await _dbSet.FirstOrDefaultAsync(entity => EF.Property<string>(entity, "Slug") == slug);
         }
 
         public async Task<bool> AddAsync(TEntity entity)
@@ -48,7 +40,7 @@ namespace FoodOrder.Infrastructure.Repositories
         }
 
 
-        public async Task<bool> DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(dynamic id)
         {
             var entity = await GetByIdAsync(id);
             if (entity != null)
@@ -59,5 +51,11 @@ namespace FoodOrder.Infrastructure.Repositories
             }
             return false;
         }
+
+        public async Task<TEntity?> FirstOrDefaultAsync(Expression<Func<TEntity, bool>> predicate)
+        {
+            return await _dbSet.FirstOrDefaultAsync(predicate);
+        }
+
     }
 }

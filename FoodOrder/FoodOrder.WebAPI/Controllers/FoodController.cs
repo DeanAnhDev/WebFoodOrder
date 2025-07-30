@@ -1,6 +1,7 @@
-﻿using FoodOrder.Application.DTOs.Foods.Food;
-using FoodOrder.Application.DTOs.Foods.FoodCategory;
+﻿
+using FoodOrder.Application.DTOs.Foods.Food.Commands;
 using FoodOrder.Application.Interfaces;
+using FoodOrder.Application.Services.Foods.Filter;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FoodOrder.WebAPI.Controllers
@@ -16,24 +17,20 @@ namespace FoodOrder.WebAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllFoods()
+        public async Task<IActionResult> GetAllFoods([FromQuery] PagedQuery query)
         {
             try
             {
-                var foods = await _foodService.GetAllAsync();
+                var result = await _foodService.GetPagedFoodsAsync(query);
 
-                if (foods == null || !foods.Any())
-                {
-                    return NotFound(new { message = "Không tìm thấy món ăn nào." });
-                }
-
-                return Ok(foods);
+                return Ok(result);
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = "Lỗi server!", error = ex.Message });
             }
         }
+
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetFoodById(int id)
@@ -86,7 +83,7 @@ namespace FoodOrder.WebAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateFood([FromBody] FoodDto foodDto)
+        public async Task<IActionResult> CreateFood([FromBody] FoodDtoCreate foodDto)
         {
             try
             {
@@ -111,7 +108,7 @@ namespace FoodOrder.WebAPI.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> UpdateFood([FromBody] FoodDto foodDto)
+        public async Task<IActionResult> UpdateFood([FromBody] FoodDtoUpdate foodDto)
         {
             try
             {

@@ -33,6 +33,22 @@ namespace FoodOrder.Infrastructure.Repositories
                 .FirstOrDefaultAsync();
         }
 
+        public Task<IEnumerable<ComboDetail>> GetAllAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<ComboDetail> GetByIdAsync(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<IEnumerable<ComboDetail>> GetByComboIdAsync(int comboId)
+        {
+            return await _dbSet
+                .Where(cd => cd.ComboId == comboId)
+                .ToListAsync();
+        }
 
     }
 }

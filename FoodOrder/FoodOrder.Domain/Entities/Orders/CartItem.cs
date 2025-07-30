@@ -12,7 +12,5 @@ namespace FoodOrder.Domain.Entities.Orders
         public int? ComboId { get; set; }
         public Combo? Combo { get; set; }
         public int Quantity { get; set; }
-        public decimal UnitPrice { get; set; }
-        public decimal TotalPrice { get; set; }
     }
 }

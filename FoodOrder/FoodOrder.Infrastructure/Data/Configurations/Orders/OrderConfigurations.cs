@@ -15,10 +15,16 @@ namespace FoodOrder.Infrastructure.Data.Configurations.Orders
                 .WithOne(o => o.Order)
                 .HasForeignKey(p => p.OrderId);
 
-            builder.Property(p => p.OrderDate)
+            builder.Property(p => p.CreatedAt)
                 .IsRequired();
 
             builder.Property(p => p.TotalAmount)
+                .HasPrecision(18, 2);
+
+            builder.Property(p => p.SubtotalAmount)
+                .HasPrecision(18, 2);
+
+            builder.Property(p => p.VoucherDiscountAmount)
                 .HasPrecision(18, 2);
 
             builder.Property(p => p.Status)

@@ -7,6 +7,7 @@ using FoodOrder.Infrastructure.Data.Context;
 using FoodOrder.Infrastructure.Identity;
 using FoodOrder.Infrastructure.Repositories;
 using FoodOrder.Infrastructure.Services;
+using FoodOrder.Infrastructure.Services.CloudinaryServices;
 using FoodOrder.Infrastructure.Services.VnPayServices;
 using FoodOrder.Infrastructure.UnitOfWorks;
 using Microsoft.EntityFrameworkCore;
@@ -38,11 +39,15 @@ namespace FoodOrder.Infrastructure.Extensions
 
             services.AddScoped<IComboRepository, ComboRepository>();
 
+            services.AddScoped<ICartItemRepository, CartItemRepository>();
+
             services.AddScoped<ISlugRepository, SlugRepository>();
 
             services.AddScoped<IEmailService, EmailService>();
 
             services.AddScoped<IIdentityService, IdentityService>();
+
+            services.AddScoped<ICartRepository, CartRepository>();
 
             services.AddScoped<IRedisService, RedisService>();
 
@@ -52,6 +57,15 @@ namespace FoodOrder.Infrastructure.Extensions
 
             services.AddScoped<IRedisService, RedisService>();
 
+
+            var cloudinarySetting = configuration.GetSection("Cloudinary").Get<CloudinarySetting>();
+            if (cloudinarySetting == null)
+            {
+                throw new InvalidOperationException("Cloudinary configuration section is missing or invalid.");
+            }
+            services.AddSingleton(cloudinarySetting);
+
+            services.AddScoped<ICloudinaryService, CloudinaryService>();
             return services;
         }
     }

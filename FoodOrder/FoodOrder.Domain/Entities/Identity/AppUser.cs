@@ -9,5 +9,6 @@ namespace FoodOrder.Domain.Entities.Identity
         public string? Location { get; set; }
         public ICollection<Order>? Orders { get; set; }
         public Cart? Cart { get; set; }
+        public ICollection<Localtion>? Localtions { get; set; }
     }
 }

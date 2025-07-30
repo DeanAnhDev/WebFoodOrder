@@ -1,4 +1,5 @@
 ﻿using FoodOrder.Application.DTOs.Foods.FoodCategory;
+using FoodOrder.Application.DTOs.Foods.FoodCategory.Commands;
 using FoodOrder.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,11 +22,6 @@ namespace FoodOrder.WebAPI.Controllers
             {
                 var foodCategories = await _foodCategoryService.GetAllAsync();
 
-                if (foodCategories == null || !foodCategories.Any())
-                {
-                    return NotFound(new { message = "Không tìm thấy danh mục nào." });
-                }
-
                 return Ok(foodCategories);
             }
             catch (Exception ex)
@@ -40,11 +36,6 @@ namespace FoodOrder.WebAPI.Controllers
             try
             {
                 var foodCategoriesWithFoods = await _foodCategoryService.GetFoodCategoriesWithFoodsAsync();
-
-                if (foodCategoriesWithFoods == null || !foodCategoriesWithFoods.Any())
-                {
-                    return NotFound(new { message = "Không tìm thấy danh mục nào." });
-                }
 
                 return Ok(foodCategoriesWithFoods);
             }
@@ -81,7 +72,7 @@ namespace FoodOrder.WebAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateFoodCategory([FromBody] FoodCategoryDto categoryDto)
+        public async Task<IActionResult> CreateFoodCategory([FromBody] FoodCategoryDtoCreate categoryDto)
         {
             try
             {
@@ -89,7 +80,6 @@ namespace FoodOrder.WebAPI.Controllers
                 {
                     return BadRequest(ModelState);
                 }
-
                 bool isCreated = await _foodCategoryService.AddAsync(categoryDto);
 
                 if (!isCreated)
@@ -106,7 +96,7 @@ namespace FoodOrder.WebAPI.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> UpdateFoodCategory([FromBody] FoodCategoryDto categoryDto)
+        public async Task<IActionResult> UpdateFoodCategory([FromBody] FoodCategoryDtoUpdate categoryDto)
         {
             try
             {
@@ -158,7 +148,7 @@ namespace FoodOrder.WebAPI.Controllers
             }
         }
 
-        [HttpGet("foods-by-category/{slug}")]
+        [HttpGet("slug/{slug}")]
         public async Task<IActionResult> GetFoodsByCategorySlug(string slug)
         {
             try
@@ -171,26 +161,6 @@ namespace FoodOrder.WebAPI.Controllers
                 }
 
                 return Ok(foodsByCategorySlug);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Lỗi server!", error = ex.Message });
-            }
-        }
-
-        [HttpGet("combos-by-category/{slug}")]
-        public async Task<IActionResult> GetCombosByCategorySlug(string slug)
-        {
-            try
-            {
-                var combosByCategorySlug = await _foodCategoryService.GetCombosByCategorySlugAsync(slug);
-
-                if (combosByCategorySlug == null)
-                {
-                    return NotFound(new { message = "Không tìm thấy combo nào." });
-                }
-
-                return Ok(combosByCategorySlug);
             }
             catch (Exception ex)
             {
