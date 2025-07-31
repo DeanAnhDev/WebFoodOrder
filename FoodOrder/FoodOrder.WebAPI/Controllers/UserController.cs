@@ -86,7 +86,7 @@ namespace FoodOrder.WebAPI.Controllers
                     return BadRequest(new { message = "Tên mới không được để trống." });
                 }
 
-                var success = await _userService.UpdateAsync(id, updateUserDto.FullName);
+                var success = await _userService.UpdateAsync(id, updateUserDto);
                 if (!success)
                 {
                     return NotFound(new { message = "Không tìm thấy người dùng." });
@@ -100,6 +100,33 @@ namespace FoodOrder.WebAPI.Controllers
             }
         }
 
+        [HttpPut("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] UserPasswordUpdateDto dto)
+        {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdStr, out var userId))
+                return Unauthorized(new { message = "User ID không hợp lệ" });
 
+            try
+            {
+                await _userService.ChangePasswordAsync(userId, dto);
+                return Ok(new { message = "Đổi mật khẩu thành công" });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch
+            {
+                return StatusCode(500, new { message = "Lỗi server!" });
+            }
+        }
     }
+
+
 }
+
