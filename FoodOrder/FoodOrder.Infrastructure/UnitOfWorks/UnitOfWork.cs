@@ -1,4 +1,4 @@
-﻿using FoodOrder.Domain.Entities.Foods;
+﻿
 using FoodOrder.Domain.Entities.Identity;
 using FoodOrder.Domain.Entities.Image;
 using FoodOrder.Domain.Entities.Orders;
@@ -22,6 +22,7 @@ namespace FoodOrder.Infrastructure.UnitOfWorks
         public ICartRepository Carts { get; }
         public IRepository<OrderDetail> OrderDetails { get; }
         public IRepository<Images> Images { get; }
+        public ILocationRepository Locations { get; }
 
         public UnitOfWork(FoodOrderDbContext context,
                           IFoodRepository foodRepo,
@@ -34,7 +35,8 @@ namespace FoodOrder.Infrastructure.UnitOfWorks
                           ICartItemRepository cartItemRepo,
                           IRepository<Order> orderRepo,
                           IRepository<OrderDetail> orderDetailRepo,
-                          IRepository<Images> orderImageRepo)
+                          IRepository<Images> orderImageRepo,
+                          ILocationRepository locations)
         {
             _context = context;
             Foods = foodRepo;
@@ -48,6 +50,7 @@ namespace FoodOrder.Infrastructure.UnitOfWorks
             Orders = orderRepo;
             OrderDetails = orderDetailRepo;
             Images = orderImageRepo;
+            Locations = locations;
         }
 
         public async Task<int> CompleteAsync()

@@ -14,8 +14,4 @@
     <ProjectReference Include="..\FoodOrder.Domain\FoodOrder.Domain.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="DTOs\Identity\Location\" />
-  </ItemGroup>
-
 </Project>

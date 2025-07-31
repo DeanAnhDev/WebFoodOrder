@@ -32,6 +32,8 @@ namespace FoodOrder.Application.Extensions
             services.AddScoped<ICartService, CartService>();
 
             services.AddScoped<IUserService, UserServices>();
+
+            services.AddScoped<ILocationService, LocationServices>();
             return services;
         }
     }

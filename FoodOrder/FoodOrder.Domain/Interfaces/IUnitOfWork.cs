@@ -1,4 +1,4 @@
-﻿using FoodOrder.Domain.Entities.Foods;
+﻿
 using FoodOrder.Domain.Entities.Identity;
 using FoodOrder.Domain.Entities.Image;
 using FoodOrder.Domain.Entities.Orders;
@@ -19,6 +19,7 @@ namespace FoodOrder.Domain.Interfaces
         IRepository<Order> Orders { get; }
         IRepository<OrderDetail> OrderDetails { get; }
         IRepository<Images> Images { get; }
+        ILocationRepository Locations { get; }
         Task<int> CompleteAsync();
     }
 }

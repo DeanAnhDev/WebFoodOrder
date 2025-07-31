@@ -57,6 +57,9 @@ namespace FoodOrder.Infrastructure.Extensions
 
             services.AddScoped<IJwtTokenServices, JwtTokenServices>();
 
+
+            services.AddScoped<ILocationRepository, LocationRepository>();
+
             services.AddScoped<IRedisService, RedisService>();
 
 
