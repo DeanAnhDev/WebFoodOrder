@@ -1,5 +1,6 @@
 ﻿using FoodOrder.Domain.Entities.Foods;
 using FoodOrder.Domain.Entities.Identity;
+using FoodOrder.Domain.Entities.Image;
 using FoodOrder.Domain.Entities.Orders;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -22,6 +23,8 @@ namespace FoodOrder.Infrastructure.Data.Context
         public DbSet<OrderDetail> OrderDetails { get; set; }
         public DbSet<Promotion> Promotions { get; set; }
         public DbSet<Voucher> Vouchers { get; set; }
+        public DbSet<Images> Images { get; set; }
+        public DbSet<Location> Locations { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
