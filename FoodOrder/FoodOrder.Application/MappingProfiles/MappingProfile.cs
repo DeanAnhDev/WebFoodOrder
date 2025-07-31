@@ -52,6 +52,7 @@ namespace FoodOrder.Application.MappingProfiles
 
             //Mapping from AppUser to UserDto
             CreateMap<AppUser, UserDto>().ReverseMap();
+            CreateMap<AppUser, UpdateUserDto>().ReverseMap();
         }
     }
 }

@@ -5,5 +5,6 @@ namespace FoodOrder.Application.Interfaces
     public interface IUserService
     {
         Task<UserDto> GetByIdAsync(int id);
+        Task<bool> UpdateAsync(int id, string newName);
     }
 }

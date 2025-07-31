@@ -2,7 +2,7 @@
 
 namespace FoodOrder.Domain.Interfaces
 {
-    public interface IUserRepository
+    public interface IUserRepository : IRepository<AppUser>
     {
         Task<AppUser?> GetByIdAsync(int id);
     }
