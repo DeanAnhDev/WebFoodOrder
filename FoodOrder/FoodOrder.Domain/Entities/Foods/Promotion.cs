@@ -9,6 +9,9 @@ namespace FoodOrder.Domain.Entities.Foods
         public float? DiscountPercent { get; set; }
         public decimal? DiscountAmount { get; set; }
 
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
+
         public bool IsActive { get; set; } = true;
 
         public int? FoodId { get; set; }

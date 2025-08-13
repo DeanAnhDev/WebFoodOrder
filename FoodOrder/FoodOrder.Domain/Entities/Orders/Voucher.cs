@@ -10,6 +10,10 @@ namespace FoodOrder.Domain.Entities.Orders
 
         public float? DiscountPercent { get; set; }   // Giảm theo %
         public decimal? DiscountAmount { get; set; }    // Giảm cố định
+        public decimal? MaxDiscountAmount { get; set; }
+
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
 
         public bool IsActive { get; set; } = true;
         public int? Quantity { get; set; }              // Số lượt dùng còn lại (nếu có giới hạn)
