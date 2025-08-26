@@ -23,6 +23,7 @@ namespace FoodOrder.Infrastructure.UnitOfWorks
         public IRepository<OrderDetail> OrderDetails { get; }
         public IRepository<Images> Images { get; }
         public ILocationRepository Locations { get; }
+        public IVoucherRepository Vouchers { get; }
 
         public UnitOfWork(FoodOrderDbContext context,
                           IFoodRepository foodRepo,
@@ -36,7 +37,8 @@ namespace FoodOrder.Infrastructure.UnitOfWorks
                           IRepository<Order> orderRepo,
                           IRepository<OrderDetail> orderDetailRepo,
                           IRepository<Images> orderImageRepo,
-                          ILocationRepository locations)
+                          ILocationRepository locations,
+                          IVoucherRepository vouchers)
         {
             _context = context;
             Foods = foodRepo;
@@ -51,6 +53,7 @@ namespace FoodOrder.Infrastructure.UnitOfWorks
             OrderDetails = orderDetailRepo;
             Images = orderImageRepo;
             Locations = locations;
+            Vouchers = vouchers;
         }
 
         public async Task<int> CompleteAsync()

@@ -1,12 +1,9 @@
 ﻿using FoodOrder.Application.Common.Interfaces;
 using FoodOrder.Application.DTOs.Authentication;
 using FoodOrder.Application.Services.Auth;
-using FoodOrder.Infrastructure.Identity;
-using FoodOrder.Infrastructure.Services.Models;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
+
 
 
 namespace FoodOrder.WebAPI.Controllers

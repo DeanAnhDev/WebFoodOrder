@@ -1,10 +1,7 @@
 ﻿using AutoMapper;
-using FoodOrder.Application.DTOs.Foods.FoodCategory.Queries;
 using FoodOrder.Application.DTOs.Identity.Location;
 using FoodOrder.Application.Interfaces;
-using FoodOrder.Domain.Entities.Foods;
 using FoodOrder.Domain.Entities.Identity;
-using FoodOrder.Domain.Entities.Image;
 using FoodOrder.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
 

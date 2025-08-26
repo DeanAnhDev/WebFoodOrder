@@ -1,11 +1,11 @@
-﻿using FoodOrder.Domain.Entities.Orders;
+﻿
+
+using FoodOrder.Domain.Entities.Orders;
 
 namespace FoodOrder.Application.DTOs.Voucher
 {
-    public class VoucherDto
+    public class VoucherCreateDto
     {
-        public int VoucherId { get; set; }
-
         public string Code { get; set; } = string.Empty;
         public decimal DiscountAmount { get; set; }
         public VoucherType Type { get; set; }

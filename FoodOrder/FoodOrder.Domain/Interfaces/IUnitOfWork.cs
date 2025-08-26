@@ -20,6 +20,7 @@ namespace FoodOrder.Domain.Interfaces
         IRepository<OrderDetail> OrderDetails { get; }
         IRepository<Images> Images { get; }
         ILocationRepository Locations { get; }
+        IVoucherRepository Vouchers { get; }
         Task<int> CompleteAsync();
     }
 }

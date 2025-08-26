@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using FoodOrder.Domain.Entities.Foods;
+using FoodOrder.Domain.Entities.Orders;
 
 namespace FoodOrder.Domain.Interfaces
 {
-    internal class IVoucherRepository
+    public interface IVoucherRepository : IRepository<Voucher>
     {
+        IQueryable<Voucher> GetAllVouchers();
+        Task<Voucher?> GetByIdAsync(int id);
+
     }
 }

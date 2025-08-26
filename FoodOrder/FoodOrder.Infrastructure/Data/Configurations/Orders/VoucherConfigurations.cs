@@ -18,7 +18,10 @@ namespace FoodOrder.Infrastructure.Data.Configurations.Orders
             builder.Property(p => p.DiscountAmount)
                    .HasPrecision(18, 2);
 
-            builder.Property(p => p.MinOrderAmount)
+            builder.Property(p => p.MaxDiscountPrice)
+                    .HasPrecision(18, 2);
+
+            builder.Property(p => p.MinOrderPrice)
                    .HasPrecision(18, 2);
 
             builder.Property(p => p.Quantity)

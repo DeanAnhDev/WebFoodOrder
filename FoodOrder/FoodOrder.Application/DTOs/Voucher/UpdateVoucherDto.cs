@@ -1,8 +1,9 @@
-﻿using FoodOrder.Domain.Entities.Orders;
+﻿
+using FoodOrder.Domain.Entities.Orders;
 
 namespace FoodOrder.Application.DTOs.Voucher
 {
-    public class VoucherDto
+    public class UpdateVoucherDto
     {
         public int VoucherId { get; set; }
 

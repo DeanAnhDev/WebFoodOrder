@@ -18,7 +18,6 @@ namespace FoodOrder.WebAPI.Controllers
             _locationService = locationService;
         }
 
-        // GET: api/locations/user/5
         [HttpGet("userId")]
         public async Task<IActionResult> GetAllByUserId()
         {
@@ -30,7 +29,6 @@ namespace FoodOrder.WebAPI.Controllers
             return Ok(locations);
         }
 
-        // GET: api/locations/5
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -40,7 +38,6 @@ namespace FoodOrder.WebAPI.Controllers
             return Ok(location);
         }
 
-        // POST: api/locations
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateLocationDto dto)
         {
@@ -55,7 +52,6 @@ namespace FoodOrder.WebAPI.Controllers
             return Ok(new { message = "Thêm địa chỉ thành công" });
         }
 
-        // PUT: api/locations
         [HttpPut]
         public async Task<IActionResult> Update([FromBody] UpdateLocationDto dto)
         {
@@ -70,7 +66,6 @@ namespace FoodOrder.WebAPI.Controllers
             return Ok(new { message = "Cập nhật địa chỉ thành công" });
         }
 
-        // DELETE: api/locations/5
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
