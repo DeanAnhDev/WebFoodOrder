@@ -91,13 +91,35 @@ namespace FoodOrder.Application.Services.Foods
 
         public async Task<bool> AddAsync(FoodDtoCreate foodDto)
         {
+            // ✅ Validate cơ bản
+            if (string.IsNullOrWhiteSpace(foodDto.FoodName))
+                throw new ArgumentException("Tên món ăn không được để trống");
+
+            if (foodDto.FoodName.Length > 200)
+                throw new ArgumentException("Tên món ăn tối đa 200 ký tự");
+
+            if (!string.IsNullOrWhiteSpace(foodDto.Description) && foodDto.Description.Length > 500)
+                throw new ArgumentException("Mô tả tối đa 500 ký tự");
+
+            if (foodDto.Price <= 0)
+                throw new ArgumentException("Giá món ăn phải lớn hơn 0");
+
+            if (foodDto.Quantity < 0)
+                throw new ArgumentException("Số lượng không được âm");
+
             if (foodDto.Images == null || string.IsNullOrEmpty(foodDto.Images.Id))
-            {
-                return false;
-            }
+                throw new ArgumentException("Món ăn cần có ảnh");
+
+            // ✅ Validate business: Category phải tồn tại
             var existingCategory = await _unitOfWork.FoodCategories.GetByIdAsync(foodDto.FoodCategoryId);
             if (existingCategory == null)
-                throw new ArgumentException("Category not found");
+                throw new ArgumentException("Danh mục không tồn tại");
+
+            // ✅ Check tên món ăn trùng
+            var existFood = await _unitOfWork.Foods
+                .FirstOrDefaultAsync(f => f.FoodName == foodDto.FoodName);
+            if (existFood != null)
+                throw new InvalidOperationException("Tên món ăn đã tồn tại");
 
             var food = _mapper.Map<Food>(foodDto);
             if (food.FoodName != null)
@@ -114,39 +136,62 @@ namespace FoodOrder.Application.Services.Foods
         {
             try
             {
+                // ✅ Kiểm tra món ăn tồn tại
                 var existing = await _unitOfWork.Foods.GetByIdAsync(dto.FoodId);
                 if (existing == null)
-                    throw new ArgumentException("Food not found");
+                    throw new ArgumentException("Không tìm thấy món ăn");
 
-                // Cập nhật tên + slug
+                // ✅ Validate tên
                 if (!string.IsNullOrWhiteSpace(dto.FoodName))
                 {
+                    if (dto.FoodName.Length > 200)
+                        throw new ArgumentException("Tên món ăn không được vượt quá 200 ký tự");
+
+                    var existFood = await _unitOfWork.Foods.FirstOrDefaultAsync(f => f.FoodName == dto.FoodName);
+                    if (existFood != null && existFood.FoodId != dto.FoodId)
+                        throw new InvalidOperationException("Tên món ăn đã tồn tại");
+
                     existing.FoodName = dto.FoodName;
                     existing.Slug = await _slugService.GenerateUniqueSlug<Food>(dto.FoodName);
                 }
 
-                // Cập nhật các thuộc tính khác
-                existing.Description = dto.Description;
+                // ✅ Validate giá
+                if (dto.Price <= 0)
+                    throw new ArgumentException("Giá phải lớn hơn 0");
                 existing.Price = dto.Price;
-                existing.Status = dto.Status;
-                existing.FoodCategoryId = dto.FoodCategoryId;
+
+                // ✅ Validate số lượng
+                if (dto.Quantity < 0)
+                    throw new ArgumentException("Số lượng không được nhỏ hơn 0");
                 existing.Quantity = dto.Quantity;
 
-                // Quản lý ảnh
-                var dbImage = await _unitOfWork.Images
-                    .FirstOrDefaultAsync(i => i.FoodId == dto.FoodId); 
+                // ✅ Validate danh mục
+                var category = await _unitOfWork.FoodCategories.GetByIdAsync(dto.FoodCategoryId);
+                if (category == null)
+                    throw new ArgumentException("Danh mục món ăn không tồn tại");
+                existing.FoodCategoryId = dto.FoodCategoryId;
 
+                // ✅ Trạng thái
+                existing.Status = dto.Status;
+
+                // ✅ Mô tả
+                if (!string.IsNullOrEmpty(dto.Description) && dto.Description.Length > 500)
+                    throw new ArgumentException("Mô tả không được vượt quá 500 ký tự");
+                existing.Description = dto.Description;
+
+                // ✅ Quản lý ảnh
+                var dbImage = await _unitOfWork.Images.FirstOrDefaultAsync(i => i.FoodId == dto.FoodId);
                 var newImage = dto.Images;
 
                 if (newImage != null)
                 {
+                    if (string.IsNullOrEmpty(newImage.Id))
+                        throw new ArgumentException("Ảnh phải có Id hợp lệ");
+
                     if (dbImage == null || dbImage.Id != newImage.Id)
                     {
                         if (dbImage != null)
-                        {
-                            var imageId = dbImage.Id;
-                            await _unitOfWork.Images.DeleteAsync(imageId!);
-                        }
+                            await _unitOfWork.Images.DeleteAsync(dbImage.Id!);
 
                         var imageEntity = new Images
                         {
@@ -154,7 +199,7 @@ namespace FoodOrder.Application.Services.Foods
                             Url = newImage.Url,
                             ThumbnailUrl = newImage.ThumbnailUrl,
                             Name = newImage.Name,
-                            FoodId = dto.FoodId // Gán quan hệ ảnh → món ăn
+                            FoodId = dto.FoodId
                         };
 
                         await _unitOfWork.Images.AddAsync(imageEntity);
@@ -167,16 +212,20 @@ namespace FoodOrder.Application.Services.Foods
                     }
                 }
 
+                // ✅ Cập nhật database
                 var updated = await _unitOfWork.Foods.UpdateAsync(existing);
                 if (!updated) return false;
+
                 await _comboService.UpdateCombosByFoodIdAsync(dto.FoodId);
                 return await _unitOfWork.CompleteAsync() > 0;
             }
             catch (DbUpdateException dbEx)
             {
-                throw new Exception($"EF Save Error: {dbEx.InnerException?.Message ?? dbEx.Message}");
+                throw new Exception($"Lỗi lưu dữ liệu EF: {dbEx.InnerException?.Message ?? dbEx.Message}");
             }
         }
+
+
 
 
         public async Task<bool> DeleteAsync(int id)
