@@ -81,7 +81,7 @@ namespace FoodOrder.Application.Services.Foods
 
             // validate business rule: không trùng tên
             var existCategory = await _unitOfWork.FoodCategories
-            .FirstOrDefaultAsync(c => c.CategoryName == foodCategoryDto.CategoryName);
+            .FirstOrDefaultAsync(c => c.CategoryName == foodCategoryDto.CategoryName.Trim());
             if (existCategory != null)
                 throw new InvalidOperationException("Tên danh mục đã tồn tại");
 
@@ -124,7 +124,7 @@ namespace FoodOrder.Application.Services.Foods
                     throw new ArgumentException("Danh mục cần có ảnh");
 
                 var existCategory = await _unitOfWork.FoodCategories
-                    .FirstOrDefaultAsync(c => c.CategoryName == dto.CategoryName);
+                    .FirstOrDefaultAsync(c => c.CategoryName == dto.CategoryName.Trim());
                 if (existCategory != null && existCategory.FoodCategoryId != dto.FoodCategoryId)
                     throw new InvalidOperationException("Tên danh mục đã tồn tại");
 

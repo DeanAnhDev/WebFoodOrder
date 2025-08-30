@@ -117,7 +117,7 @@ namespace FoodOrder.Application.Services.Foods
 
             // ✅ Check tên món ăn trùng
             var existFood = await _unitOfWork.Foods
-                .FirstOrDefaultAsync(f => f.FoodName == foodDto.FoodName);
+                .FirstOrDefaultAsync(f => f.FoodName == foodDto.FoodName.Trim());
             if (existFood != null)
                 throw new InvalidOperationException("Tên món ăn đã tồn tại");
 
@@ -147,7 +147,7 @@ namespace FoodOrder.Application.Services.Foods
                     if (dto.FoodName.Length > 200)
                         throw new ArgumentException("Tên món ăn không được vượt quá 200 ký tự");
 
-                    var existFood = await _unitOfWork.Foods.FirstOrDefaultAsync(f => f.FoodName == dto.FoodName);
+                    var existFood = await _unitOfWork.Foods.FirstOrDefaultAsync(f => f.FoodName == dto.FoodName.Trim());
                     if (existFood != null && existFood.FoodId != dto.FoodId)
                         throw new InvalidOperationException("Tên món ăn đã tồn tại");
 

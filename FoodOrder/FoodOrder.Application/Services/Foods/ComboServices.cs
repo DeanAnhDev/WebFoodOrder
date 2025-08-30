@@ -135,21 +135,36 @@ namespace FoodOrder.Application.Services.Foods
 
         public async Task<bool> AddAsync(ComboDtoCreate dto)
         {
-            // 1. VALIDATE DỮ LIỆU
             if (string.IsNullOrWhiteSpace(dto.ComboName))
                 throw new ArgumentException("Tên combo không được để trống.");
+            if (dto.ComboName.Length > 200)
+                throw new ArgumentException("Tên combo không được vượt quá 200 ký tự.");
 
-            if (dto.Price < 0)
+            if (dto.Price <= 0)
                 throw new ArgumentException("Giá combo phải lớn hơn 0.");
+
+            if (dto.Quantity < 0)
+                throw new ArgumentException("Số lượng combo không được nhỏ hơn 0.");
 
             if (dto.FoodCategoryId <= 0)
                 throw new ArgumentException("Danh mục món ăn không hợp lệ.");
 
+            if (!string.IsNullOrWhiteSpace(dto.Description) && dto.Description.Length > 500)
+                throw new ArgumentException("Mô tả tối đa 500 ký tự");
+
             if (dto.Foods == null || !dto.Foods.Any())
                 throw new ArgumentException("Phải chọn ít nhất một món ăn cho combo.");
 
-            if (dto.Foods.Any(f => f.FoodId <= 0 || f.Quantity <= 0))
-                throw new ArgumentException("Mỗi món ăn phải có ID hợp lệ và số lượng > 0.");
+            if (dto.Foods.Any(f => f.FoodId <= 0))
+                throw new ArgumentException("Mỗi món ăn trong combo phải có ID hợp lệ.");
+
+            if (dto.Foods.Any(f => f.Quantity <= 0))
+                throw new ArgumentException("Số lượng của mỗi món ăn trong combo phải lớn hơn 0.");
+
+            var existCombo = await _unitOfWork.Combos
+              .FirstOrDefaultAsync(f => f.ComboName == dto.ComboName.Trim());
+            if (existCombo != null)
+                throw new InvalidOperationException("Tên combo đã tồn tại");
 
             // Kiểm tra danh mục có tồn tại không
             var category = await _unitOfWork.FoodCategories.GetByIdAsync(dto.FoodCategoryId);
@@ -220,17 +235,44 @@ namespace FoodOrder.Application.Services.Foods
             try
             {
                 // 1. VALIDATE cơ bản
-                if (dto.ComboId <= 0) throw new ArgumentException("ComboId không hợp lệ.");
-                if (string.IsNullOrWhiteSpace(dto.ComboName)) throw new ArgumentException("Tên combo không được để trống.");
-                if (dto.Price < 0) throw new ArgumentException("Giá combo phải lớn hơn 0.");
-                if (dto.FoodCategoryId <= 0) throw new ArgumentException("Danh mục món ăn không hợp lệ.");
-                if (dto.Foods == null || !dto.Foods.Any()) throw new ArgumentException("Combo cần ít nhất một món ăn.");
+                if (dto.ComboId <= 0)
+                    throw new ArgumentException("ComboId không hợp lệ.");
+
+                if (string.IsNullOrWhiteSpace(dto.ComboName))
+                    throw new ArgumentException("Tên combo không được để trống.");
+
+                if (dto.Price <= 0)
+                    throw new ArgumentException("Giá combo phải lớn hơn 0.");
+
+                if (dto.FoodCategoryId <= 0)
+                    throw new ArgumentException("Danh mục món ăn không hợp lệ.");
+
+                if (dto.Foods == null || !dto.Foods.Any())
+                    throw new ArgumentException("Combo cần ít nhất một món ăn.");
+
+                if (dto.Foods.Any(f => f.FoodId <= 0 || f.Quantity <= 0))
+                    throw new ArgumentException("Mỗi món ăn phải có ID hợp lệ và số lượng > 0.");
+
+                // 2. Kiểm tra trùng tên combo
+                var existCombo = await _unitOfWork.Combos.FirstOrDefaultAsync(f => f.ComboName == dto.ComboName.Trim());
+                if (existCombo != null && existCombo.ComboId != dto.ComboId)
+                    throw new InvalidOperationException("Tên combo đã tồn tại");
+
+                // check trùng món ăn
+                if (dto.Foods.GroupBy(f => f.FoodId).Any(g => g.Count() > 1))
+                    throw new ArgumentException("Combo có chứa món ăn bị trùng lặp.");
 
                 // 2. Tìm combo hiện tại
                 var combo = await _unitOfWork.Combos.GetByIdAsync(dto.ComboId);
-                if (combo == null) throw new ArgumentException("Combo không tồn tại.");
+                if (combo == null)
+                    throw new ArgumentException("Combo không tồn tại.");
 
-                // 3. Cập nhật thông tin cơ bản
+                // 3. Kiểm tra danh mục tồn tại
+                var category = await _unitOfWork.FoodCategories.GetByIdAsync(dto.FoodCategoryId);
+                if (category == null)
+                    throw new ArgumentException("Danh mục không tồn tại.");
+
+                // 4. Cập nhật thông tin cơ bản
                 combo.ComboName = dto.ComboName;
                 combo.Slug = await _slugService.GenerateUniqueSlug<Combo>(dto.ComboName!);
                 combo.Description = dto.Description;
@@ -239,9 +281,12 @@ namespace FoodOrder.Application.Services.Foods
                 combo.Status = dto.Status;
                 combo.Quantity = dto.Quantity;
 
-                // 4. Cập nhật ảnh
+                // 5. Cập nhật ảnh
                 if (dto.Images != null)
                 {
+                    if (string.IsNullOrWhiteSpace(dto.Images.Id) || string.IsNullOrWhiteSpace(dto.Images.Url))
+                        throw new ArgumentException("Ảnh combo không hợp lệ.");
+
                     if (combo.Images == null || combo.Images.Id != dto.Images.Id)
                     {
                         if (combo.Images != null)
@@ -257,19 +302,19 @@ namespace FoodOrder.Application.Services.Foods
                     }
                 }
 
-                // 5. Xoá combo detail cũ
-                var oldDetails = await _unitOfWork.ComboDetails
-                    .GetByComboIdAsync(dto.ComboId);
+                // 6. Xoá combo detail cũ
+                var oldDetails = await _unitOfWork.ComboDetails.GetByComboIdAsync(dto.ComboId);
                 foreach (var detail in oldDetails)
                 {
                     await _unitOfWork.ComboDetails.DeleteAsync(detail.ComboId, detail.FoodId);
                 }
 
-                // 6. Thêm lại combo detail mới
+                // 7. Thêm combo detail mới
                 foreach (var food in dto.Foods)
                 {
                     var exists = await _unitOfWork.Foods.GetByIdAsync(food.FoodId);
-                    if (exists == null) throw new ArgumentException($"Món ăn ID {food.FoodId} không tồn tại.");
+                    if (exists == null)
+                        throw new ArgumentException($"Món ăn ID {food.FoodId} không tồn tại.");
 
                     var comboDetail = new ComboDetail
                     {
@@ -281,7 +326,7 @@ namespace FoodOrder.Application.Services.Foods
                     await _unitOfWork.ComboDetails.AddAsync(comboDetail);
                 }
 
-                // 7. Cập nhật combo và lưu
+                // 8. Cập nhật combo và lưu
                 var updated = await _unitOfWork.Combos.UpdateAsync(combo);
                 if (!updated) return false;
 
@@ -289,9 +334,10 @@ namespace FoodOrder.Application.Services.Foods
             }
             catch (DbUpdateException dbEx)
             {
-                throw new Exception($"EF Save Error: {dbEx.InnerException?.Message ?? dbEx.Message}");
+                throw new Exception($"Lỗi khi lưu EF: {dbEx.InnerException?.Message ?? dbEx.Message}");
             }
-}
+        }
+
 
         public async Task<bool> DeleteAsync(int id)
         {
