@@ -62,11 +62,6 @@ namespace FoodOrder.WebAPI.Controllers
         {
             try
             {
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState);
-                }
-
                 bool isCreated = await _voucherServices.AddAsync(voucherDto);
 
                 if (!isCreated)
@@ -87,11 +82,6 @@ namespace FoodOrder.WebAPI.Controllers
         {
             try
             {
-
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState);
-                }
 
                 bool isUpdated = await _voucherServices.UpdateAsync(voucherDto);
 

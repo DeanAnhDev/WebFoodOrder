@@ -21,6 +21,41 @@ namespace FoodOrder.Application.Services.Orders
 
         public async Task<bool> AddAsync(VoucherCreateDto entity)
         {
+            var existVoucher = await _unitOfWork.Vouchers
+             .FirstOrDefaultAsync(vc => vc.Code == entity.Code.Trim());
+            if (existVoucher != null)
+                throw new InvalidOperationException("Mã voucher đã tồn tại");
+
+            if (string.IsNullOrWhiteSpace(entity.Code))
+                throw new ArgumentException("Mã voucher không được để trống");
+
+            if (entity.Quantity <= 0)
+                throw new ArgumentException("Số lượng phải > 0");
+
+            if (entity.DiscountAmount < 0)
+                throw new ArgumentException("Giá trị giảm không được < 0");
+
+            if(entity.Type == VoucherType.Percentage)
+            {
+                if (entity.DiscountAmount > 100 || entity.DiscountAmount <0)
+                    throw new ArgumentException("Giá trị giảm từ 0% đến 100%");
+            }
+
+            if (entity.MinOrderPrice < 0)
+                throw new ArgumentException("Giá trị đơn tối thiểu không được < 0");
+
+            if (entity.MaxDiscountPrice < 0)
+                throw new ArgumentException("Giá trị giảm tối đa không được < 0");
+
+            if (entity.StartDate < DateTime.UtcNow)
+                throw new ArgumentException("Ngày bắt đầu phải lớn hơn hoặc bằng ngày hiện tại");
+
+            if (entity.StartDate >= entity.EndDate)
+                throw new ArgumentException("Ngày bắt đầu phải nhỏ hơn ngày kết thúc");
+
+            if (entity.EndDate < DateTime.UtcNow)
+                throw new ArgumentException("Ngày kết thúc phải lớn hơn hoặc bằng ngày hiện tại");
+
             var voucher = _mapper.Map<Voucher>(entity);
             var result = await _unitOfWork.Vouchers.AddAsync(voucher);
             if (!result) return false;
@@ -111,6 +146,42 @@ namespace FoodOrder.Application.Services.Orders
             var existing = await _unitOfWork.Vouchers.GetByIdAsync(entity.VoucherId);
             if (existing == null)
                 throw new ArgumentException("Không tìm thấy voucher nào");
+
+            var existVoucher = await _unitOfWork.Vouchers.FirstOrDefaultAsync(vc => vc.Code == entity.Code.Trim());
+            if (existVoucher != null && existVoucher.VoucherId != entity.VoucherId)
+                throw new InvalidOperationException("Mã voucher đã tồn tại");
+
+            if (string.IsNullOrWhiteSpace(entity.Code))
+                throw new ArgumentException("Mã voucher không được để trống");
+
+            if (entity.Quantity <= 0)
+                throw new ArgumentException("Số lượng phải > 0");
+
+            if (entity.DiscountAmount < 0)
+                throw new ArgumentException("Giá trị giảm không được < 0");
+
+            if (entity.Type == VoucherType.Percentage)
+            {
+                if (entity.DiscountAmount > 100 || entity.DiscountAmount < 0)
+                    throw new ArgumentException("Giá trị giảm từ 0% đến 100%");
+            }
+
+            if (entity.MinOrderPrice < 0)
+                throw new ArgumentException("Giá trị đơn tối thiểu không được < 0");
+
+            if (entity.MaxDiscountPrice < 0)
+                throw new ArgumentException("Giá trị giảm tối đa không được < 0");
+
+            if (entity.StartDate < DateTime.UtcNow)
+                throw new ArgumentException("Ngày bắt đầu phải lớn hơn hoặc bằng ngày hiện tại");
+
+            if (entity.StartDate >= entity.EndDate)
+                throw new ArgumentException("Ngày bắt đầu phải nhỏ hơn ngày kết thúc");
+
+            if (entity.EndDate < DateTime.UtcNow)
+                throw new ArgumentException("Ngày kết thúc phải lớn hơn hoặc bằng ngày hiện tại");
+
+
             var voucher = _mapper.Map(entity, existing);
             var updated = await _unitOfWork.Vouchers.UpdateAsync(voucher);
             if (!updated) return false;
