@@ -8,6 +8,7 @@ using FoodOrder.Infrastructure.Identity;
 using FoodOrder.Infrastructure.Repositories;
 using FoodOrder.Infrastructure.Services;
 using FoodOrder.Infrastructure.Services.CloudinaryServices;
+using FoodOrder.Infrastructure.Services.GoongServices;
 using FoodOrder.Infrastructure.Services.VnPayServices;
 using FoodOrder.Infrastructure.UnitOfWorks;
 using Microsoft.EntityFrameworkCore;
@@ -62,7 +63,6 @@ namespace FoodOrder.Infrastructure.Extensions
             services.AddScoped<ILocationRepository, LocationRepository>();
 
             services.AddScoped<IRedisService, RedisService>();
-
 
             var cloudinarySetting = configuration.GetSection("Cloudinary").Get<CloudinarySetting>();
             if (cloudinarySetting == null)

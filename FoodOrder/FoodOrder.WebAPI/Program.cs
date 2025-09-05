@@ -1,9 +1,11 @@
 ﻿using FoodOrder.Application.Common.Settings;
 using FoodOrder.Application.Extensions;
+using FoodOrder.Application.Interfaces;
 using FoodOrder.Application.Services;
 using FoodOrder.Domain.Entities.Identity;
 using FoodOrder.Infrastructure.Data.Context;
 using FoodOrder.Infrastructure.Extensions;
+using FoodOrder.Infrastructure.Services.GoongServices;
 using FoodOrder.Infrastructure.Services.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -29,7 +31,11 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
     return ConnectionMultiplexer.Connect(config!);
 });
 
+//goong services
+builder.Services.Configure<GoongSettings>(builder.Configuration.GetSection("GoongSettings"));
 
+// Đăng ký HttpClient cho GoongService
+builder.Services.AddHttpClient<IGoongService, GoongService>();
 
 builder.Services.InfrastructureServices(builder.Configuration);
 builder.Services.ApplicationServices();
