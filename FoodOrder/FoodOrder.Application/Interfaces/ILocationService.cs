@@ -11,6 +11,6 @@ namespace FoodOrder.Application.Interfaces
         Task<bool> DeleteAsync(int id);
         Task<LocationDto> GetByIdAsync(int id);
         Task <List<LocationDto>> GetAllByIdUserAsync(int id);
-
+        Task<bool> UpdateIsDefault(int userId, int id, bool isDefault);
     }
 }

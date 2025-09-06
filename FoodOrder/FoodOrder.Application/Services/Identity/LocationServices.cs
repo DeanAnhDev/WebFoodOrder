@@ -20,8 +20,9 @@ namespace FoodOrder.Application.Services.Identity
 
         public async Task<bool> AddAsync(CreateLocationDto dto)
         {
-
             var location = _mapper.Map<Location>(dto);
+            location.CreatedAt = DateTime.UtcNow;
+            location.UpdatedAt = DateTime.UtcNow;
             var result = await _unitOfWork.Locations.AddAsync(location);
             if (!result) return false;
             return await _unitOfWork.CompleteAsync() > 0;
@@ -35,8 +36,8 @@ namespace FoodOrder.Application.Services.Identity
                 var existing = await _unitOfWork.Locations.GetByIdAsync(dto.Id);
                 if (existing == null)
                     throw new ArgumentException("Không tìm thấy địa chỉ nào");
-
                 var location = _mapper.Map(dto, existing);
+                location.UpdatedAt = DateTime.UtcNow;
                 var updated = await _unitOfWork.Locations.UpdateAsync(location);
                 if (!updated) return false;
 
@@ -72,5 +73,33 @@ namespace FoodOrder.Application.Services.Identity
             var location = await _unitOfWork.Locations.GetByIdAsync(id);
             return _mapper.Map<LocationDto>(location);
         }
+
+        public async Task<bool> UpdateIsDefault(int userId, int id, bool isDefault)
+        {
+            var existing = await _unitOfWork.Locations.GetByIdAsync(id);
+            if (existing == null)
+                throw new ArgumentException("Không tìm thấy địa chỉ nào");
+
+            if (isDefault)
+            {
+                // Reset tất cả location khác của user về false
+                var userLocations = await _unitOfWork.Locations
+                    .FindAsync(l => l.UserId == userId && l.Id != id && l.IsDefault);
+
+                foreach (var loc in userLocations)
+                {
+                    loc.IsDefault = false;
+                    loc.UpdatedAt = DateTime.UtcNow;
+                    await _unitOfWork.Locations.UpdateAsync(loc);
+                }
+            }
+
+            existing.IsDefault = isDefault;
+            existing.UpdatedAt = DateTime.UtcNow;
+            await _unitOfWork.Locations.UpdateAsync(existing);
+
+            return await _unitOfWork.CompleteAsync() > 0;
+        }
+
     }
 }

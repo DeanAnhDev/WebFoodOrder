@@ -1,6 +1,7 @@
 ﻿using FoodOrder.Domain.Interfaces;
 using FoodOrder.Infrastructure.Data.Context;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using System.Linq.Expressions;
 
 
@@ -55,6 +56,11 @@ namespace FoodOrder.Infrastructure.Repositories
         public async Task<TEntity?> FirstOrDefaultAsync(Expression<Func<TEntity, bool>> predicate)
         {
             return await _dbSet.FirstOrDefaultAsync(predicate);
+        }
+
+        public async Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate)
+        {
+            return await _dbSet.Where(predicate).ToListAsync();
         }
 
     }

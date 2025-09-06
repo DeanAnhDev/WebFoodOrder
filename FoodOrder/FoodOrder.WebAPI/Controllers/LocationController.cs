@@ -66,6 +66,21 @@ namespace FoodOrder.WebAPI.Controllers
             return Ok(new { message = "Cập nhật địa chỉ thành công" });
         }
 
+        [HttpPatch]
+        public async Task<IActionResult> UpdateIsDefault([FromQuery]int id, [FromQuery] bool isDefault)
+        {
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out var userId))
+                return Unauthorized("User ID không hợp lệ");
+            var user = userId;
+            var result = await _locationService.UpdateIsDefault(user,id, isDefault);
+            if (!result)
+                return BadRequest(new { message = "Cập nhật địa chỉ thất bại" });
+
+            return Ok(new { message = "Cập nhật địa chỉ thành công" });
+        }
+
+
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {

@@ -10,6 +10,6 @@ namespace FoodOrder.Domain.Interfaces
         Task<bool> UpdateAsync(TEntity entity);
         Task<bool> DeleteAsync(dynamic id);
         Task<TEntity?> FirstOrDefaultAsync(Expression<Func<TEntity, bool>> predicate);
-
+        Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate);
     }
 }
