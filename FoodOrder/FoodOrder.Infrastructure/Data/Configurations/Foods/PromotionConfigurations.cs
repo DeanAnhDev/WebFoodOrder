@@ -11,16 +11,18 @@ namespace FoodOrder.Infrastructure.Data.Configurations.Foods
         {
             builder.HasKey(p => p.PromotionId);
 
+            // Promotion 1-nhiều Food
+            builder.HasMany(p => p.Foods)
+                   .WithOne(f => f.Promotion)
+                   .HasForeignKey(f => f.PromotionId)
+                   .OnDelete(DeleteBehavior.SetNull);
 
-            builder.HasOne(p => p.Food)
-                    .WithOne(f => f.Promotion)
-                    .HasForeignKey<Promotion>(p => p.FoodId)
-                    .OnDelete(DeleteBehavior.SetNull);
+            // Promotion 1-nhiều Combo
+            builder.HasMany(p => p.Combos)
+                   .WithOne(c => c.Promotion)
+                   .HasForeignKey(c => c.PromotionId)
+                   .OnDelete(DeleteBehavior.SetNull);
 
-            builder.HasOne(p => p.Combo)
-                    .WithOne(c => c.Promotion)
-                    .HasForeignKey<Promotion>(p => p.ComboId)
-                    .OnDelete(DeleteBehavior.SetNull);
 
             builder.Property(p => p.DiscountAmount)
                     .HasPrecision(18, 2);

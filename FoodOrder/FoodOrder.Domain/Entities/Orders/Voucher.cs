@@ -6,7 +6,6 @@ namespace FoodOrder.Domain.Entities.Orders
     public class Voucher
     {
         public int VoucherId { get; set; }
-
         public string Code { get; set; } = string.Empty;
         public decimal DiscountAmount { get; set; }
         public VoucherType Type { get; set; }
