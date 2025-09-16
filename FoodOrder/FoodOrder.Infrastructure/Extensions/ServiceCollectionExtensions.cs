@@ -62,6 +62,8 @@ namespace FoodOrder.Infrastructure.Extensions
 
             services.AddScoped<ILocationRepository, LocationRepository>();
 
+                services.AddScoped<IPromotionRepository, PromotionRepository>();
+
             services.AddScoped<IRedisService, RedisService>();
 
             var cloudinarySetting = configuration.GetSection("Cloudinary").Get<CloudinarySetting>();

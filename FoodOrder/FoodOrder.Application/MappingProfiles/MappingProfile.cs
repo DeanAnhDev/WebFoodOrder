@@ -7,6 +7,7 @@ using FoodOrder.Application.DTOs.Foods.Food.Queries;
 using FoodOrder.Application.DTOs.Foods.FoodCategory.Commands;
 using FoodOrder.Application.DTOs.Foods.FoodCategory.Queries;
 using FoodOrder.Application.DTOs.Foods.Image;
+using FoodOrder.Application.DTOs.Foods.Promotion;
 using FoodOrder.Application.DTOs.Identity;
 using FoodOrder.Application.DTOs.Identity.Location;
 using FoodOrder.Application.DTOs.Voucher;
@@ -63,6 +64,8 @@ namespace FoodOrder.Application.MappingProfiles
             CreateMap<Voucher, VoucherCreateDto>().ReverseMap();
             CreateMap<Voucher, VoucherDto>().ReverseMap();
             CreateMap<Voucher, UpdateVoucherDto>().ReverseMap();
+
+            CreateMap<Promotion, PromotionDto>().ReverseMap();
         }
     }
 }

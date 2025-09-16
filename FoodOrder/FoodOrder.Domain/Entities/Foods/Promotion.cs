@@ -24,6 +24,4 @@ namespace FoodOrder.Domain.Entities.Foods
         Percentage = 2
     }
 
-
-
 }

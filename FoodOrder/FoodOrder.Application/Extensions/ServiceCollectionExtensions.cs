@@ -37,7 +37,7 @@ namespace FoodOrder.Application.Extensions
             services.AddScoped<ILocationService, LocationServices>();
 
             services.AddScoped<IVoucherServices, VoucherService>();
-
+            services.AddScoped<IPromotionService, PromotionService>();
             return services;
         }
     }

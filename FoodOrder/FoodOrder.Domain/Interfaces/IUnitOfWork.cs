@@ -21,6 +21,7 @@ namespace FoodOrder.Domain.Interfaces
         IRepository<Images> Images { get; }
         ILocationRepository Locations { get; }
         IVoucherRepository Vouchers { get; }
+        IPromotionRepository Promotions { get; }
         Task<int> CompleteAsync();
     }
 }
