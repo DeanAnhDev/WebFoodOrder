@@ -34,7 +34,9 @@ namespace FoodOrder.Infrastructure.Repositories
         {
             return await _dbSet
                 .Include(f => f.Images)
+                .Include(f => f.Promotion)
                 .FirstOrDefaultAsync(f => f.Slug == slug);
+                
         }
     }
 }

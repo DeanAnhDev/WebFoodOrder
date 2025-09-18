@@ -29,7 +29,8 @@ namespace FoodOrder.Infrastructure.Repositories
                             Status = f.Status,
                             Price = f.Price,
                             Images = f.Images,
-                            Quantity = f.Quantity
+                            Quantity = f.Quantity,
+                            Promotion = f.Promotion,
                         }).ToList(),
 
                     Combos = fc.Combos
@@ -42,8 +43,10 @@ namespace FoodOrder.Infrastructure.Repositories
                             Status = c.Status,
                             Price = c.Price,
                             Images = c.Images,
-                            Quantity = c.Quantity
-                        }).ToList()
+                            Quantity = c.Quantity,
+                            Promotion = c.Promotion,
+                        }).ToList(),
+                    
                 })
                 .AsSplitQuery();
         }
@@ -71,7 +74,9 @@ namespace FoodOrder.Infrastructure.Repositories
                             Status = f.Status,
                             Price = f.Price,
                             Images = f.Images,
-                            Quantity = f.Quantity
+                            Quantity = f.Quantity,
+                            Promotion = f.Promotion,
+
                         }).ToList(),
 
                    Combos = fc.Combos
@@ -84,7 +89,9 @@ namespace FoodOrder.Infrastructure.Repositories
                             Status = c.Status,
                             Price = c.Price,
                             Images = c.Images,
-                            Quantity = c.Quantity
+                            Quantity = c.Quantity,
+                            Promotion = c.Promotion,
+
                         }).ToList()
                })
                 .AsSplitQuery();

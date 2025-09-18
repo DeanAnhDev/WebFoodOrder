@@ -56,6 +56,7 @@ namespace FoodOrder.Infrastructure.Repositories
                .Include(c => c.Images)
                .Include(c => c.ComboDetails!)
                .ThenInclude(cd => cd.Food).ThenInclude(f => f.Images)
+                .Include(c => c.Promotion)
                .AsSplitQuery();
             return result;
         }
@@ -81,7 +82,7 @@ namespace FoodOrder.Infrastructure.Repositories
 
         public async Task<List<Combo>> GetAllComboAsync()
         {
-            return await _dbSet.Include(cb => cb.Images).Where(cb => cb.Status).ToListAsync();
+            return await _dbSet.Include(cb => cb.Images).Where(cb => cb.Status).Include(c=>c.Promotion).ToListAsync();
         }
     }
 }
