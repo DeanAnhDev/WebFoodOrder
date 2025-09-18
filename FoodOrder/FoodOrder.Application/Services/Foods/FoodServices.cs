@@ -75,8 +75,6 @@ namespace FoodOrder.Application.Services.Foods
             return new PagedResult<FoodDto>(foodDtos, totalCount, query.Page, query.PageSize);
         }
 
-
-
         public async Task<FoodDto> GetByIdAsync(int id)
         {
             var foods = await _unitOfWork.Foods.GetByIdAsync(id);
@@ -120,6 +118,21 @@ namespace FoodOrder.Application.Services.Foods
                 .FirstOrDefaultAsync(f => f.FoodName == foodDto.FoodName.Trim());
             if (existFood != null)
                 throw new InvalidOperationException("Tên món ăn đã tồn tại");
+
+            Promotion? promotion = null;
+            if (foodDto.PromotionId.HasValue)
+            {
+                promotion = await _unitOfWork.Promotions.GetByIdWithRelationsAsync(foodDto.PromotionId.Value);
+                if (promotion == null)
+                    throw new ArgumentException("Khuyến mãi không tồn tại");
+
+                if (!promotion.IsActive || promotion.EndDate < DateTime.UtcNow)
+                    throw new ArgumentException("Khuyến mãi không còn hiệu lực");
+
+                // Nếu kiểu Amount thì phải check giá
+                if (promotion.Type == PromotionType.Amount && promotion.DiscountAmount >= foodDto.Price)
+                    throw new ArgumentException("Giá trị giảm phải nhỏ hơn giá combo");
+            }
 
             var food = _mapper.Map<Food>(foodDto);
             if (food.FoodName != null)
@@ -179,6 +192,21 @@ namespace FoodOrder.Application.Services.Foods
                     throw new ArgumentException("Mô tả không được vượt quá 500 ký tự");
                 existing.Description = dto.Description;
 
+                Promotion? promotion = null;
+                if (dto.PromotionId.HasValue)
+                {
+                    promotion = await _unitOfWork.Promotions.GetByIdWithRelationsAsync(dto.PromotionId.Value);
+                    if (promotion == null)
+                        throw new ArgumentException("Khuyến mãi không tồn tại");
+
+                    if (!promotion.IsActive || promotion.EndDate < DateTime.UtcNow)
+                        throw new ArgumentException("Khuyến mãi không còn hiệu lực");
+
+                    // Nếu kiểu Amount thì phải check giá
+                    if (promotion.Type == PromotionType.Amount && promotion.DiscountAmount >= dto.Price)
+                        throw new ArgumentException("Giá trị giảm phải nhỏ hơn giá combo");
+                }
+
                 // ✅ Quản lý ảnh
                 var dbImage = await _unitOfWork.Images.FirstOrDefaultAsync(i => i.FoodId == dto.FoodId);
                 var newImage = dto.Images;
@@ -213,6 +241,7 @@ namespace FoodOrder.Application.Services.Foods
                 }
 
                 // ✅ Cập nhật database
+                existing.PromotionId = dto.PromotionId;
                 var updated = await _unitOfWork.Foods.UpdateAsync(existing);
                 if (!updated) return false;
 
@@ -225,9 +254,6 @@ namespace FoodOrder.Application.Services.Foods
             }
         }
 
-
-
-
         public async Task<bool> DeleteAsync(int id)
         {
             var result = await _unitOfWork.Foods.DeleteAsync(id);
@@ -238,6 +264,19 @@ namespace FoodOrder.Application.Services.Foods
             return false;
         }
 
+        public async Task<bool> UpdateFoodStatusAsync(int id, bool isActive)
+        {
+            var food = await _unitOfWork.Foods.GetByIdAsync(id);
+            if (food == null)
+                throw new KeyNotFoundException("Không tìm thấy món ăn");
 
+            food.Status = isActive;
+
+            await _comboService.UpdateCombosByFoodIdAsync(id);
+            await _unitOfWork.Foods.UpdateAsync(food);
+            var result = await _unitOfWork.CompleteAsync();
+
+            return result > 0;
+        }
     }
 }

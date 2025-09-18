@@ -66,6 +66,7 @@ namespace FoodOrder.Application.MappingProfiles
             CreateMap<Voucher, UpdateVoucherDto>().ReverseMap();
 
             CreateMap<Promotion, PromotionDto>().ReverseMap();
+            CreateMap<Promotion, PromotionDtoSelect>().ReverseMap();
         }
     }
 }

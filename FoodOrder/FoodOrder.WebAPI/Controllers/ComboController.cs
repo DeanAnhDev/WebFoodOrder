@@ -215,6 +215,28 @@ namespace FoodOrder.WebAPI.Controllers
             return Ok(foods);
         }
 
+        [HttpPatch("{id}/status")]
+        public async Task<IActionResult> UpdateComboStatus(int id, [FromBody] bool isActive)
+        {
+            try
+            {
+                var result = await _comboServices.UpdateComboStatusAsync(id, isActive);
+                if (!result)
+                    return StatusCode(StatusCodes.Status500InternalServerError,
+                        new { message = "Cập nhật trạng thái combo thất bại" });
+
+                return Ok(new { message = "Cập nhật trạng thái combo thành công" });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    new { message = ex.Message });
+            }
+        }
 
     }
 }

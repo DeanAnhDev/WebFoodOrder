@@ -15,6 +15,7 @@ namespace FoodOrder.Domain.Entities.Orders
         public PaymentStatus PaymentStatus { get; set; } = PaymentStatus.Unpaid;
         public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.CashOnDelivery;
         public string? Note { get; set; }
+        public string? Address { get; set; }
 
         public decimal SubtotalAmount { get; set; }        // Tổng tiền sau khi đã giảm món
         public decimal VoucherDiscountAmount { get; set; } // Số tiền giảm từ voucher
@@ -24,6 +25,7 @@ namespace FoodOrder.Domain.Entities.Orders
         public Voucher? Voucher { get; set; }
 
         public ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
+        public string? Reason { get; set; }
     }
 
     public enum OrderStatus

@@ -14,6 +14,7 @@ namespace FoodOrder.Infrastructure.Repositories
             return _dbSet
                 .Include(c => c.Images)
                 .Include(c => c.FoodCategorys)
+                .Include(c => c.Promotion)
                 .AsQueryable();
         }
 
@@ -33,6 +34,7 @@ namespace FoodOrder.Infrastructure.Repositories
         {
             return await _dbSet.Include(cb => cb.Images)
                 .Include(cb => cb.ComboDetails!).ThenInclude(cbd => cbd.Food).ThenInclude(f => f.Images)
+                .Include(c => c.Promotion)
                 .FirstOrDefaultAsync(cb => cb.ComboId == id);
         }
 

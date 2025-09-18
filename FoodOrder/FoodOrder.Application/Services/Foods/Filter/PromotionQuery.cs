@@ -1,5 +1,4 @@
-﻿
-namespace FoodOrder.Application.Services.Foods.Filter
+﻿namespace FoodOrder.Application.Services.Foods.Filter
 {
     public class PromotionQuery
     {

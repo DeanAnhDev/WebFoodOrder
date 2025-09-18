@@ -37,12 +37,12 @@ namespace FoodOrder.Application.Services.Foods
 
             if (dto.StartDate >= dto.EndDate)
                 throw new ArgumentException("Ngày bắt đầu phải nhỏ hơn ngày kết thúc");
-
-            if (dto.EndDate < DateTime.UtcNow)
+            if (dto.StartDate < DateTime.Today)
+                throw new ArgumentException("Ngày kết thúc không được nhỏ hơn hiện tại");
+            if (dto.EndDate < DateTime.Today)
                 throw new ArgumentException("Ngày kết thúc không được nhỏ hơn hiện tại");
 
-            // Nếu là giảm tiền trực tiếp thì phải nhỏ hơn giá món/combo rẻ nhất
-            if (dto.Type == PromotionType.Amount)
+            if (dto.Type == PromotionType.Amount && (dto.FoodIds.Any() || dto.ComboIds.Any()))
             {
                 var foodPrices = new List<decimal>();
                 var comboPrices = new List<decimal>();
@@ -61,13 +61,14 @@ namespace FoodOrder.Application.Services.Foods
                     comboPrices.AddRange(combos.Select(c => c.Price));
                 }
 
-                var minPrice = foodPrices.Concat(comboPrices).DefaultIfEmpty(0).Min();
-                if (dto.DiscountAmount >= minPrice && minPrice > 0)
-                    throw new ArgumentException($"Số tiền giảm phải nhỏ hơn giá sản phẩm thấp nhất ({minPrice})");
+                if (foodPrices.Any() || comboPrices.Any())
+                {
+                    var minPrice = foodPrices.Concat(comboPrices).Min();
+                    if (dto.DiscountAmount >= minPrice)
+                        throw new ArgumentException($"Số tiền giảm phải nhỏ hơn giá sản phẩm thấp nhất ({minPrice})");
+                }
             }
 
-
-            // ==== TẠO PROMOTION ====
             var promotion = new Promotion
             {
                 PromotionName = dto.PromotionName,
@@ -83,31 +84,33 @@ namespace FoodOrder.Application.Services.Foods
             if (result <= 0)
                 throw new Exception("Không thể lưu khuyến mãi");
 
-            // Gán Foods
-            if (dto.FoodIds.Any())
+            if (dto.Type == PromotionType.Amount && (dto.FoodIds.Any() || dto.ComboIds.Any()))
             {
-                var foods = await _unitOfWork.Foods
-                    .FindAsync(f => dto.FoodIds.Contains(f.FoodId));
-                foreach (var food in foods)
+                var foodPrices = new List<decimal>();
+                var comboPrices = new List<decimal>();
+
+                if (dto.FoodIds.Any())
                 {
-                    food.PromotionId = promotion.PromotionId;
+                    var foods = await _unitOfWork.Foods
+                        .FindAsync(f => dto.FoodIds.Contains(f.FoodId));
+                    foodPrices.AddRange(foods.Select(f => f.Price));
+                }
+
+                if (dto.ComboIds.Any())
+                {
+                    var combos = await _unitOfWork.Combos
+                        .FindAsync(c => dto.ComboIds.Contains(c.ComboId));
+                    comboPrices.AddRange(combos.Select(c => c.Price));
+                }
+
+                if (foodPrices.Any() || comboPrices.Any())
+                {
+                    var minPrice = foodPrices.Concat(comboPrices).Min();
+                    if (dto.DiscountAmount >= minPrice)
+                        throw new ArgumentException($"Số tiền giảm phải nhỏ hơn giá sản phẩm thấp nhất ({minPrice})");
                 }
             }
 
-            // Gán Combos
-            if (dto.ComboIds.Any())
-            {
-                var combos = await _unitOfWork.Combos
-                    .FindAsync(c => dto.ComboIds.Contains(c.ComboId));
-                foreach (var combo in combos)
-                {
-                    combo.PromotionId = promotion.PromotionId;
-                }
-            }
-
-            var updateResult = await _unitOfWork.CompleteAsync();
-            if (updateResult <= 0)
-                throw new Exception("Không thể cập nhật Food/Combo với khuyến mãi");
 
             return true;
         }
@@ -166,36 +169,37 @@ namespace FoodOrder.Application.Services.Foods
             if (dto.StartDate >= dto.EndDate)
                 throw new ArgumentException("Ngày bắt đầu phải nhỏ hơn ngày kết thúc");
 
-            if (dto.EndDate < DateTime.UtcNow)
+            if (dto.EndDate < DateTime.Today)
                 throw new ArgumentException("Ngày kết thúc không được nhỏ hơn hiện tại");
 
-            if (!dto.FoodIds.Any() && !dto.ComboIds.Any())
-                throw new ArgumentException("Khuyến mãi phải áp dụng cho ít nhất một món ăn hoặc combo");
 
             // Nếu là giảm tiền trực tiếp thì phải nhỏ hơn giá món/combo rẻ nhất
-            if (dto.Type == PromotionType.Amount)
-            {
-                var foodPrices = new List<decimal>();
-                var comboPrices = new List<decimal>();
+            //if (dto.Type == PromotionType.Amount)
+            //{
+            //    var foodPrices = new List<decimal>();
+            //    var comboPrices = new List<decimal>();
 
-                if (dto.FoodIds.Any())
-                {
-                    var foods = await _unitOfWork.Foods
-                        .FindAsync(f => dto.FoodIds.Contains(f.FoodId));
-                    foodPrices.AddRange(foods.Select(f => f.Price));
-                }
+            //    if (dto.FoodIds.Any())
+            //    {
+            //        var foods = await _unitOfWork.Foods
+            //            .FindAsync(f => dto.FoodIds.Contains(f.FoodId));
+            //        foodPrices.AddRange(foods.Select(f => f.Price));
+            //    }
 
-                if (dto.ComboIds.Any())
-                {
-                    var combos = await _unitOfWork.Combos
-                        .FindAsync(c => dto.ComboIds.Contains(c.ComboId));
-                    comboPrices.AddRange(combos.Select(c => c.Price));
-                }
+            //    if (dto.ComboIds.Any())
+            //    {
+            //        var combos = await _unitOfWork.Combos
+            //            .FindAsync(c => dto.ComboIds.Contains(c.ComboId));
+            //        comboPrices.AddRange(combos.Select(c => c.Price));
+            //    }
 
-                var minPrice = foodPrices.Concat(comboPrices).DefaultIfEmpty(0).Min();
-                if (dto.DiscountAmount >= minPrice && minPrice > 0)
-                    throw new ArgumentException($"Số tiền giảm phải nhỏ hơn giá sản phẩm thấp nhất ({minPrice})");
-            }
+            //    if (foodPrices.Any() || comboPrices.Any())
+            //    {
+            //        var minPrice = foodPrices.Concat(comboPrices).Min();
+            //        if (dto.DiscountAmount >= minPrice)
+            //            throw new ArgumentException($"Số tiền giảm phải nhỏ hơn giá sản phẩm thấp nhất ({minPrice})");
+            //    }
+            //}
 
             // ==== UPDATE ====
             promotion.PromotionName = dto.PromotionName;
@@ -206,39 +210,56 @@ namespace FoodOrder.Application.Services.Foods
             promotion.IsActive = dto.IsActive;
 
             // Reset các quan hệ cũ
-            var oldFoods = await _unitOfWork.Foods.FindAsync(f => f.PromotionId == promotion.PromotionId);
-            foreach (var food in oldFoods)
+            var foods = await _unitOfWork.Foods.FindAsync(f => f.PromotionId == promotion.PromotionId);
+            foreach (var food in foods)
             {
-                food.PromotionId = null;
+                bool valid = dto.Type switch
+                {
+                    PromotionType.Percentage => dto.DiscountAmount > 0 && dto.DiscountAmount <= 100,
+                    PromotionType.Amount => dto.DiscountAmount < food.Price,
+                    _ => false
+                };
+
+                if (!valid)
+                    food.PromotionId = null; // bỏ nếu không hợp lệ
             }
 
-            var oldCombos = await _unitOfWork.Combos.FindAsync(c => c.PromotionId == promotion.PromotionId);
-            foreach (var combo in oldCombos)
+            // ==== CHECK LẠI COMBOS ====
+            var combos = await _unitOfWork.Combos.FindAsync(c => c.PromotionId == promotion.PromotionId);
+            foreach (var combo in combos)
             {
-                combo.PromotionId = null;
+                bool valid = dto.Type switch
+                {
+                    PromotionType.Percentage => dto.DiscountAmount > 0 && dto.DiscountAmount <= 100,
+                    PromotionType.Amount => dto.DiscountAmount < combo.Price,
+                    _ => false
+                };
+
+                if (!valid)
+                    combo.PromotionId = null; // bỏ nếu không hợp lệ
             }
 
             // Gán Foods mới
-            if (dto.FoodIds.Any())
-            {
-                var foods = await _unitOfWork.Foods
-                    .FindAsync(f => dto.FoodIds.Contains(f.FoodId));
-                foreach (var food in foods)
-                {
-                    food.PromotionId = promotion.PromotionId;
-                }
-            }
+            //if (dto.FoodIds.Any())
+            //{
+            //    var foods = await _unitOfWork.Foods
+            //        .FindAsync(f => dto.FoodIds.Contains(f.FoodId));
+            //    foreach (var food in foods)
+            //    {
+            //        food.PromotionId = promotion.PromotionId;
+            //    }
+            //}
 
             // Gán Combos mới
-            if (dto.ComboIds.Any())
-            {
-                var combos = await _unitOfWork.Combos
-                    .FindAsync(c => dto.ComboIds.Contains(c.ComboId));
-                foreach (var combo in combos)
-                {
-                    combo.PromotionId = promotion.PromotionId;
-                }
-            }
+            //if (dto.ComboIds.Any())
+            //{
+            //    var combos = await _unitOfWork.Combos
+            //        .FindAsync(c => dto.ComboIds.Contains(c.ComboId));
+            //    foreach (var combo in combos)
+            //    {
+            //        combo.PromotionId = promotion.PromotionId;
+            //    }
+            //}
 
             var result = await _unitOfWork.CompleteAsync();
             if (result <= 0)
@@ -257,7 +278,7 @@ namespace FoodOrder.Application.Services.Foods
                 promotions = promotions.Where(p => p.StartDate >= query.StartDateFrom.Value);
 
             if (query.StartDateTo.HasValue)
-                promotions = promotions.Where(p => p.EndDate <= query.StartDateTo.Value);
+                promotions = promotions.Where(p => p.StartDate <= query.StartDateTo.Value);
 
             if (query.IsActive.HasValue)
                 promotions = promotions.Where(p => p.IsActive == query.IsActive.Value);

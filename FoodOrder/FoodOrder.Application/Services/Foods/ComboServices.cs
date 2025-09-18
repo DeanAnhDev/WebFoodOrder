@@ -115,20 +115,37 @@ namespace FoodOrder.Application.Services.Foods
 
             foreach (var combo in combos)
             {
-                //if (!food.Status || food.IsOutOfStock)
-                //{
-                //    combo.Status = false;
-                //    combo.IsOutOfStock = true;
-                //}
-                //else
-                //{
-                //    var allFoods = await _unitOfWork.Combos.GetFoodsInComboAsync(combo.ComboId);
-                //    bool allAvailable = allFoods.All(f => f.Status && !f.IsOutOfStock);
-
-                //    combo.Status = allAvailable;
-                //    combo.IsOutOfStock = !allAvailable;
-                //}
+                if (!food.Status )
+                {
+                    combo.Status = false;
+                }
+                else
+                {
+                    var allFoods = await _unitOfWork.Combos.GetFoodsInComboAsync(combo.ComboId);
+                    bool allAvailable = allFoods.All(f => f.Status);
+                    combo.Status = allAvailable;
+                }
             }
+        }
+
+        public async Task<bool> UpdateComboStatusAsync(int id, bool isActive)
+        {
+            var combo = await _unitOfWork.Combos.GetByIdAsync(id);
+            if (combo == null)
+                throw new KeyNotFoundException("Không tìm thấy combo");
+
+            // Nếu bật thì kiểm tra các Food
+            if (isActive)
+            {
+                var hasInactiveFood = combo.ComboDetails.Any(cd => cd.Food != null && !cd.Food.Status);
+                if (hasInactiveFood)
+                    throw new InvalidOperationException("Không thể mở bán combo vì có món ăn đang bị tắt");
+            }
+
+            combo.Status = isActive;
+            await _unitOfWork.Combos.UpdateAsync(combo);
+            var result = await _unitOfWork.CompleteAsync();
+            return result > 0;
         }
 
         #region crud
@@ -179,6 +196,23 @@ namespace FoodOrder.Application.Services.Foods
                     throw new ArgumentException($"Món ăn với ID {food.FoodId} không tồn tại.");
             }
 
+            // Nếu có PromotionId thì kiểm tra khuyến mãi còn hiệu lực không
+            Promotion? promotion = null;
+            if (dto.PromotionId.HasValue)
+            {
+                promotion = await _unitOfWork.Promotions.GetByIdWithRelationsAsync(dto.PromotionId.Value);
+                if (promotion == null)
+                    throw new ArgumentException("Khuyến mãi không tồn tại");
+
+                if (!promotion.IsActive || promotion.EndDate < DateTime.UtcNow)
+                    throw new ArgumentException("Khuyến mãi không còn hiệu lực");
+
+                // Nếu kiểu Amount thì phải check giá
+                if (promotion.Type == PromotionType.Amount && promotion.DiscountAmount >= dto.Price)
+                    throw new ArgumentException("Giá trị giảm phải nhỏ hơn giá combo");
+            }
+
+
             // 2. Tạo Combo entity
             var combo = new Combo
             {
@@ -190,6 +224,7 @@ namespace FoodOrder.Application.Services.Foods
                 Slug = await _slugService.GenerateUniqueSlug<Combo>(dto.ComboName!),
                 Status = true,
                 Quantity = dto.Quantity,
+                PromotionId = dto.PromotionId
             };
 
             // 3. Gán ảnh nếu có
@@ -272,6 +307,22 @@ namespace FoodOrder.Application.Services.Foods
                 if (category == null)
                     throw new ArgumentException("Danh mục không tồn tại.");
 
+                // Nếu có PromotionId thì kiểm tra khuyến mãi còn hiệu lực không
+                Promotion? promotion = null;
+                if (dto.PromotionId.HasValue)
+                {
+                    promotion = await _unitOfWork.Promotions.GetByIdWithRelationsAsync(dto.PromotionId.Value);
+                    if (promotion == null)
+                        throw new ArgumentException("Khuyến mãi không tồn tại");
+
+                    if (!promotion.IsActive || promotion.EndDate < DateTime.UtcNow)
+                        throw new ArgumentException("Khuyến mãi không còn hiệu lực");
+
+                    // Nếu kiểu Amount thì phải check giá
+                    if (promotion.Type == PromotionType.Amount && promotion.DiscountAmount >= dto.Price)
+                        throw new ArgumentException("Giá trị giảm phải nhỏ hơn giá combo");
+                }
+
                 // 4. Cập nhật thông tin cơ bản
                 combo.ComboName = dto.ComboName;
                 combo.Slug = await _slugService.GenerateUniqueSlug<Combo>(dto.ComboName!);
@@ -280,7 +331,7 @@ namespace FoodOrder.Application.Services.Foods
                 combo.FoodCategoryId = dto.FoodCategoryId;
                 combo.Status = dto.Status;
                 combo.Quantity = dto.Quantity;
-
+                combo.PromotionId = dto.PromotionId;
                 // 5. Cập nhật ảnh
                 if (dto.Images != null)
                 {

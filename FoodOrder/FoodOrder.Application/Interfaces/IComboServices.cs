@@ -18,5 +18,6 @@ namespace FoodOrder.Application.Interfaces
         Task<List<FoodDto>> GetFoodsNotInComboAsync();
         Task<List<ComboDto>> GetAllComboAsync();
         Task UpdateCombosByFoodIdAsync(int foodId);
+        Task<bool> UpdateComboStatusAsync(int id, bool isActive);
     }
 }
