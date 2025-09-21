@@ -7,5 +7,7 @@ namespace FoodOrder.Application.Interfaces
     {
         Task<CreateOrderResponseDto> CreateOrderAsync(CreateOrderDto createOrderDto, int userId);
         Task<bool> ProcessPaymentCallbackAsync(string orderCode, string responseData);
+        Task<bool> ProcessPaymentSuccessAsync(string orderCode);
+        Task<bool> ProcessPaymentFailureAsync(string orderCode);
     }
 }

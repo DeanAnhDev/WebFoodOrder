@@ -314,7 +314,7 @@ namespace FoodOrder.Application.Services.Orders
 
                 var paymentStatus = PaymentStatus.Unpaid;
 
-                if(!createOrderDto.LocationId.HasValue && createOrderDto.PaymentMethod == PaymentMethod.CashOnDelivery)
+                if (!createOrderDto.LocationId.HasValue && createOrderDto.PaymentMethod == PaymentMethod.CashOnDelivery)
                 {
                     paymentStatus = PaymentStatus.Paid;
                 }
@@ -343,11 +343,14 @@ namespace FoodOrder.Application.Services.Orders
                 await _unitOfWork.CompleteAsync();
 
                 // 10. Xóa cart items sau khi tạo order thành công
-                foreach (var cartItem in cart.CartItems.ToList())
+                if (createOrderDto.PaymentMethod == PaymentMethod.CashOnDelivery)
                 {
-                    await _unitOfWork.CartItems.RemoveAsync(cartItem);
+                    foreach (var cartItem in cart.CartItems.ToList())
+                    {
+                        await _unitOfWork.CartItems.RemoveAsync(cartItem);
+                    }
+                    await _unitOfWork.CompleteAsync();
                 }
-                await _unitOfWork.CompleteAsync();
 
                 // 11. Map order result
                 var orderDto = _mapper.Map<OrderDto>(order);
@@ -442,6 +445,135 @@ namespace FoodOrder.Application.Services.Orders
             catch (Exception ex)
             {
                 Console.WriteLine($"Error processing payment callback for order {orderCode}: {ex.Message}");
+                return false;
+            }
+        }
+
+        public async Task<bool> ProcessPaymentSuccessAsync(string orderCode)
+        {
+            try
+            {
+                // 1. Tìm order theo orderCode
+                var order = await _unitOfWork.Orders.FirstOrDefaultAsync(o => o.OrderCode == orderCode);
+
+                if (order == null)
+                {
+                    Console.WriteLine($"Order not found: {orderCode}");
+                    return false;
+                }
+
+                // 2. Kiểm tra order đã được thanh toán chưa
+                if (order.PaymentStatus == Domain.Entities.Orders.PaymentStatus.Paid)
+                {
+                    Console.WriteLine($"Order {orderCode} already paid");
+                    return true;
+                }
+
+                // 3. Cập nhật payment status thành công
+                order.PaymentStatus = Domain.Entities.Orders.PaymentStatus.Paid;
+                order.Status = Domain.Entities.Orders.OrderStatus.Processing;
+
+                await _unitOfWork.Orders.UpdateAsync(order);
+
+                // 4. Xóa cart items của user này
+                var userId = order.UserId;
+                var userCart = await _unitOfWork.Carts.GetCartByUserIdAsync(userId);
+
+                if (userCart != null && userCart.CartItems != null)
+                {
+                    foreach (var cartItem in userCart.CartItems.ToList())
+                    {
+                        await _unitOfWork.CartItems.RemoveAsync(cartItem);
+                    }
+                }
+
+                await _unitOfWork.CompleteAsync();
+                Console.WriteLine($"Payment success processed for order {orderCode}, cart cleared");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error processing payment success for order {orderCode}: {ex.Message}");
+                return false;
+            }
+        }
+
+        public async Task<bool> ProcessPaymentFailureAsync(string orderCode)
+        {
+            try
+            {
+                // 1. Tìm order theo orderCode
+                var order = await _unitOfWork.Orders.FirstOrDefaultAsync(o => o.OrderCode == orderCode);
+
+                if (order == null)
+                {
+                    Console.WriteLine($"Order not found: {orderCode}");
+                    return false;
+                }
+
+                // 2. Kiểm tra trạng thái order
+                if (order.PaymentStatus == Domain.Entities.Orders.PaymentStatus.Paid)
+                {
+                    Console.WriteLine($"Order {orderCode} already paid, cannot rollback");
+                    return false;
+                }
+
+                // 3. Lấy order details
+                var orderDetails = await _unitOfWork.OrderDetails.FindAsync(od => od.OrderId == order.OrderId);
+
+                // 4. Rollback số lượng Food và Combo
+                foreach (var orderDetail in orderDetails)
+                {
+                    if (orderDetail.FoodId.HasValue)
+                    {
+                        var food = await _unitOfWork.Foods.GetByIdAsync(orderDetail.FoodId.Value);
+                        if (food != null)
+                        {
+                            // Cộng lại số lượng đã trừ
+                            food.Quantity += orderDetail.Quantity;
+                            food.Sold -= orderDetail.Quantity;
+                            if (food.Sold < 0) food.Sold = 0; // Đảm bảo không âm
+                            await _unitOfWork.Foods.UpdateAsync(food);
+                        }
+                    }
+                    else if (orderDetail.ComboId.HasValue)
+                    {
+                        var combo = await _unitOfWork.Combos.GetByIdAsync(orderDetail.ComboId.Value);
+                        if (combo != null)
+                        {
+                            // Cộng lại số lượng đã trừ
+                            combo.Quantity += orderDetail.Quantity;
+                            combo.Sold -= orderDetail.Quantity;
+                            if (combo.Sold < 0) combo.Sold = 0; // Đảm bảo không âm
+                            await _unitOfWork.Combos.UpdateAsync(combo);
+                        }
+                    }
+                }
+
+                // 5. Rollback voucher quantity nếu có
+                if (order.VoucherId.HasValue)
+                {
+                    var voucher = await _unitOfWork.Vouchers.GetByIdAsync(order.VoucherId.Value);
+                    if (voucher != null)
+                    {
+                        voucher.Quantity += 1; // Cộng lại 1 voucher đã trừ
+                        await _unitOfWork.Vouchers.UpdateAsync(voucher);
+                    }
+                }
+
+                // 6. Cập nhật order status thành failed
+                order.PaymentStatus = Domain.Entities.Orders.PaymentStatus.Fail;
+                order.Status = Domain.Entities.Orders.OrderStatus.Cancelled;
+
+                await _unitOfWork.Orders.UpdateAsync(order);
+                await _unitOfWork.CompleteAsync();
+
+                Console.WriteLine($"Payment failure processed for order {orderCode}, quantities restored");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error processing payment failure for order {orderCode}: {ex.Message}");
                 return false;
             }
         }
