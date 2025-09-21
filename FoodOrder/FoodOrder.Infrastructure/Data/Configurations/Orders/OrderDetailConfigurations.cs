@@ -16,12 +16,12 @@ namespace FoodOrder.Infrastructure.Data.Configurations.Orders
             builder.HasKey(p => p.OrderDetailId);
 
             builder.HasOne(p => p.Food)
-                .WithOne(o => o.OrderDetail)
-                .HasForeignKey<OrderDetail>(p => p.FoodId);
+               .WithMany(o => o.OrderDetails)
+               .HasForeignKey(p => p.FoodId);
 
             builder.HasOne(p => p.Combo)
-               .WithOne(o => o.OrderDetail)
-               .HasForeignKey<OrderDetail>(p => p.ComboId);
+              .WithMany(o => o.OrderDetails)
+              .HasForeignKey(p => p.ComboId);
 
             builder.Property(p => p.Quantity)
                 .IsRequired();

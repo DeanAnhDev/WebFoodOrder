@@ -10,6 +10,7 @@ using FoodOrder.Application.DTOs.Foods.Image;
 using FoodOrder.Application.DTOs.Foods.Promotion;
 using FoodOrder.Application.DTOs.Identity;
 using FoodOrder.Application.DTOs.Identity.Location;
+using FoodOrder.Application.DTOs.Orders;
 using FoodOrder.Application.DTOs.Voucher;
 using FoodOrder.Domain.Entities.Foods;
 using FoodOrder.Domain.Entities.Identity;
@@ -27,7 +28,7 @@ namespace FoodOrder.Application.MappingProfiles
             CreateMap<FoodCategory, FoodCategoryDtoUpdate>().ReverseMap();
             CreateMap<FoodCategory, FoodCategoryDtoCreate>().ReverseMap();
             CreateMap<FoodCategory, FoodCategoryListFoodDto>().ReverseMap();
-        
+
             //Mapping from Food to FoodDto
             CreateMap<Food, FoodDto>().ReverseMap();
             CreateMap<Food, FoodDtoCreate>().ReverseMap();
@@ -67,6 +68,13 @@ namespace FoodOrder.Application.MappingProfiles
 
             CreateMap<Promotion, PromotionDto>().ReverseMap();
             CreateMap<Promotion, PromotionDtoSelect>().ReverseMap();
+
+            //Mapping from Order to OrderDto
+            CreateMap<Order, OrderDto>().ReverseMap();
+            CreateMap<Order, CreateOrderDto>().ReverseMap();
+
+            //Mapping from OrderDetail to OrderDetailDto
+            CreateMap<OrderDetail, OrderDetailDto>().ReverseMap();
         }
     }
 }

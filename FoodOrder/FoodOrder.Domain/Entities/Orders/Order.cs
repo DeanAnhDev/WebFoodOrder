@@ -20,7 +20,7 @@ namespace FoodOrder.Domain.Entities.Orders
         public decimal SubtotalAmount { get; set; }        // Tổng tiền sau khi đã giảm món
         public decimal VoucherDiscountAmount { get; set; } // Số tiền giảm từ voucher
         public decimal TotalAmount { get; set; }           // Subtotal - VoucherDiscount
-
+        public decimal ShipFee { get; set; }
         public int? VoucherId { get; set; }                // Null nếu không áp dụng
         public Voucher? Voucher { get; set; }
 
@@ -41,6 +41,7 @@ namespace FoodOrder.Domain.Entities.Orders
     {
         Unpaid,         // Chưa thanh toán
         Paid,           // Đã thanh toán
+        Fail,           //Thanh toán thất bại   
     }
 
     public enum PaymentMethod

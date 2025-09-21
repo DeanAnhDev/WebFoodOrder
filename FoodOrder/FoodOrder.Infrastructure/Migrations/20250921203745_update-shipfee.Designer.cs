@@ -4,6 +4,7 @@ using FoodOrder.Infrastructure.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FoodOrder.Infrastructure.Migrations
 {
     [DbContext(typeof(FoodOrderDbContext))]
-    partial class FoodOrderDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250921203745_update-shipfee")]
+    partial class updateshipfee
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -563,9 +566,13 @@ namespace FoodOrder.Infrastructure.Migrations
 
                     b.HasKey("OrderDetailId");
 
-                    b.HasIndex("ComboId");
+                    b.HasIndex("ComboId")
+                        .IsUnique()
+                        .HasFilter("[ComboId] IS NOT NULL");
 
-                    b.HasIndex("FoodId");
+                    b.HasIndex("FoodId")
+                        .IsUnique()
+                        .HasFilter("[FoodId] IS NOT NULL");
 
                     b.HasIndex("OrderId");
 
@@ -864,12 +871,12 @@ namespace FoodOrder.Infrastructure.Migrations
             modelBuilder.Entity("FoodOrder.Domain.Entities.Orders.OrderDetail", b =>
                 {
                     b.HasOne("FoodOrder.Domain.Entities.Foods.Combo", "Combo")
-                        .WithMany("OrderDetails")
-                        .HasForeignKey("ComboId");
+                        .WithOne("OrderDetail")
+                        .HasForeignKey("FoodOrder.Domain.Entities.Orders.OrderDetail", "ComboId");
 
                     b.HasOne("FoodOrder.Domain.Entities.Foods.Food", "Food")
-                        .WithMany("OrderDetails")
-                        .HasForeignKey("FoodId");
+                        .WithOne("OrderDetail")
+                        .HasForeignKey("FoodOrder.Domain.Entities.Orders.OrderDetail", "FoodId");
 
                     b.HasOne("FoodOrder.Domain.Entities.Orders.Order", "Order")
                         .WithMany("OrderDetails")
@@ -943,7 +950,7 @@ namespace FoodOrder.Infrastructure.Migrations
 
                     b.Navigation("Images");
 
-                    b.Navigation("OrderDetails");
+                    b.Navigation("OrderDetail");
                 });
 
             modelBuilder.Entity("FoodOrder.Domain.Entities.Foods.Food", b =>
@@ -954,7 +961,7 @@ namespace FoodOrder.Infrastructure.Migrations
 
                     b.Navigation("Images");
 
-                    b.Navigation("OrderDetails");
+                    b.Navigation("OrderDetail");
                 });
 
             modelBuilder.Entity("FoodOrder.Domain.Entities.Foods.FoodCategory", b =>
