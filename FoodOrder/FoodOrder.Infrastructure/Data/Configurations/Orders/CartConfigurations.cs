@@ -16,8 +16,8 @@ namespace FoodOrder.Infrastructure.Data.Configurations.Orders
                 .HasForeignKey(p => p.CartId);
 
             builder.HasOne(p => p.AppUser)
-              .WithOne(o => o.Cart)
-              .HasForeignKey<Cart>(p => p.UserId);
+              .WithMany(o => o.Cart)
+              .HasForeignKey(p => p.UserId);
         }
     }
 }

@@ -13,5 +13,6 @@ namespace FoodOrder.Application.DTOs.Foods.Combo.Commands
         public int Quantity { get; set; }
         public ImageDto? Images { get; set; }
         public List<FoodInComboDto> Foods { get; set; } = new();
+        public int? PromotionId { get; set; }
     }
 }

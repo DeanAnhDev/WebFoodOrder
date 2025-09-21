@@ -14,6 +14,7 @@ namespace FoodOrder.Infrastructure.Repositories
             return _dbSet
                 .Include(c => c.Images)
                 .Include(c => c.FoodCategorys)
+                .Include(c => c.Promotion)
                 .AsQueryable();
         }
 
@@ -33,6 +34,7 @@ namespace FoodOrder.Infrastructure.Repositories
         {
             return await _dbSet.Include(cb => cb.Images)
                 .Include(cb => cb.ComboDetails!).ThenInclude(cbd => cbd.Food).ThenInclude(f => f.Images)
+                .Include(c => c.Promotion)
                 .FirstOrDefaultAsync(cb => cb.ComboId == id);
         }
 
@@ -54,6 +56,7 @@ namespace FoodOrder.Infrastructure.Repositories
                .Include(c => c.Images)
                .Include(c => c.ComboDetails!)
                .ThenInclude(cd => cd.Food).ThenInclude(f => f.Images)
+                .Include(c => c.Promotion)
                .AsSplitQuery();
             return result;
         }
@@ -79,7 +82,7 @@ namespace FoodOrder.Infrastructure.Repositories
 
         public async Task<List<Combo>> GetAllComboAsync()
         {
-            return await _dbSet.Include(cb => cb.Images).Where(cb => cb.Status).ToListAsync();
+            return await _dbSet.Include(cb => cb.Images).Where(cb => cb.Status).Include(c=>c.Promotion).ToListAsync();
         }
     }
 }

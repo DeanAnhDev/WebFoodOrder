@@ -1,22 +1,28 @@
 ﻿
+using System.Text.Json.Serialization;
+
 namespace FoodOrder.Domain.Entities.Orders
 {
     public class Voucher
     {
         public int VoucherId { get; set; }
-
         public string Code { get; set; } = string.Empty;
-        public string? Description { get; set; }
-
-        public float? DiscountPercent { get; set; }   // Giảm theo %
-        public decimal? DiscountAmount { get; set; }    // Giảm cố định
-
-        public bool IsActive { get; set; } = true;
-        public int? Quantity { get; set; }              // Số lượt dùng còn lại (nếu có giới hạn)
-
-        public decimal? MinOrderAmount { get; set; }    // Điều kiện áp dụng (vd: đơn > 200k)
+        public decimal DiscountAmount { get; set; }
+        public VoucherType Type { get; set; }
+        public int Quantity { get; set; }
+        public decimal MinOrderPrice { get; set; }
+        public decimal MaxDiscountPrice { get; set; }
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
+        public bool IsActive { get; set; }
 
         public ICollection<Order>? Orders { get; set; }
     }
 
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public enum VoucherType
+    {
+        Amount = 1,
+        Percentage = 2
+    }
 }

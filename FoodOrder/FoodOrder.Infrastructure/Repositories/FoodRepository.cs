@@ -14,6 +14,7 @@ namespace FoodOrder.Infrastructure.Repositories
             return _dbSet
                 .Include(f => f.Images)
                 .Include(f => f.FoodCategory)
+                .Include(f => f.Promotion)
                 .AsQueryable();
         }
         public async Task<List<Food>> GetAllAsync()
@@ -33,7 +34,9 @@ namespace FoodOrder.Infrastructure.Repositories
         {
             return await _dbSet
                 .Include(f => f.Images)
+                .Include(f => f.Promotion)
                 .FirstOrDefaultAsync(f => f.Slug == slug);
+                
         }
     }
 }

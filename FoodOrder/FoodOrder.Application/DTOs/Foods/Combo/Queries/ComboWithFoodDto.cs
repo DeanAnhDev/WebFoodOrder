@@ -1,4 +1,5 @@
 ﻿using FoodOrder.Application.DTOs.Foods.Image;
+using FoodOrder.Application.DTOs.Foods.Promotion;
 
 namespace FoodOrder.Application.DTOs.Foods.Combo.Queries
 {
@@ -14,5 +15,6 @@ namespace FoodOrder.Application.DTOs.Foods.Combo.Queries
         public int Quantity { get; set; }
         public ImageDto? Images { get; set; }
         public List<ComboDetailDto>? ComboDetails { get; set; }
+        public PromotionDtoSelect? Promotion { get; set; }
     }
 }

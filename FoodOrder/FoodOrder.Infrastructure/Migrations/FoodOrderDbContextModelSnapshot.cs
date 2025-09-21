@@ -50,6 +50,9 @@ namespace FoodOrder.Infrastructure.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<int?>("PromotionId")
+                        .HasColumnType("int");
+
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
@@ -66,6 +69,8 @@ namespace FoodOrder.Infrastructure.Migrations
                     b.HasKey("ComboId");
 
                     b.HasIndex("FoodCategoryId");
+
+                    b.HasIndex("PromotionId");
 
                     b.ToTable("Combos");
                 });
@@ -116,6 +121,9 @@ namespace FoodOrder.Infrastructure.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<int?>("PromotionId")
+                        .HasColumnType("int");
+
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
@@ -132,6 +140,8 @@ namespace FoodOrder.Infrastructure.Migrations
                     b.HasKey("FoodId");
 
                     b.HasIndex("FoodCategoryId");
+
+                    b.HasIndex("PromotionId");
 
                     b.ToTable("Foods");
                 });
@@ -171,18 +181,12 @@ namespace FoodOrder.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PromotionId"));
 
-                    b.Property<int?>("ComboId")
-                        .HasColumnType("int");
-
-                    b.Property<decimal?>("DiscountAmount")
+                    b.Property<decimal>("DiscountAmount")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<float?>("DiscountPercent")
-                        .HasColumnType("real");
-
-                    b.Property<int?>("FoodId")
-                        .HasColumnType("int");
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -191,15 +195,13 @@ namespace FoodOrder.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
                     b.HasKey("PromotionId");
-
-                    b.HasIndex("ComboId")
-                        .IsUnique()
-                        .HasFilter("[ComboId] IS NOT NULL");
-
-                    b.HasIndex("FoodId")
-                        .IsUnique()
-                        .HasFilter("[FoodId] IS NOT NULL");
 
                     b.ToTable("Promotions");
                 });
@@ -322,7 +324,7 @@ namespace FoodOrder.Infrastructure.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("FoodOrder.Domain.Entities.Identity.Localtion", b =>
+            modelBuilder.Entity("FoodOrder.Domain.Entities.Identity.Location", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -362,7 +364,7 @@ namespace FoodOrder.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Localtion");
+                    b.ToTable("Locations");
                 });
 
             modelBuilder.Entity("FoodOrder.Domain.Entities.Image.Images", b =>
@@ -421,8 +423,7 @@ namespace FoodOrder.Infrastructure.Migrations
 
                     b.HasKey("CartId");
 
-                    b.HasIndex("UserId")
-                        .IsUnique();
+                    b.HasIndex("UserId");
 
                     b.ToTable("Carts");
                 });
@@ -466,6 +467,9 @@ namespace FoodOrder.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("OrderId"));
 
+                    b.Property<string>("Address")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -476,9 +480,17 @@ namespace FoodOrder.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
+                    b.Property<int>("PaymentMethod")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PaymentStatus")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Reason")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.Property<decimal>("SubtotalAmount")
                         .HasPrecision(18, 2)
@@ -570,24 +582,31 @@ namespace FoodOrder.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal?>("DiscountAmount")
+                    b.Property<decimal>("DiscountAmount")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<float?>("DiscountPercent")
-                        .HasColumnType("real");
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
-                    b.Property<decimal?>("MinOrderAmount")
+                    b.Property<decimal>("MaxDiscountPrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("MinOrderPrice")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Type")
                         .HasColumnType("int");
 
                     b.HasKey("VoucherId");
@@ -706,7 +725,14 @@ namespace FoodOrder.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("FoodOrder.Domain.Entities.Foods.Promotion", "Promotion")
+                        .WithMany("Combos")
+                        .HasForeignKey("PromotionId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.Navigation("FoodCategorys");
+
+                    b.Navigation("Promotion");
                 });
 
             modelBuilder.Entity("FoodOrder.Domain.Entities.Foods.ComboDetail", b =>
@@ -736,30 +762,20 @@ namespace FoodOrder.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("FoodOrder.Domain.Entities.Foods.Promotion", "Promotion")
+                        .WithMany("Foods")
+                        .HasForeignKey("PromotionId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.Navigation("FoodCategory");
+
+                    b.Navigation("Promotion");
                 });
 
-            modelBuilder.Entity("FoodOrder.Domain.Entities.Foods.Promotion", b =>
-                {
-                    b.HasOne("FoodOrder.Domain.Entities.Foods.Combo", "Combo")
-                        .WithOne("Promotion")
-                        .HasForeignKey("FoodOrder.Domain.Entities.Foods.Promotion", "ComboId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("FoodOrder.Domain.Entities.Foods.Food", "Food")
-                        .WithOne("Promotion")
-                        .HasForeignKey("FoodOrder.Domain.Entities.Foods.Promotion", "FoodId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("Combo");
-
-                    b.Navigation("Food");
-                });
-
-            modelBuilder.Entity("FoodOrder.Domain.Entities.Identity.Localtion", b =>
+            modelBuilder.Entity("FoodOrder.Domain.Entities.Identity.Location", b =>
                 {
                     b.HasOne("FoodOrder.Domain.Entities.Identity.AppUser", "Users")
-                        .WithMany("Localtions")
+                        .WithMany("Locations")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -794,8 +810,8 @@ namespace FoodOrder.Infrastructure.Migrations
             modelBuilder.Entity("FoodOrder.Domain.Entities.Orders.Cart", b =>
                 {
                     b.HasOne("FoodOrder.Domain.Entities.Identity.AppUser", "AppUser")
-                        .WithOne("Cart")
-                        .HasForeignKey("FoodOrder.Domain.Entities.Orders.Cart", "UserId")
+                        .WithMany("Cart")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -926,8 +942,6 @@ namespace FoodOrder.Infrastructure.Migrations
                     b.Navigation("Images");
 
                     b.Navigation("OrderDetail");
-
-                    b.Navigation("Promotion");
                 });
 
             modelBuilder.Entity("FoodOrder.Domain.Entities.Foods.Food", b =>
@@ -939,8 +953,6 @@ namespace FoodOrder.Infrastructure.Migrations
                     b.Navigation("Images");
 
                     b.Navigation("OrderDetail");
-
-                    b.Navigation("Promotion");
                 });
 
             modelBuilder.Entity("FoodOrder.Domain.Entities.Foods.FoodCategory", b =>
@@ -952,11 +964,18 @@ namespace FoodOrder.Infrastructure.Migrations
                     b.Navigation("Images");
                 });
 
+            modelBuilder.Entity("FoodOrder.Domain.Entities.Foods.Promotion", b =>
+                {
+                    b.Navigation("Combos");
+
+                    b.Navigation("Foods");
+                });
+
             modelBuilder.Entity("FoodOrder.Domain.Entities.Identity.AppUser", b =>
                 {
                     b.Navigation("Cart");
 
-                    b.Navigation("Localtions");
+                    b.Navigation("Locations");
 
                     b.Navigation("Orders");
                 });

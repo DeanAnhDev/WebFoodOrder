@@ -12,6 +12,7 @@ namespace FoodOrder.Application.DTOs.Foods.Food.Commands
         public bool Status { get; set; }
         public int Quantity { get; set; }
         public ImageDto? Images { get; set; }
-       
+        public int? PromotionId { get; set; }
+
     }
 }

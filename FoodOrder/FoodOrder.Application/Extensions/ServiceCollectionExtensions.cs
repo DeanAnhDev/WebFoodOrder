@@ -5,6 +5,7 @@ using FoodOrder.Application.Services.Auth;
 using FoodOrder.Application.Services.Carts;
 using FoodOrder.Application.Services.Foods;
 using FoodOrder.Application.Services.Identity;
+using FoodOrder.Application.Services.Orders;
 using Microsoft.Extensions.DependencyInjection;
 
 
@@ -32,6 +33,11 @@ namespace FoodOrder.Application.Extensions
             services.AddScoped<ICartService, CartService>();
 
             services.AddScoped<IUserService, UserServices>();
+
+            services.AddScoped<ILocationService, LocationServices>();
+
+            services.AddScoped<IVoucherServices, VoucherService>();
+            services.AddScoped<IPromotionService, PromotionService>();
             return services;
         }
     }

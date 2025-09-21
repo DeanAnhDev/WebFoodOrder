@@ -20,6 +20,7 @@ namespace FoodOrder.Domain.Entities.Foods
         public OrderDetail? OrderDetail { get; set; }
         public ICollection<CartItem>? CartItems { get; set; }
         public Promotion? Promotion { get; set; }
+        public int? PromotionId { get; set; }
         public Images? Images { get; set; }
     }
 }

@@ -13,5 +13,6 @@ namespace FoodOrder.Application.Interfaces
         Task<bool> DeleteAsync(int id);
         Task<PagedResult<FoodDto>> GetPagedFoodsAsync(PagedQuery query);
         Task<FoodDto> GetByIdAsync(int id);
+        Task<bool> UpdateFoodStatusAsync(int id, bool isActive);
     }
 }

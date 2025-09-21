@@ -1,9 +1,6 @@
 ﻿using AutoMapper;
-using FoodOrder.Application.DTOs.Foods.Combo.Queries;
-using FoodOrder.Application.DTOs.Foods.Food.Queries;
 using FoodOrder.Application.DTOs.Foods.FoodCategory.Commands;
 using FoodOrder.Application.DTOs.Foods.FoodCategory.Queries;
-using FoodOrder.Application.DTOs.Foods.Image;
 using FoodOrder.Application.Interfaces;
 using FoodOrder.Domain.Entities.Foods;
 using FoodOrder.Domain.Entities.Image;
@@ -24,6 +21,8 @@ namespace FoodOrder.Application.Services.Foods
             _mapper = mapper;
             _slugService = slugService;
         }
+
+        #region queries
         public async Task<IEnumerable<FoodCategoryDto>> GetAllAsync()
         {
             var foodCategories = await _unitOfWork.FoodCategories.GetAllAsync();
@@ -42,9 +41,49 @@ namespace FoodOrder.Application.Services.Foods
             return _mapper.Map<FoodCategoryDto>(foodCategory);
         }
 
+  
+        public async Task<IEnumerable<FoodCategoryListFoodDto?>> GetFoodCategoriesWithFoodsAsync()
+        {
+            var foodCategoriesWithFoods = await _unitOfWork.FoodCategories.GetFoodCategoriesWithFoods().ToListAsync();
+            return _mapper.Map<IEnumerable<FoodCategoryListFoodDto>>(foodCategoriesWithFoods);
+        }
+
+        public async Task<FoodCategoryListFoodDto?> GetFoodsByCategorySlugAsync(string categorySlug)
+        {
+            var entity = await _unitOfWork.FoodCategories
+                .GetFoodsByCategorySlug(categorySlug)
+                .FirstOrDefaultAsync();
+
+            if (entity == null)
+                return null;
+
+            var dto = _mapper.Map<FoodCategoryListFoodDto>(entity);
+            return dto;
+        }
+        #endregion
+
         #region crud
         public async Task<bool> AddAsync(FoodCategoryDtoCreate foodCategoryDto)
         {
+            // validate cơ bản
+            if (string.IsNullOrWhiteSpace(foodCategoryDto.CategoryName))
+                throw new ArgumentException("Tên danh mục không được để trống");
+
+            if (foodCategoryDto.CategoryName.Length > 100)
+                throw new ArgumentException("Tên danh mục tối đa 100 ký tự");
+
+            if (!string.IsNullOrWhiteSpace(foodCategoryDto.Description) &&
+                foodCategoryDto.Description.Length > 500)
+                throw new ArgumentException("Mô tả tối đa 500 ký tự");
+
+            if (foodCategoryDto.Images == null || string.IsNullOrEmpty(foodCategoryDto.Images.Id))
+                throw new ArgumentException("Danh mục cần có ảnh");
+
+            // validate business rule: không trùng tên
+            var existCategory = await _unitOfWork.FoodCategories
+            .FirstOrDefaultAsync(c => c.CategoryName == foodCategoryDto.CategoryName.Trim());
+            if (existCategory != null)
+                throw new InvalidOperationException("Tên danh mục đã tồn tại");
 
             if (foodCategoryDto.Images == null || string.IsNullOrEmpty(foodCategoryDto.Images.Id))
             {
@@ -71,6 +110,24 @@ namespace FoodOrder.Application.Services.Foods
                 if (existing == null)
                     throw new ArgumentException("Category not found");
 
+                if (string.IsNullOrWhiteSpace(dto.CategoryName))
+                    throw new ArgumentException("Tên danh mục không được để trống");
+
+                if (dto.CategoryName.Length > 100)
+                    throw new ArgumentException("Tên danh mục tối đa 100 ký tự");
+
+                if (!string.IsNullOrWhiteSpace(dto.Description) &&
+                    dto.Description.Length > 500)
+                    throw new ArgumentException("Mô tả tối đa 500 ký tự");
+
+                if (dto.Images == null || string.IsNullOrEmpty(dto.Images.Id))
+                    throw new ArgumentException("Danh mục cần có ảnh");
+
+                var existCategory = await _unitOfWork.FoodCategories
+                    .FirstOrDefaultAsync(c => c.CategoryName == dto.CategoryName.Trim());
+                if (existCategory != null && existCategory.FoodCategoryId != dto.FoodCategoryId)
+                    throw new InvalidOperationException("Tên danh mục đã tồn tại");
+
                 if (!string.IsNullOrWhiteSpace(dto.CategoryName))
                 {
                     existing.CategoryName = dto.CategoryName;
@@ -91,7 +148,7 @@ namespace FoodOrder.Application.Services.Foods
                     {
                         if (dbImage != null)
                         {
-                          var imageId = dbImage.Id;
+                            var imageId = dbImage.Id;
                             await _unitOfWork.Images.DeleteAsync(imageId!);
                         }
 
@@ -137,26 +194,6 @@ namespace FoodOrder.Application.Services.Foods
         }
 
         #endregion
-
-        public async Task<IEnumerable<FoodCategoryListFoodDto?>> GetFoodCategoriesWithFoodsAsync()
-        {
-            var foodCategoriesWithFoods = await _unitOfWork.FoodCategories.GetFoodCategoriesWithFoods().ToListAsync();
-            return _mapper.Map<IEnumerable<FoodCategoryListFoodDto>>(foodCategoriesWithFoods);
-        }
-
-        public async Task<FoodCategoryListFoodDto?> GetFoodsByCategorySlugAsync(string categorySlug)
-        {
-            var entity = await _unitOfWork.FoodCategories
-                .GetFoodsByCategorySlug(categorySlug)
-                .FirstOrDefaultAsync();
-
-            if (entity == null)
-                return null;
-
-            var dto = _mapper.Map<FoodCategoryListFoodDto>(entity);
-            return dto;
-        }
-
 
 
 

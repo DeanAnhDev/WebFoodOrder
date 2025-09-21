@@ -160,5 +160,28 @@ namespace FoodOrder.WebAPI.Controllers
             }
         }
 
+        [HttpPatch("{id}/status")]
+        public async Task<IActionResult> UpdateFoodStatus(int id, [FromBody] bool isActive)
+        {
+            try
+            {
+                var result = await _foodService.UpdateFoodStatusAsync(id, isActive);
+                if (!result)
+                    return StatusCode(StatusCodes.Status500InternalServerError,
+                        new { message = "Cập nhật trạng thái thất bại" });
+
+                return Ok(new { message = "Cập nhật trạng thái thành công" });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    new { message = ex.Message });
+            }
+        }
+
     }
 }

@@ -1,5 +1,4 @@
-﻿using FoodOrder.Domain.Entities.Foods;
-using FoodOrder.Domain.Entities.Orders;
+﻿using FoodOrder.Domain.Entities.Orders;
 
 namespace FoodOrder.Domain.Interfaces
 {

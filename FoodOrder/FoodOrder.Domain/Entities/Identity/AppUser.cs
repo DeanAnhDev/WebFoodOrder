@@ -8,7 +8,7 @@ namespace FoodOrder.Domain.Entities.Identity
         public string? FullName { get; set; }
         public string? Location { get; set; }
         public ICollection<Order>? Orders { get; set; }
-        public Cart? Cart { get; set; }
-        public ICollection<Localtion>? Localtions { get; set; }
+        public ICollection<Cart>? Cart { get; set; }
+        public ICollection<Location>? Locations { get; set; }
     }
 }
