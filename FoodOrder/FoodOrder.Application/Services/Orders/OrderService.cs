@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FoodOrder.Application.DTOs.Ahamove;
 using FoodOrder.Application.DTOs.Orders;
 using FoodOrder.Application.Interfaces;
 using FoodOrder.Domain.Entities.Orders;
@@ -11,11 +12,13 @@ namespace FoodOrder.Application.Services.Orders
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly IAhamoveService _ahamoveService;
 
-        public OrderService(IUnitOfWork unitOfWork, IMapper mapper)
+        public OrderService(IUnitOfWork unitOfWork, IMapper mapper, IAhamoveService ahamoveService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _ahamoveService = ahamoveService;
         }
 
         public async Task<OrderDto> CreateOrderAsync(CreateOrderDto createOrderDto, int userId)
@@ -129,7 +132,7 @@ namespace FoodOrder.Application.Services.Orders
 
                         if (food.Promotion != null && food.Promotion.IsActive)
                         {
-                            var now = DateTime.UtcNow;
+                            var now = DateTime.Now;
                             if (now >= food.Promotion.StartDate && now <= food.Promotion.EndDate)
                             {
                                 if (food.Promotion.Type == Domain.Entities.Foods.PromotionType.Amount)
@@ -187,7 +190,7 @@ namespace FoodOrder.Application.Services.Orders
 
                         if (combo.Promotion != null && combo.Promotion.IsActive)
                         {
-                            var now = DateTime.UtcNow;
+                            var now = DateTime.Now;
                             if (now >= combo.Promotion.StartDate && now <= combo.Promotion.EndDate)
                             {
                                 if (combo.Promotion.Type == Domain.Entities.Foods.PromotionType.Amount)
@@ -261,10 +264,53 @@ namespace FoodOrder.Application.Services.Orders
                     await _unitOfWork.Vouchers.UpdateAsync(voucher);
                 }
 
-                // 6. Tính tổng tiền cuối cùng
-                var totalAmount = Math.Max(0, subtotalAmount - voucherDiscountAmount);
+                // 6. Tính phí giao hàng (nếu có địa chỉ giao hàng)
+                decimal shipFee = 0;
+                if (createOrderDto.LocationId.HasValue)
+                {
+                    try
+                    {
+                        // Lấy thông tin user để có phone number
+                        var user = await _unitOfWork.AppUsers.GetByIdAsync(userId);
+                        if (user != null && !string.IsNullOrEmpty(user.PhoneNumber))
+                        {
+                            var location = await _unitOfWork.Locations.GetByIdAsync(createOrderDto.LocationId.Value);
+                            if (location != null)
+                            {
+                                var shippingRequest = new EstimateShippingFeeRequestDto
+                                {
+                                    ToAddress = location.Address,
+                                    ToName = user.FullName ?? "Khách hàng",
+                                    ToPhone = user.PhoneNumber,
+                                    ItemValue = 0,
+                                    CodAmount = 0, // COD = tổng tiền sau discount
+                                    Remarks = $"Đơn hàng #{DateTime.Now.Ticks.ToString()[^6..]}"
+                                };
 
-                // 7. Tạo Order
+                                var shippingResponse = await _ahamoveService.EstimateShippingFeeAsync(shippingRequest);
+                                if (shippingResponse.Success)
+                                {
+                                    shipFee = shippingResponse.Fee;
+                                }
+                                else
+                                {
+                                    // Log lỗi nhưng không fail order, để shipFee = 0
+                                    Console.WriteLine($"Không thể tính phí ship: {shippingResponse.Message}");
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        // Log lỗi nhưng không fail order, để shipFee = 0
+                        Console.WriteLine($"Lỗi khi tính phí ship: {ex.Message}");
+                    }
+                }
+
+                // 7. Tính tổng tiền cuối cùng (bao gồm phí ship)
+                var totalAmount = Math.Max(0, subtotalAmount - voucherDiscountAmount + shipFee);
+
+                // 8. Tạo Order
                 var order = new Order
                 {
                     UserId = userId,
@@ -277,24 +323,24 @@ namespace FoodOrder.Application.Services.Orders
                     SubtotalAmount = subtotalAmount,
                     VoucherDiscountAmount = voucherDiscountAmount,
                     TotalAmount = totalAmount,
-                    ShipFee = createOrderDto.LocationId.HasValue ? 0 : 0, // Phí ship = 0 cho bán tại quầy, có thể tính phí cho giao hàng
+                    ShipFee = shipFee,
                     VoucherId = createOrderDto.VoucherId,
                     Reason = createOrderDto.Reason?.Trim(),
                     OrderDetails = orderDetails
                 };
 
-                // 8. Lưu Order
+                // 9. Lưu Order
                 await _unitOfWork.Orders.AddAsync(order);
                 await _unitOfWork.CompleteAsync();
 
-                // 9. Xóa cart items sau khi tạo order thành công
+                // 10. Xóa cart items sau khi tạo order thành công
                 foreach (var cartItem in cart.CartItems.ToList())
                 {
                     await _unitOfWork.CartItems.RemoveAsync(cartItem);
                 }
                 await _unitOfWork.CompleteAsync();
 
-                // 10. Map và trả về result
+                // 11. Map và trả về result
                 var orderDto = _mapper.Map<OrderDto>(order);
                 return orderDto;
             }

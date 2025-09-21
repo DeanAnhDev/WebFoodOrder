@@ -21,8 +21,8 @@ namespace FoodOrder.WebAPI.Controllers
         /// <summary>
         /// Tạo đơn hàng mới từ giỏ hàng
         /// </summary>
-        /// <param name="createOrderDto">Thông tin đơn hàng (LocationId = null cho bán tại quầy)</param>
-        /// <returns>Thông tin đơn hàng đã tạo</returns>
+        /// <param name="createOrderDto">Thông tin đơn hàng (LocationId = null cho bán tại quầy, có LocationId sẽ tự động tính phí ship qua Ahamove)</param>
+        /// <returns>Thông tin đơn hàng đã tạo bao gồm phí giao hàng</returns>
         [HttpPost]
         public async Task<ActionResult<OrderDto>> CreateOrder([FromBody] CreateOrderDto createOrderDto)
         {

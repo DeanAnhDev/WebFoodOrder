@@ -31,7 +31,9 @@ namespace FoodOrder.Domain.Entities.Orders
     public enum OrderStatus
     {
         Pending,        // Chờ xử lý
+        Accepted,       // Nhà hàng đã xác nhận 
         Processing,     // Đang xử lý
+        Done,           //Nhà hàng đã làm xong
         Shipping,       // Đang giao hàng
         Completed,      // Hoàn thành
         Cancelled       // Đã hủy
