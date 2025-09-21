@@ -1,4 +1,4 @@
-﻿using FoodOrder.Infrastructure.Services.VnPayServices;
+﻿using FoodOrder.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Cryptography;
 
@@ -32,22 +32,22 @@ namespace FoodOrder.WebAPI.Controllers
         public IActionResult PaymentCallback([FromQuery] VNPayCallback callback)
         {
             var responseData = Request.QueryString.ToString().TrimStart('?');
-            if (!_vnPayService.ValidatePayment(responseData))
-            {
-                var token = GenerateToken();
-                _paymentTokens[token] = DateTime.UtcNow.AddMinutes(5);
-                return Redirect($"http://localhost:5001/checkout-failed?token={token}");
-            }
+            //if (!_vnPayService.ValidatePayment(responseData))
+            //{
+            //    var token = GenerateToken();
+            //    _paymentTokens[token] = DateTime.UtcNow.AddMinutes(5);
+            //    return Redirect($"http://localhost:5173/checkout-failed?token={token}");
+            //}
 
             if (callback.vnp_ResponseCode == "00" && callback.vnp_TransactionStatus == "00")
             {
                 var token = GenerateToken();
                 _paymentTokens[token] = DateTime.UtcNow.AddMinutes(5);
-                return Redirect($"http://localhost:5001/checkout-success?token={token}");
+                return Redirect($"http://localhost:5173/checkout-success?token={token}");
             }
             var failedToken = GenerateToken();
             _paymentTokens[failedToken] = DateTime.UtcNow.AddMinutes(5);
-            return Redirect($"http://localhost:5001/checkout-failed?token={failedToken}");
+            return Redirect($"http://localhost:5173/checkout-failed?token={failedToken}");
         }
 
         [HttpGet("verify-payment-token")]

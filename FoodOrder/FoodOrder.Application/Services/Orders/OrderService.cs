@@ -13,15 +13,17 @@ namespace FoodOrder.Application.Services.Orders
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IAhamoveService _ahamoveService;
+        private readonly IVNPayService _vnPayService;
 
-        public OrderService(IUnitOfWork unitOfWork, IMapper mapper, IAhamoveService ahamoveService)
+        public OrderService(IUnitOfWork unitOfWork, IMapper mapper, IAhamoveService ahamoveService, IVNPayService vnPayService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _ahamoveService = ahamoveService;
+            _vnPayService = vnPayService;
         }
 
-        public async Task<OrderDto> CreateOrderAsync(CreateOrderDto createOrderDto, int userId)
+        public async Task<CreateOrderResponseDto> CreateOrderAsync(CreateOrderDto createOrderDto, int userId)
         {
             try
             {
@@ -310,13 +312,20 @@ namespace FoodOrder.Application.Services.Orders
                 // 7. Tính tổng tiền cuối cùng (bao gồm phí ship)
                 var totalAmount = Math.Max(0, subtotalAmount - voucherDiscountAmount + shipFee);
 
+                var paymentStatus = PaymentStatus.Unpaid;
+
+                if(!createOrderDto.LocationId.HasValue && createOrderDto.PaymentMethod == PaymentMethod.CashOnDelivery)
+                {
+                    paymentStatus = PaymentStatus.Paid;
+                }
+
                 // 8. Tạo Order
                 var order = new Order
                 {
                     UserId = userId,
                     CreatedAt = DateTime.UtcNow,
                     Status = Domain.Entities.Orders.OrderStatus.Pending,
-                    PaymentStatus = Domain.Entities.Orders.PaymentStatus.Unpaid,
+                    PaymentStatus = paymentStatus,
                     PaymentMethod = createOrderDto.PaymentMethod,
                     Note = createOrderDto.Note?.Trim(),
                     Address = deliveryAddress,
@@ -340,9 +349,40 @@ namespace FoodOrder.Application.Services.Orders
                 }
                 await _unitOfWork.CompleteAsync();
 
-                // 11. Map và trả về result
+                // 11. Map order result
                 var orderDto = _mapper.Map<OrderDto>(order);
-                return orderDto;
+
+                // 12. Tạo payment URL nếu payment method là BankTransfer
+                string? paymentUrl = null;
+                string message = "Đặt hàng thành công";
+
+                if (createOrderDto.PaymentMethod == Domain.Entities.Orders.PaymentMethod.BankTransfer)
+                {
+                    try
+                    {
+                        var orderInfo = $"Thanh toán đơn hàng #{order.OrderCode} - {orderDetails.Count} món";
+                        paymentUrl = _vnPayService.CreatePaymentUrl(
+                            amount: order.TotalAmount,
+                            orderId: order.OrderCode,
+                            orderInfo: orderInfo
+                        );
+                        message = "Đặt hàng thành công. Vui lòng thanh toán để hoàn tất đơn hàng.";
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Lỗi tạo payment URL: {ex.Message}");
+                        // Không fail order, chỉ log lỗi
+                        message = "Đặt hàng thành công nhưng không thể tạo link thanh toán. Vui lòng liên hệ hỗ trợ.";
+                    }
+                }
+
+                return new CreateOrderResponseDto
+                {
+                    Order = orderDto,
+                    PaymentUrl = paymentUrl,
+                    Message = message,
+                    Success = true
+                };
             }
             catch (ArgumentException)
             {
@@ -359,6 +399,50 @@ namespace FoodOrder.Application.Services.Orders
             catch (Exception ex)
             {
                 throw new InvalidOperationException("Có lỗi xảy ra khi tạo đơn hàng", ex);
+            }
+        }
+
+        public async Task<bool> ProcessPaymentCallbackAsync(string orderCode, string responseData)
+        {
+            try
+            {
+                // 1. Validate payment với VNPay
+                var isValidPayment = _vnPayService.ValidatePayment(responseData);
+                if (!isValidPayment)
+                {
+                    Console.WriteLine($"Invalid VNPay payment for order {orderCode}");
+                    return false;
+                }
+
+                // 2. Tìm order theo orderCode
+                var order = await _unitOfWork.Orders.FirstOrDefaultAsync(o => o.OrderCode == orderCode);
+                if (order == null)
+                {
+                    Console.WriteLine($"Order not found: {orderCode}");
+                    return false;
+                }
+
+                // 3. Kiểm tra order đã được thanh toán chưa
+                if (order.PaymentStatus == Domain.Entities.Orders.PaymentStatus.Paid)
+                {
+                    Console.WriteLine($"Order {orderCode} already paid");
+                    return true; // Đã thanh toán rồi
+                }
+
+                // 4. Cập nhật payment status
+                order.PaymentStatus = Domain.Entities.Orders.PaymentStatus.Paid;
+                order.Status = Domain.Entities.Orders.OrderStatus.Processing; // Chuyển sang đang xử lý
+
+                await _unitOfWork.Orders.UpdateAsync(order);
+                await _unitOfWork.CompleteAsync();
+
+                Console.WriteLine($"Payment processed successfully for order {orderCode}");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error processing payment callback for order {orderCode}: {ex.Message}");
+                return false;
             }
         }
     }

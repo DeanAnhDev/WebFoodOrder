@@ -5,6 +5,7 @@ namespace FoodOrder.Application.Interfaces
 {
     public interface IOrderService
     {
-        Task<OrderDto> CreateOrderAsync(CreateOrderDto createOrderDto, int userId);
+        Task<CreateOrderResponseDto> CreateOrderAsync(CreateOrderDto createOrderDto, int userId);
+        Task<bool> ProcessPaymentCallbackAsync(string orderCode, string responseData);
     }
 }

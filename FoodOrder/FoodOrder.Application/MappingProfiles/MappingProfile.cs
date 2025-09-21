@@ -72,6 +72,11 @@ namespace FoodOrder.Application.MappingProfiles
             //Mapping from Order to OrderDto
             CreateMap<Order, OrderDto>().ReverseMap();
             CreateMap<Order, CreateOrderDto>().ReverseMap();
+            CreateMap<OrderDto, CreateOrderResponseDto>()
+                .ForMember(dest => dest.Order, opt => opt.MapFrom(src => src))
+                .ForMember(dest => dest.PaymentUrl, opt => opt.Ignore())
+                .ForMember(dest => dest.Message, opt => opt.Ignore())
+                .ForMember(dest => dest.Success, opt => opt.MapFrom(src => true));
 
             //Mapping from OrderDetail to OrderDetailDto
             CreateMap<OrderDetail, OrderDetailDto>().ReverseMap();
