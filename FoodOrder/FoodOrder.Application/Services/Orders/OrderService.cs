@@ -313,10 +313,12 @@ namespace FoodOrder.Application.Services.Orders
                 var totalAmount = Math.Max(0, subtotalAmount - voucherDiscountAmount + shipFee);
 
                 var paymentStatus = PaymentStatus.Unpaid;
+                var orderStatus = OrderStatus.Pending;
 
                 if (!createOrderDto.LocationId.HasValue && createOrderDto.PaymentMethod == PaymentMethod.CashOnDelivery)
                 {
                     paymentStatus = PaymentStatus.Paid;
+                    orderStatus = OrderStatus.Completed;
                 }
 
                 // 8. Tạo Order
@@ -324,7 +326,7 @@ namespace FoodOrder.Application.Services.Orders
                 {
                     UserId = userId,
                     CreatedAt = DateTime.UtcNow,
-                    Status = Domain.Entities.Orders.OrderStatus.Pending,
+                    Status = orderStatus,
                     PaymentStatus = paymentStatus,
                     PaymentMethod = createOrderDto.PaymentMethod,
                     Note = createOrderDto.Note?.Trim(),
@@ -472,6 +474,10 @@ namespace FoodOrder.Application.Services.Orders
                 // 3. Cập nhật payment status thành công
                 order.PaymentStatus = Domain.Entities.Orders.PaymentStatus.Paid;
                 order.Status = Domain.Entities.Orders.OrderStatus.Processing;
+                if(order.Address == "Bán tại quầy")
+                {
+                    order.Status = OrderStatus.Completed;
+                }
 
                 await _unitOfWork.Orders.UpdateAsync(order);
 
