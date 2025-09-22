@@ -125,6 +125,38 @@ namespace FoodOrder.WebAPI.Controllers
                 return StatusCode(500, new { message = "Lỗi server!" });
             }
         }
+
+        [Authorize(Roles = "Admin")]
+        [HttpGet("customers")]
+        public async Task<IActionResult> GetCustomers([FromQuery] GetCustomersRequestDto request)
+        {
+            try
+            {
+                if (request.PageNumber <= 0)
+                    request.PageNumber = 1;
+
+                if (request.PageSize <= 0 || request.PageSize > 100)
+                    request.PageSize = 10;
+
+                var result = await _userService.GetCustomersAsync(request);
+
+                return Ok(new
+                {
+                    message = "Lấy danh sách khách hàng thành công",
+                    data = result.Items,
+                    totalCount = result.TotalCount,
+                    pageNumber = result.PageNumber,
+                    pageSize = result.PageSize,
+                    totalPages = result.TotalPages,
+                    hasNextPage = result.HasNextPage,
+                    hasPreviousPage = result.HasPreviousPage
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Lỗi server!", error = ex.Message });
+            }
+        }
     }
 
 

@@ -2,6 +2,7 @@
 using FoodOrder.Domain.Entities.Identity;
 using FoodOrder.Domain.Entities.Image;
 using FoodOrder.Domain.Entities.Orders;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;

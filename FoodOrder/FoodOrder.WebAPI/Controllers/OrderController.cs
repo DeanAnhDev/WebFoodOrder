@@ -44,18 +44,6 @@ namespace FoodOrder.WebAPI.Controllers
             }
         }
 
-        /// <summary>
-        /// Lấy danh sách đơn hàng với các filter và phân trang
-        /// </summary>
-        /// <param name="orderCode">Mã đơn hàng (tìm kiếm)</param>
-        /// <param name="userId">ID người dùng</param>
-        /// <param name="status">Trạng thái đơn hàng</param>
-        /// <param name="paymentStatus">Trạng thái thanh toán</param>
-        /// <param name="page">Trang hiện tại (default: 1)</param>
-        /// <param name="pageSize">Số lượng item mỗi trang (default: 10)</param>
-        /// <param name="sortBy">Trường sắp xếp (default: CreatedAt)</param>
-        /// <param name="sortOrder">Thứ tự sắp xếp: asc/desc (default: desc)</param>
-        /// <returns>Danh sách đơn hàng với thông tin phân trang</returns>
         [HttpGet]
         public async Task<ActionResult<GetOrdersResponseDto>> GetOrders(
             [FromQuery] string? orderCode = null,
