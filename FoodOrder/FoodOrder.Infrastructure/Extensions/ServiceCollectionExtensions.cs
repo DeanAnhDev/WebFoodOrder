@@ -52,6 +52,8 @@ namespace FoodOrder.Infrastructure.Extensions
 
             services.AddScoped<IUserRepository, UserRepository>();
 
+            services.AddScoped<IOrderRepository, OrderRepository>();
+
             services.AddScoped<IRedisService, RedisService>();
 
             services.AddScoped<Application.Interfaces.IVNPayService, VNPayService>();

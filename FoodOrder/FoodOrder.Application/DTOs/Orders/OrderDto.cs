@@ -1,3 +1,4 @@
+using FoodOrder.Application.DTOs.Foods.Image;
 using FoodOrder.Domain.Entities.Orders;
 
 namespace FoodOrder.Application.DTOs.Orders
@@ -33,5 +34,6 @@ namespace FoodOrder.Application.DTOs.Orders
         public decimal DiscountedPrice { get; set; }
         public int Quantity { get; set; }
         public decimal TotalPrice { get; set; }
+        public ImageDto? ItemImage { get; set; } // Ảnh của Food hoặc Combo
     }
 }

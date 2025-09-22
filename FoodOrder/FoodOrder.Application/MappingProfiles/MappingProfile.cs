@@ -79,7 +79,11 @@ namespace FoodOrder.Application.MappingProfiles
                 .ForMember(dest => dest.Success, opt => opt.MapFrom(src => true));
 
             //Mapping from OrderDetail to OrderDetailDto
-            CreateMap<OrderDetail, OrderDetailDto>().ReverseMap();
+            CreateMap<OrderDetail, OrderDetailDto>()
+                .ForMember(dest => dest.ItemImage, opt => opt.MapFrom(src =>
+                    src.Food != null ? src.Food.Images :
+                    src.Combo != null ? src.Combo.Images : null))
+                .ReverseMap();
         }
     }
 }

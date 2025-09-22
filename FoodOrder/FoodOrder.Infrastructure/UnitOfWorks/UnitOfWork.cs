@@ -18,7 +18,7 @@ namespace FoodOrder.Infrastructure.UnitOfWorks
         public IUserRepository AppUsers { get; }
         public IRepository<AppRole> AppRoles { get; }
         public ICartItemRepository CartItems { get; }
-        public IRepository<Order> Orders { get; }
+        public IOrderRepository Orders { get; }
         public ICartRepository Carts { get; }
         public IRepository<OrderDetail> OrderDetails { get; }
         public IRepository<Images> Images { get; }
@@ -35,7 +35,7 @@ namespace FoodOrder.Infrastructure.UnitOfWorks
                           IRepository<AppRole> appRoleRepo,
                           ICartRepository cartRepo,
                           ICartItemRepository cartItemRepo,
-                          IRepository<Order> orderRepo,
+                          IOrderRepository orderRepo,
                           IRepository<OrderDetail> orderDetailRepo,
                           IRepository<Images> orderImageRepo,
                           ILocationRepository locations,

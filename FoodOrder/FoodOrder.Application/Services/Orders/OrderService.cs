@@ -23,6 +23,7 @@ namespace FoodOrder.Application.Services.Orders
             _vnPayService = vnPayService;
         }
 
+        #region crud 
         public async Task<CreateOrderResponseDto> CreateOrderAsync(CreateOrderDto createOrderDto, int userId)
         {
             try
@@ -325,7 +326,7 @@ namespace FoodOrder.Application.Services.Orders
                 var order = new Order
                 {
                     UserId = userId,
-                    CreatedAt = DateTime.UtcNow,
+                    CreatedAt = DateTime.Now,
                     Status = orderStatus,
                     PaymentStatus = paymentStatus,
                     PaymentMethod = createOrderDto.PaymentMethod,
@@ -474,7 +475,7 @@ namespace FoodOrder.Application.Services.Orders
                 // 3. Cập nhật payment status thành công
                 order.PaymentStatus = Domain.Entities.Orders.PaymentStatus.Paid;
                 order.Status = Domain.Entities.Orders.OrderStatus.Processing;
-                if(order.Address == "Bán tại quầy")
+                if (order.Address == "Bán tại quầy")
                 {
                     order.Status = OrderStatus.Completed;
                 }
@@ -581,6 +582,221 @@ namespace FoodOrder.Application.Services.Orders
             {
                 Console.WriteLine($"Error processing payment failure for order {orderCode}: {ex.Message}");
                 return false;
+            }
+        }
+
+        #endregion
+
+
+
+
+        public async Task<GetOrdersResponseDto> GetAllOrdersAsync(GetOrdersRequestDto request)
+        {
+            try
+            {
+                // Use the new OrderRepository method
+                var (orders, totalCount) = await _unitOfWork.Orders.GetOrdersWithPaginationAsync(
+                    orderCode: request.OrderCode,
+                    userId: request.UserId,
+                    status: request.Status,
+                    paymentStatus: request.PaymentStatus,
+                    page: request.Page,
+                    pageSize: request.PageSize,
+                    sortBy: request.SortBy ?? "CreatedAt",
+                    sortOrder: request.SortOrder ?? "desc"
+                );
+
+                // Get statistics with the same filters (excluding status filter for complete statistics)
+                var statistics = await GetOrderStatisticsAsync(
+                    request.OrderCode,
+                    request.UserId,
+                    request.PaymentStatus
+                );
+
+                // Map to DTOs
+                var orderDtos = _mapper.Map<List<OrderDto>>(orders);
+
+                return new GetOrdersResponseDto
+                {
+                    Orders = orderDtos,
+                    TotalCount = totalCount,
+                    CurrentPage = request.Page,
+                    PageSize = request.PageSize,
+                    Statistics = statistics
+                };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting orders: {ex.Message}");
+                throw;
+            }
+        }
+
+        public async Task<OrderStatisticsDto> GetOrderStatisticsAsync(
+            string? orderCode = null,
+            int? userId = null,
+            PaymentStatus? paymentStatus = null)
+        {
+            try
+            {
+                var statusCounts = await _unitOfWork.Orders.GetOrderCountByStatusAsync(
+                    orderCode, userId, paymentStatus);
+
+                var statusCountDtos = statusCounts.Select(kvp => new OrderStatusCountDto
+                {
+                    Status = kvp.Key,
+                    Count = kvp.Value,
+                    StatusName = GetStatusDisplayName(kvp.Key)
+                }).ToList();
+
+                var totalOrders = statusCounts.Values.Sum();
+
+                return new OrderStatisticsDto
+                {
+                    StatusCounts = statusCountDtos,
+                    TotalOrders = totalOrders
+                };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting order statistics: {ex.Message}");
+                throw;
+            }
+        }
+
+        private static string GetStatusDisplayName(OrderStatus status)
+        {
+            return status switch
+            {
+                OrderStatus.Pending => "Chờ xử lý",
+                OrderStatus.Accepted => "Đã xác nhận",
+                OrderStatus.Processing => "Đang xử lý",
+                OrderStatus.Done => "Đã làm xong",
+                OrderStatus.Shipping => "Đang giao hàng",
+                OrderStatus.Completed => "Hoàn thành",
+                OrderStatus.Cancelled => "Đã hủy",
+                _ => status.ToString()
+            };
+        }
+
+        public async Task<UpdateOrderStatusResponseDto> UpdateOrderStatusAsync(UpdateOrderStatusDto request)
+        {
+            try
+            {
+                // Validate input
+                if (request.OrderId <= 0)
+                {
+                    return new UpdateOrderStatusResponseDto
+                    {
+                        Success = false,
+                        Message = "OrderId không hợp lệ"
+                    };
+                }
+
+                // Find the order
+                var order = await _unitOfWork.Orders.FirstOrDefaultAsync(o => o.OrderId == request.OrderId);
+                if (order == null)
+                {
+                    return new UpdateOrderStatusResponseDto
+                    {
+                        Success = false,
+                        Message = "Không tìm thấy đơn hàng"
+                    };
+                }
+
+                // Validate status transition
+                if (!IsValidStatusTransition(order.Status, request.NewStatus))
+                {
+                    return new UpdateOrderStatusResponseDto
+                    {
+                        Success = false,
+                        Message = $"Không thể chuyển từ trạng thái '{GetStatusDisplayName(order.Status)}' sang '{GetStatusDisplayName(request.NewStatus)}'"
+                    };
+                }
+
+                // Update order status and reason
+                var oldStatus = order.Status;
+                order.Status = request.NewStatus;
+
+
+
+                // Update reason if provided or if status is being cancelled
+                if (!string.IsNullOrWhiteSpace(request.Reason) || request.NewStatus == OrderStatus.Cancelled)
+                {
+                    order.Reason = request.Reason;
+                }
+
+                if(request.NewStatus == OrderStatus.Cancelled)
+                {
+                    order.PaymentStatus = PaymentStatus.Fail;
+                }
+
+                if (request.NewStatus == OrderStatus.Accepted && order.PaymentMethod == PaymentMethod.CashOnDelivery)
+                {
+                    order.PaymentStatus = PaymentStatus.Paid;
+                }
+
+                // Save changes
+                await _unitOfWork.Orders.UpdateAsync(order);
+                await _unitOfWork.CompleteAsync();
+
+                // Map to DTO for response
+                var orderDto = _mapper.Map<OrderDto>(order);
+
+                return new UpdateOrderStatusResponseDto
+                {
+                    Success = true,
+                    Message = $"Đã cập nhật trạng thái đơn hàng từ '{GetStatusDisplayName(oldStatus)}' sang '{GetStatusDisplayName(request.NewStatus)}'",
+                    Order = orderDto
+                };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error updating order status: {ex.Message}");
+                return new UpdateOrderStatusResponseDto
+                {
+                    Success = false,
+                    Message = "Có lỗi xảy ra khi cập nhật trạng thái đơn hàng"
+                };
+            }
+        }
+
+        private static bool IsValidStatusTransition(OrderStatus currentStatus, OrderStatus newStatus)
+        {
+            // Define valid status transitions
+            var validTransitions = new Dictionary<OrderStatus, List<OrderStatus>>
+            {
+                [OrderStatus.Pending] = new() { OrderStatus.Accepted, OrderStatus.Cancelled },
+                [OrderStatus.Accepted] = new() { OrderStatus.Processing, OrderStatus.Cancelled },
+                [OrderStatus.Processing] = new() { OrderStatus.Done, OrderStatus.Cancelled },
+                [OrderStatus.Done] = new() { OrderStatus.Shipping, OrderStatus.Completed, OrderStatus.Cancelled },
+                [OrderStatus.Shipping] = new() { OrderStatus.Completed, OrderStatus.Cancelled },
+                [OrderStatus.Completed] = new() { }, // No transitions from completed
+                [OrderStatus.Cancelled] = new() { }  // No transitions from cancelled
+            };
+
+            // Allow same status (no change)
+            if (currentStatus == newStatus)
+                return true;
+
+            return validTransitions.ContainsKey(currentStatus) &&
+                   validTransitions[currentStatus].Contains(newStatus);
+        }
+
+        public async Task<OrderDto?> GetOrderByIdAsync(int orderId)
+        {
+            try
+            {
+                var order = await _unitOfWork.Orders.GetOrderByIdWithDetailsAsync(orderId);
+                if (order == null)
+                    return null;
+
+                return _mapper.Map<OrderDto>(order);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting order by id: {ex.Message}");
+                throw;
             }
         }
     }
