@@ -25,10 +25,11 @@ namespace FoodOrder.Application.Services.Orders
         }
 
         #region crud 
-        public async Task<CreateOrderResponseDto> CreateOrderAsync(CreateOrderDto createOrderDto, int userId)
+        public async Task<CreateOrderResponseDto> CreateOrderAsync(CreateOrderDto createOrderDto)
         {
             try
             {
+                var userId = createOrderDto.UserId;
                 // 0. Validate input parameters
                 if (createOrderDto == null)
                     throw new ArgumentNullException(nameof(createOrderDto));

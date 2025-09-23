@@ -147,14 +147,7 @@ namespace FoodOrder.WebAPI.Controllers
         {
             try
             {
-                // Lấy userId từ claims
-                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (!int.TryParse(userIdClaim, out int userId))
-                {
-                    return Unauthorized("Không thể xác định người dùng");
-                }
-
-                var result = await _orderService.CreateOrderAsync(createOrderDto, userId);
+                var result = await _orderService.CreateOrderAsync(createOrderDto);
                 return Ok(result);
             }
             catch (ArgumentException ex)

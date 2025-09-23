@@ -5,6 +5,7 @@ namespace FoodOrder.Application.DTOs.Orders
     public class CreateOrderDto
     {
         public int CartId { get; set; }
+        public int UserId { get; set; }
         public PaymentMethod PaymentMethod { get; set; }
         public string? Note { get; set; }
         public int? LocationId { get; set; }
