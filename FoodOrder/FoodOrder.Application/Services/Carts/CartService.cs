@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using FoodOrder.Application.DTOs.Carts;
+using FoodOrder.Application.DTOs.Foods.Promotion;
 using FoodOrder.Application.Interfaces;
+using FoodOrder.Domain.Entities.Foods;
 using FoodOrder.Domain.Entities.Orders;
 using FoodOrder.Domain.Interfaces;
 
@@ -32,6 +34,8 @@ namespace FoodOrder.Application.Services.Carts
                 {
                     Cart = emptyDto,
                     Subtotal = 0,
+                    OriginalTotal = 0,
+                    TotalDiscount = 0,
                     TotalQuantity = 0
                 };
             }
@@ -39,7 +43,7 @@ namespace FoodOrder.Application.Services.Carts
             // Danh sách các item cần xoá vì hết hàng
             var itemsToRemove = new List<CartItem>();
 
-            foreach (var item in cart.CartItems.ToList())
+            foreach (var item in cart.CartItems?.ToList() ?? new List<CartItem>())
             {
                 int? stock = null;
 
@@ -75,27 +79,47 @@ namespace FoodOrder.Application.Services.Carts
             // Map DTO sau khi đã dọn giỏ hàng
             var cartDto = _mapper.Map<CartDto>(cart);
 
-            // Tính tổng tiền và số lượng
-            decimal subtotal = 0;
+            // Tính tổng tiền và số lượng + cập nhật thông tin giá cho từng item
+            decimal subtotal = 0;           // Tổng tiền sau khuyến mãi
+            decimal originalTotal = 0;      // Tổng tiền gốc
             int totalQuantity = 0;
 
             foreach (var item in cartDto.CartItems ?? Enumerable.Empty<CartItemDto>())
             {
-                decimal price = 0;
+                decimal originalPrice = 0;
+                decimal finalPrice = 0;
 
                 if (item.Food != null)
-                    price = item.Food.Price;
+                {
+                    originalPrice = item.Food.Price;
+                    finalPrice = CalculateFinalPrice(originalPrice, item.Food.Promotion);
+                }
                 else if (item.Combo != null)
-                    price = item.Combo.Price;
+                {
+                    originalPrice = item.Combo.Price;
+                    finalPrice = CalculateFinalPrice(originalPrice, item.Combo.Promotion);
+                }
 
-                subtotal += price * item.Quantity;
+                // Cập nhật thông tin giá cho item
+                item.OriginalPrice = originalPrice;
+                item.FinalPrice = finalPrice;
+                item.OriginalTotal = originalPrice * item.Quantity;
+                item.FinalTotal = finalPrice * item.Quantity;
+                item.DiscountAmount = item.OriginalTotal - item.FinalTotal;
+
+                subtotal += item.FinalTotal;
+                originalTotal += item.OriginalTotal;
                 totalQuantity += item.Quantity;
             }
+
+            var totalDiscount = originalTotal - subtotal;
 
             return new CartResponse
             {
                 Cart = cartDto,
                 Subtotal = subtotal,
+                OriginalTotal = originalTotal,
+                TotalDiscount = totalDiscount,
                 TotalQuantity = totalQuantity
             };
         }
@@ -154,11 +178,14 @@ namespace FoodOrder.Application.Services.Carts
             if (newQuantity > availableStock.Value)
             {
                 newQuantity = availableStock.Value;
-                existingItem.Quantity = newQuantity;
-                await _unitOfWork.CartItems.UpdateAsync(existingItem);
+                if (existingItem != null)
+                {
+                    existingItem.Quantity = newQuantity;
+                    await _unitOfWork.CartItems.UpdateAsync(existingItem);
+                }
                 throw new InvalidOperationException($"Số lượng bạn chọn vượt quá tồn kho. Đã cập nhật còn lại {newQuantity}.");
             }
-                
+
 
             if (existingItem != null)
             {
@@ -250,6 +277,41 @@ namespace FoodOrder.Application.Services.Carts
 
             await _unitOfWork.CartItems.RemoveAsync(item);
             await _unitOfWork.CompleteAsync();
+        }
+
+        /// <summary>
+        /// Tính giá cuối cùng sau khi áp dụng khuyến mãi
+        /// </summary>
+        /// <param name="originalPrice">Giá gốc</param>
+        /// <param name="promotion">Thông tin khuyến mãi</param>
+        /// <returns>Giá sau khuyến mãi</returns>
+        private decimal CalculateFinalPrice(decimal originalPrice, PromotionDtoSelect? promotion)
+        {
+            // Không có khuyến mãi hoặc khuyến mãi không hoạt động
+            if (promotion == null || !promotion.IsActive)
+                return originalPrice;
+
+            // Kiểm tra thời gian khuyến mãi có hiệu lực không
+            var now = DateTime.Now;
+            if (now < promotion.StartDate || now > promotion.EndDate)
+                return originalPrice;
+
+            // Tính giá sau khuyến mãi
+            switch (promotion.Type)
+            {
+                case PromotionType.Amount:
+                    // Giảm theo số tiền cố định
+                    var discountedPrice = originalPrice - promotion.DiscountAmount;
+                    return Math.Max(0, discountedPrice); // Đảm bảo giá không âm
+
+                case PromotionType.Percentage:
+                    // Giảm theo phần trăm
+                    var discountPercent = promotion.DiscountAmount / 100;
+                    return originalPrice * (1 - discountPercent);
+
+                default:
+                    return originalPrice;
+            }
         }
 
     }
