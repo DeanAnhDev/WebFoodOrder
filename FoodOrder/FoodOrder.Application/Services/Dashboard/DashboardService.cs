@@ -139,9 +139,16 @@ namespace FoodOrder.Application.Services.Dashboard
                 // Thống kê cơ bản
                 var totalRevenue = completedOrders.Sum(o => o.SubtotalAmount - o.VoucherDiscountAmount);
                 var totalOrders = allOrders.Count;
+
+                // Thống kê đầy đủ tất cả trạng thái đơn hàng
                 var pendingOrders = allOrders.Count(o => o.Status == OrderStatus.Pending);
-                var completedOrdersCount = completedOrders.Count;
+                var acceptedOrders = allOrders.Count(o => o.Status == OrderStatus.Accepted);
+                var processingOrders = allOrders.Count(o => o.Status == OrderStatus.Processing);
+                var doneOrders = allOrders.Count(o => o.Status == OrderStatus.Done);
+                var shippingOrders = allOrders.Count(o => o.Status == OrderStatus.Shipping);
+                var completedOrdersCount = allOrders.Count(o => o.Status == OrderStatus.Completed);
                 var cancelledOrders = allOrders.Count(o => o.Status == OrderStatus.Cancelled);
+
                 var averageOrderValue = completedOrdersCount > 0 ? totalRevenue / completedOrdersCount : 0;
 
                 // Lấy tất cả sản phẩm để đếm tổng số
@@ -173,6 +180,10 @@ namespace FoodOrder.Application.Services.Dashboard
                     TotalOrders = totalOrders,
                     TotalProducts = totalProducts,
                     PendingOrders = pendingOrders,
+                    AcceptedOrders = acceptedOrders,
+                    ProcessingOrders = processingOrders,
+                    DoneOrders = doneOrders,
+                    ShippingOrders = shippingOrders,
                     CompletedOrders = completedOrdersCount,
                     CancelledOrders = cancelledOrders,
                     AverageOrderValue = averageOrderValue,

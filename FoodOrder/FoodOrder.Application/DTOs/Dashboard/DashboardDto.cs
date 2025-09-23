@@ -36,9 +36,16 @@ namespace FoodOrder.Application.DTOs.Dashboard
         public decimal TotalRevenue { get; set; }
         public int TotalOrders { get; set; }
         public int TotalProducts { get; set; }
-        public int PendingOrders { get; set; }
-        public int CompletedOrders { get; set; }
-        public int CancelledOrders { get; set; }
+
+        // Thống kê đầy đủ tất cả trạng thái đơn hàng
+        public int PendingOrders { get; set; }      // Chờ xử lý
+        public int AcceptedOrders { get; set; }     // Đã xác nhận
+        public int ProcessingOrders { get; set; }   // Đang xử lý
+        public int DoneOrders { get; set; }         // Đã làm xong
+        public int ShippingOrders { get; set; }     // Đang giao hàng
+        public int CompletedOrders { get; set; }    // Hoàn thành
+        public int CancelledOrders { get; set; }    // Đã hủy
+
         public decimal AverageOrderValue { get; set; }
         public List<TopProductDto> TopProducts { get; set; } = new();
         public DateTime PeriodStart { get; set; }
