@@ -19,6 +19,59 @@ namespace FoodOrder.WebAPI.Controllers
             _cartService = cartService;
         }
 
+        [AllowAnonymous]
+        [HttpPost("temporary")]
+        public async Task<IActionResult> CreateTemporaryCart()
+        {
+            try
+            {
+                var cart = await _cartService.CreateTemporaryCartAsync();
+                return Ok(cart);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Có lỗi xảy ra khi tạo giỏ hàng tạm thời", detail = ex.Message });
+            }
+        }
+
+        [Authorize]
+        [HttpPut("assign/{cartId}")]
+        public async Task<IActionResult> AssignCartToUser(int cartId, [FromQuery] int userId)
+        {
+            try
+            {
+
+                var result = await _cartService.AssignCartToUserAsync(cartId, userId);
+                if (result)
+                {
+                    return Ok(new { message = "Giỏ hàng đã được gán cho người dùng thành công" });
+                }
+                else
+                {
+                    return BadRequest(new { message = "Không thể gán giỏ hàng cho người dùng. Giỏ hàng không tồn tại hoặc không phải là giỏ hàng tạm thời, hoặc người dùng đã có giỏ hàng." });
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Có lỗi xảy ra khi gán giỏ hàng cho người dùng", detail = ex.Message });
+            }
+        }
+
+        [Authorize]
+        [HttpGet("temporary")]
+        public async Task<IActionResult> GetAllTemporaryCarts()
+        {
+            try
+            {
+                var carts = await _cartService.GetAllTemporaryCartsBasicAsync();
+                return Ok(carts);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Có lỗi xảy ra khi lấy danh sách giỏ hàng tạm thời", detail = ex.Message });
+            }
+        }
+
         [Authorize]
         [HttpGet]
         public async Task<IActionResult> GetCart()
@@ -100,6 +153,40 @@ namespace FoodOrder.WebAPI.Controllers
             return Ok(new { message = "Xóa thành công" });
         }
 
+        /// <summary>
+        /// Lấy cart theo ID bao gồm đầy đủ thông tin food, combo, hình ảnh và promotion
+        /// </summary>
+        /// <param name="cartId">ID của cart cần lấy</param>
+        /// <returns>Thông tin đầy đủ của cart</returns>
+        [HttpGet("{cartId}")]
+        public async Task<IActionResult> GetCartById(int cartId)
+        {
+            try
+            {
+                var cartResponse = await _cartService.GetCartByIdAsync(cartId);
+
+                if (cartResponse == null)
+                {
+                    return NotFound(new { message = "Không tìm thấy cart với ID này" });
+                }
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Lấy thông tin cart thành công",
+                    data = cartResponse
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Có lỗi xảy ra khi lấy thông tin cart",
+                    detail = ex.Message
+                });
+            }
+        }
 
     }
 }

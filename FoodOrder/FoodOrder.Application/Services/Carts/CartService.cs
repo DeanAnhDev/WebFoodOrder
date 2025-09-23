@@ -314,5 +314,133 @@ namespace FoodOrder.Application.Services.Carts
             }
         }
 
+        public async Task<CartResponse> CreateTemporaryCartAsync()
+        {
+            var cart = await _unitOfWork.Carts.CreateTemporaryCartAsync();
+            await _unitOfWork.CompleteAsync();
+
+            var cartDto = _mapper.Map<CartDto>(cart);
+
+            return new CartResponse
+            {
+                Cart = cartDto,
+            };
+        }
+
+        public async Task<bool> AssignCartToUserAsync(int cartId, int userId)
+        {
+            // Check if the cart exists and is temporary
+            var cart = await _unitOfWork.Carts.GetCartByIdAsync(cartId);
+            if (cart == null || cart.Temporary != true)
+                return false;
+
+            // Check if the user already has a cart
+            var existingCart = await _unitOfWork.Carts.GetCartByUserIdAsync(userId);
+            if (existingCart != null)
+            {
+                // If user already has a cart, we might want to merge them
+                // But for now, we'll just return false indicating we can't assign
+                return false;
+            }
+
+            // Update the cart with the user ID
+            var success = await _unitOfWork.Carts.UpdateCartUserIdAsync(cartId, userId);
+            if (success)
+            {
+                await _unitOfWork.CompleteAsync();
+                return true;
+            }
+
+            return false;
+        }
+
+        public async Task<IEnumerable<CartResponse>> GetAllTemporaryCartsAsync()
+        {
+            var carts = await _unitOfWork.Carts.GetAllTemporaryCartsAsync();
+            var cartResponses = new List<CartResponse>();
+
+            foreach (var cart in carts)
+            {
+                var cartDto = _mapper.Map<CartDto>(cart);
+
+                // Calculate totals for each cart
+                decimal subtotal = 0;
+                decimal originalTotal = 0;
+                int totalQuantity = 0;
+
+                foreach (var item in cartDto.CartItems ?? Enumerable.Empty<CartItemDto>())
+                {
+                    decimal originalPrice = 0;
+                    decimal finalPrice = 0;
+
+                    if (item.Food != null)
+                    {
+                        originalPrice = item.Food.Price;
+                        finalPrice = CalculateFinalPrice(originalPrice, item.Food.Promotion);
+                    }
+                    else if (item.Combo != null)
+                    {
+                        originalPrice = item.Combo.Price;
+                        finalPrice = CalculateFinalPrice(originalPrice, item.Combo.Promotion);
+                    }
+
+                    // Update price info for the item
+                    item.OriginalPrice = originalPrice;
+                    item.FinalPrice = finalPrice;
+                    item.OriginalTotal = originalPrice * item.Quantity;
+                    item.FinalTotal = finalPrice * item.Quantity;
+                    item.DiscountAmount = item.OriginalTotal - item.FinalTotal;
+
+                    subtotal += item.FinalTotal;
+                    originalTotal += item.OriginalTotal;
+                    totalQuantity += item.Quantity;
+                }
+
+                var totalDiscount = originalTotal - subtotal;
+
+                cartResponses.Add(new CartResponse
+                {
+                    Cart = cartDto,
+                    Subtotal = subtotal,
+                    OriginalTotal = originalTotal,
+                    TotalDiscount = totalDiscount,
+                    TotalQuantity = totalQuantity
+                });
+            }
+
+            return cartResponses;
+        }
+
+        public async Task<CartResponse?> GetCartByIdAsync(int cartId)
+        {
+            var cart = await _unitOfWork.Carts.GetCartByIdAsync(cartId);
+            if (cart == null) return null;
+
+            var cartDto = _mapper.Map<CartDto>(cart);
+
+            return new CartResponse
+            {
+                Cart = cartDto,
+            };
+        }
+
+        public async Task<IEnumerable<CartDto>> GetAllTemporaryCartsBasicAsync()
+        {
+            var carts = await _unitOfWork.Carts.GetAllTemporaryCartsAsync();
+
+            var cartDtos = new List<CartDto>();
+            foreach (var cart in carts)
+            {
+                var cartDto = new CartDto
+                {
+                    CartId = cart.CartId,
+                    UserId = cart.UserId ?? 0, // Xử lý nullable
+                    CartItems = null // Không load cartItems
+                };
+                cartDtos.Add(cartDto);
+            }
+
+            return cartDtos;
+        }
     }
 }
