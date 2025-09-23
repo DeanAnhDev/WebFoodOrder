@@ -2,6 +2,7 @@
 using FoodOrder.Domain.Entities.Identity;
 using FoodOrder.Domain.Entities.Image;
 using FoodOrder.Domain.Entities.Orders;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
@@ -39,7 +40,8 @@ namespace FoodOrder.Infrastructure.Data.Context
         {
             builder.Entity<AppRole>().HasData(
                 new AppRole { Id = 1, Name = "Admin", NormalizedName = "ADMIN" },
-                new AppRole { Id = 2, Name = "Customer", NormalizedName = "CUSTOMER" }
+                new AppRole { Id = 2, Name = "Customer", NormalizedName = "CUSTOMER" },
+                new AppRole { Id = 3, Name = "Staff", NormalizedName = "STAFF" }
             );
         }
     }

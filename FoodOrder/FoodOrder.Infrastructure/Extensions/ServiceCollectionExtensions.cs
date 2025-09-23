@@ -52,9 +52,11 @@ namespace FoodOrder.Infrastructure.Extensions
 
             services.AddScoped<IUserRepository, UserRepository>();
 
+            services.AddScoped<IOrderRepository, OrderRepository>();
+
             services.AddScoped<IRedisService, RedisService>();
 
-            services.AddScoped<IVNPayService, VNPayService>();
+            services.AddScoped<Application.Interfaces.IVNPayService, VNPayService>();
 
             services.AddScoped<IJwtTokenServices, JwtTokenServices>();
 
@@ -62,7 +64,7 @@ namespace FoodOrder.Infrastructure.Extensions
 
             services.AddScoped<ILocationRepository, LocationRepository>();
 
-                services.AddScoped<IPromotionRepository, PromotionRepository>();
+            services.AddScoped<IPromotionRepository, PromotionRepository>();
 
             services.AddScoped<IRedisService, RedisService>();
 

@@ -10,6 +10,7 @@ using FoodOrder.Application.DTOs.Foods.Image;
 using FoodOrder.Application.DTOs.Foods.Promotion;
 using FoodOrder.Application.DTOs.Identity;
 using FoodOrder.Application.DTOs.Identity.Location;
+using FoodOrder.Application.DTOs.Orders;
 using FoodOrder.Application.DTOs.Voucher;
 using FoodOrder.Domain.Entities.Foods;
 using FoodOrder.Domain.Entities.Identity;
@@ -27,7 +28,7 @@ namespace FoodOrder.Application.MappingProfiles
             CreateMap<FoodCategory, FoodCategoryDtoUpdate>().ReverseMap();
             CreateMap<FoodCategory, FoodCategoryDtoCreate>().ReverseMap();
             CreateMap<FoodCategory, FoodCategoryListFoodDto>().ReverseMap();
-        
+
             //Mapping from Food to FoodDto
             CreateMap<Food, FoodDto>().ReverseMap();
             CreateMap<Food, FoodDtoCreate>().ReverseMap();
@@ -56,6 +57,8 @@ namespace FoodOrder.Application.MappingProfiles
             //Mapping from AppUser to UserDto
             CreateMap<AppUser, UserDto>().ReverseMap();
             CreateMap<AppUser, UpdateUserDto>().ReverseMap();
+            CreateMap<AppUser, CustomerDto>()
+                .ReverseMap();
 
             CreateMap<Location, CreateLocationDto>().ReverseMap();
             CreateMap<Location, UpdateLocationDto>().ReverseMap();
@@ -67,6 +70,22 @@ namespace FoodOrder.Application.MappingProfiles
 
             CreateMap<Promotion, PromotionDto>().ReverseMap();
             CreateMap<Promotion, PromotionDtoSelect>().ReverseMap();
+
+            //Mapping from Order to OrderDto
+            CreateMap<Order, OrderDto>().ReverseMap();
+            CreateMap<Order, CreateOrderDto>().ReverseMap();
+            CreateMap<OrderDto, CreateOrderResponseDto>()
+                .ForMember(dest => dest.Order, opt => opt.MapFrom(src => src))
+                .ForMember(dest => dest.PaymentUrl, opt => opt.Ignore())
+                .ForMember(dest => dest.Message, opt => opt.Ignore())
+                .ForMember(dest => dest.Success, opt => opt.MapFrom(src => true));
+
+            //Mapping from OrderDetail to OrderDetailDto
+            CreateMap<OrderDetail, OrderDetailDto>()
+                .ForMember(dest => dest.ItemImage, opt => opt.MapFrom(src =>
+                    src.Food != null ? src.Food.Images :
+                    src.Combo != null ? src.Combo.Images : null))
+                .ReverseMap();
         }
     }
 }

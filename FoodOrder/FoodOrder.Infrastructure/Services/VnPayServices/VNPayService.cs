@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using FoodOrder.Application.Interfaces;
+using Microsoft.Extensions.Configuration;
 using System.Globalization;
 using System.Net;
 using System.Security.Cryptography;
@@ -6,7 +7,7 @@ using System.Text;
 
 namespace FoodOrder.Infrastructure.Services.VnPayServices
 {
-    public class VNPayService(IConfiguration configuration) : IVNPayService
+    public class VNPayService(IConfiguration configuration) : Application.Interfaces.IVNPayService
     {
         public string CreatePaymentUrl(decimal amount, string orderId, string orderInfo)
         {
@@ -41,7 +42,8 @@ namespace FoodOrder.Infrastructure.Services.VnPayServices
 
         public bool ValidatePayment(string responseData)
         {
-            var vnpay = new SortedList<string, string>();
+            // Sử dụng VnPayCompare để đảm bảo thứ tự sort giống như khi tạo payment URL
+            var vnpay = new SortedList<string, string>(new VnPayCompare());
             var responseParams = responseData.Split('&');
             foreach (var param in responseParams)
             {
@@ -52,15 +54,28 @@ namespace FoodOrder.Infrastructure.Services.VnPayServices
                 }
             }
 
-            var secureHash = vnpay["vnp_SecureHash"];
-            vnpay.Remove("vnp_SecureHash");
+            // Lấy secure hash từ response và xóa nó khỏi danh sách để validate
+            var secureHash = vnpay.ContainsKey("vnp_SecureHash") ? vnpay["vnp_SecureHash"] : "";
+            if (vnpay.ContainsKey("vnp_SecureHash"))
+                vnpay.Remove("vnp_SecureHash");
 
-            var signData = string.Join("&", vnpay.Select(kvp => $"{kvp.Key}={kvp.Value}"));
+            // Tạo signData giống như cách tạo trong CreatePaymentUrl
+            var signData = new StringBuilder();
+            foreach (var kv in vnpay)
+            {
+                if (!string.IsNullOrEmpty(kv.Value))
+                    signData.Append(WebUtility.UrlEncode(kv.Key) + "=" + WebUtility.UrlEncode(kv.Value) + "&");
+            }
+
+            // Xóa ký tự & cuối cùng
+            if (signData.Length > 0)
+                signData.Length -= 1;
+
             var hashSecret = configuration.GetValue<string>("VnPay:HashSecret")
             ?? throw new ArgumentNullException(nameof(configuration), "VnPay:HashSecret configuration value is missing.");
             var hash = HmacSHA512(hashSecret, signData.ToString());
 
-            return secureHash == hash;
+            return secureHash.Equals(hash, StringComparison.OrdinalIgnoreCase);
         }
 
         private string HmacSHA512(string key, string inputData)
@@ -78,7 +93,7 @@ namespace FoodOrder.Infrastructure.Services.VnPayServices
             }
             return hash.ToString();
         }
-        
+
     }
     public class VnPayCompare : IComparer<string>
     {

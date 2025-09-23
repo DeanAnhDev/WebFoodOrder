@@ -16,7 +16,7 @@ namespace FoodOrder.Domain.Interfaces
         IRepository<AppRole> AppRoles { get; }
         ICartRepository Carts { get; }
         ICartItemRepository CartItems { get; }
-        IRepository<Order> Orders { get; }
+        IOrderRepository Orders { get; }
         IRepository<OrderDetail> OrderDetails { get; }
         IRepository<Images> Images { get; }
         ILocationRepository Locations { get; }

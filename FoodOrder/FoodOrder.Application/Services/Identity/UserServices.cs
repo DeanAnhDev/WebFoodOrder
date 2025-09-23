@@ -20,7 +20,7 @@ namespace FoodOrder.Application.Services.Identity
             _userManager = userManager;
         }
 
-        public async  Task ChangePasswordAsync(int id, UserPasswordUpdateDto dto)
+        public async Task ChangePasswordAsync(int id, UserPasswordUpdateDto dto)
         {
             if (dto.NewPassword != dto.ConfirmNewPassword)
                 throw new ArgumentException("Xác nhận mật khẩu không khớp");
@@ -64,6 +64,30 @@ namespace FoodOrder.Application.Services.Identity
             {
                 throw new Exception($"EF Save Error: {dbEx.InnerException?.Message ?? dbEx.Message}");
             }
+        }
+
+        public async Task<PagedResultDto<CustomerDto>> GetCustomersAsync(GetCustomersRequestDto request)
+        {
+            var (users, totalCount) = await _unitOfWork.AppUsers.GetCustomersAsync(
+                request.PageNumber,
+                request.PageSize,
+                request.SearchTerm,
+                request.Email,
+                request.PhoneNumber);
+
+            var customerDtos = users.Select(user =>
+            {
+                var customerDto = _mapper.Map<CustomerDto>(user);
+                // Set created date if available (assuming you have this field or can derive it)
+                // customerDto.CreatedDate = user.CreatedDate; // Uncomment if you have this field
+                return customerDto;
+            });
+
+            return new PagedResultDto<CustomerDto>(
+                customerDtos,
+                totalCount,
+                request.PageNumber,
+                request.PageSize);
         }
 
     }

@@ -4,8 +4,10 @@ using FoodOrder.Application.Interfaces;
 using FoodOrder.Application.Services;
 using FoodOrder.Domain.Entities.Identity;
 using FoodOrder.Infrastructure.Data.Context;
+using FoodOrder.Infrastructure.Data.Seeders;
 using FoodOrder.Infrastructure.Extensions;
 using FoodOrder.Infrastructure.Services.GoongServices;
+using FoodOrder.Infrastructure.Services.AhamoveServices;
 using FoodOrder.Infrastructure.Services.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -36,6 +38,12 @@ builder.Services.Configure<GoongSettings>(builder.Configuration.GetSection("Goon
 
 // Đăng ký HttpClient cho GoongService
 builder.Services.AddHttpClient<IGoongService, GoongService>();
+
+//ahamove services
+builder.Services.Configure<AhamoveSettings>(builder.Configuration.GetSection("AhamoveSettings"));
+
+// Đăng ký HttpClient cho AhamoveService
+builder.Services.AddHttpClient<IAhamoveService, AhamoveService>();
 
 builder.Services.InfrastructureServices(builder.Configuration);
 builder.Services.ApplicationServices();
@@ -170,5 +178,23 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Seed default data
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var userManager = services.GetRequiredService<UserManager<AppUser>>();
+        var roleManager = services.GetRequiredService<RoleManager<AppRole>>();
+
+        await IdentitySeeder.SeedAsync(userManager, roleManager);
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Lỗi khi seed dữ liệu mặc định");
+    }
+}
 
 app.Run();

@@ -18,7 +18,8 @@ namespace FoodOrder.Domain.Entities.Foods
         public int Sold { get; set; } = 0;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public ICollection<ComboDetail>? ComboDetails { get; set; }
-        public OrderDetail? OrderDetail { get; set; }
+        public ICollection<OrderDetail>? OrderDetails { get; set; }
+
         public ICollection<CartItem>? CartItems { get; set; }
         public int? PromotionId { get; set; }
         public Promotion? Promotion { get; set; }
