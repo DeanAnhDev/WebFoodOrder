@@ -9,6 +9,5 @@ namespace FoodOrder.Application.DTOs.Identity
         public string? UserName { get; set; }
         public bool EmailConfirmed { get; set; }
         public bool PhoneNumberConfirmed { get; set; }
-        public DateTime? CreatedDate { get; set; }
     }
 }

@@ -58,7 +58,6 @@ namespace FoodOrder.Application.MappingProfiles
             CreateMap<AppUser, UserDto>().ReverseMap();
             CreateMap<AppUser, UpdateUserDto>().ReverseMap();
             CreateMap<AppUser, CustomerDto>()
-                .ForMember(dest => dest.CreatedDate, opt => opt.Ignore()) // Sẽ set trong service
                 .ReverseMap();
 
             CreateMap<Location, CreateLocationDto>().ReverseMap();
