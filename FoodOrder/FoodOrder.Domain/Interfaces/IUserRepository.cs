@@ -11,5 +11,11 @@ namespace FoodOrder.Domain.Interfaces
             string? searchTerm = null,
             string? email = null,
             string? phoneNumber = null);
+        Task<(IEnumerable<AppUser> users, int totalCount)> GetStaffAsync(
+            int pageNumber,
+            int pageSize,
+            string? searchTerm = null,
+            string? email = null,
+            string? phoneNumber = null);
     }
 }
