@@ -19,7 +19,8 @@ namespace FoodOrder.Infrastructure.Data.Seeders
             var roles = new[]
             {
                 new AppRole { Name = "Admin" },
-                new AppRole { Name = "Customer" }
+                new AppRole { Name = "Customer" },
+                new AppRole { Name = "Staff" }
             };
 
             foreach (var role in roles)
@@ -72,6 +73,27 @@ namespace FoodOrder.Infrastructure.Data.Seeders
                 if (result.Succeeded)
                 {
                     await userManager.AddToRoleAsync(customer, "Customer");
+                }
+            }
+
+            // Seed Staff
+            var staffEmail = "staff@foodorder.com";
+            if (await userManager.FindByEmailAsync(staffEmail) == null)
+            {
+                var staff = new AppUser
+                {
+                    UserName = staffEmail,
+                    Email = staffEmail,
+                    EmailConfirmed = true,
+                    FullName = "Nhân Viên",
+                    PhoneNumber = "0912345678",
+                    PhoneNumberConfirmed = true
+                };
+
+                var result = await userManager.CreateAsync(staff, "Staff@123");
+                if (result.Succeeded)
+                {
+                    await userManager.AddToRoleAsync(staff, "Staff");
                 }
             }
         }

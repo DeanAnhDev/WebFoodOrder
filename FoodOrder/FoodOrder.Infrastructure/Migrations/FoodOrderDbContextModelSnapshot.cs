@@ -72,7 +72,7 @@ namespace FoodOrder.Infrastructure.Migrations
 
                     b.HasIndex("PromotionId");
 
-                    b.ToTable("Combos", (string)null);
+                    b.ToTable("Combos");
                 });
 
             modelBuilder.Entity("FoodOrder.Domain.Entities.Foods.ComboDetail", b =>
@@ -90,7 +90,7 @@ namespace FoodOrder.Infrastructure.Migrations
 
                     b.HasIndex("ComboId");
 
-                    b.ToTable("ComboDetails", (string)null);
+                    b.ToTable("ComboDetails");
                 });
 
             modelBuilder.Entity("FoodOrder.Domain.Entities.Foods.Food", b =>
@@ -143,7 +143,7 @@ namespace FoodOrder.Infrastructure.Migrations
 
                     b.HasIndex("PromotionId");
 
-                    b.ToTable("Foods", (string)null);
+                    b.ToTable("Foods");
                 });
 
             modelBuilder.Entity("FoodOrder.Domain.Entities.Foods.FoodCategory", b =>
@@ -170,7 +170,7 @@ namespace FoodOrder.Infrastructure.Migrations
 
                     b.HasKey("FoodCategoryId");
 
-                    b.ToTable("FoodCategories", (string)null);
+                    b.ToTable("FoodCategories");
                 });
 
             modelBuilder.Entity("FoodOrder.Domain.Entities.Foods.Promotion", b =>
@@ -203,7 +203,7 @@ namespace FoodOrder.Infrastructure.Migrations
 
                     b.HasKey("PromotionId");
 
-                    b.ToTable("Promotions", (string)null);
+                    b.ToTable("Promotions");
                 });
 
             modelBuilder.Entity("FoodOrder.Domain.Entities.Identity.AppRole", b =>
@@ -247,6 +247,12 @@ namespace FoodOrder.Infrastructure.Migrations
                             Id = 2,
                             Name = "Customer",
                             NormalizedName = "CUSTOMER"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Staff",
+                            NormalizedName = "STAFF"
                         });
                 });
 
@@ -364,7 +370,7 @@ namespace FoodOrder.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Locations", (string)null);
+                    b.ToTable("Locations");
                 });
 
             modelBuilder.Entity("FoodOrder.Domain.Entities.Image.Images", b =>
@@ -407,7 +413,7 @@ namespace FoodOrder.Infrastructure.Migrations
                         .IsUnique()
                         .HasFilter("[FoodId] IS NOT NULL");
 
-                    b.ToTable("Images", (string)null);
+                    b.ToTable("Images");
                 });
 
             modelBuilder.Entity("FoodOrder.Domain.Entities.Orders.Cart", b =>
@@ -428,7 +434,7 @@ namespace FoodOrder.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Carts", (string)null);
+                    b.ToTable("Carts");
                 });
 
             modelBuilder.Entity("FoodOrder.Domain.Entities.Orders.CartItem", b =>
@@ -459,7 +465,7 @@ namespace FoodOrder.Infrastructure.Migrations
 
                     b.HasIndex("FoodId");
 
-                    b.ToTable("CartItems", (string)null);
+                    b.ToTable("CartItems");
                 });
 
             modelBuilder.Entity("FoodOrder.Domain.Entities.Orders.Order", b =>
@@ -522,7 +528,7 @@ namespace FoodOrder.Infrastructure.Migrations
 
                     b.HasIndex("VoucherId");
 
-                    b.ToTable("Orders", (string)null);
+                    b.ToTable("Orders");
                 });
 
             modelBuilder.Entity("FoodOrder.Domain.Entities.Orders.OrderDetail", b =>
@@ -569,7 +575,7 @@ namespace FoodOrder.Infrastructure.Migrations
 
                     b.HasIndex("OrderId");
 
-                    b.ToTable("OrderDetails", (string)null);
+                    b.ToTable("OrderDetails");
                 });
 
             modelBuilder.Entity("FoodOrder.Domain.Entities.Orders.Voucher", b =>
@@ -613,7 +619,7 @@ namespace FoodOrder.Infrastructure.Migrations
 
                     b.HasKey("VoucherId");
 
-                    b.ToTable("Vouchers", (string)null);
+                    b.ToTable("Vouchers");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>

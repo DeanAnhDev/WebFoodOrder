@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FoodOrder.Infrastructure.Migrations
 {
     [DbContext(typeof(FoodOrderDbContext))]
-    [Migration("20250305220841_Initial_Create_03")]
-    partial class Initial_Create_03
+    [Migration("20250923095429_Create-database")]
+    partial class Createdatabase
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -38,6 +38,9 @@ namespace FoodOrder.Infrastructure.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(500)
@@ -46,20 +49,31 @@ namespace FoodOrder.Infrastructure.Migrations
                     b.Property<int>("FoodCategoryId")
                         .HasColumnType("int");
 
-                    b.Property<string>("Image")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<decimal>("Price")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<string>("Status")
+                    b.Property<int?>("PromotionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Slug")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Sold")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Status")
+                        .HasColumnType("bit");
 
                     b.HasKey("ComboId");
 
                     b.HasIndex("FoodCategoryId");
+
+                    b.HasIndex("PromotionId");
 
                     b.ToTable("Combos");
                 });
@@ -90,6 +104,9 @@ namespace FoodOrder.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("FoodId"));
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(500)
@@ -103,20 +120,31 @@ namespace FoodOrder.Infrastructure.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
-                    b.Property<string>("Image")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<decimal>("Price")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<string>("Status")
+                    b.Property<int?>("PromotionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Slug")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Sold")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Status")
+                        .HasColumnType("bit");
 
                     b.HasKey("FoodId");
 
                     b.HasIndex("FoodCategoryId");
+
+                    b.HasIndex("PromotionId");
 
                     b.ToTable("Foods");
                 });
@@ -139,13 +167,46 @@ namespace FoodOrder.Infrastructure.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
-                    b.Property<string>("ImageUrl")
+                    b.Property<string>("Slug")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("FoodCategoryId");
 
                     b.ToTable("FoodCategories");
+                });
+
+            modelBuilder.Entity("FoodOrder.Domain.Entities.Foods.Promotion", b =>
+                {
+                    b.Property<int>("PromotionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PromotionId"));
+
+                    b.Property<decimal>("DiscountAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("PromotionName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.HasKey("PromotionId");
+
+                    b.ToTable("Promotions");
                 });
 
             modelBuilder.Entity("FoodOrder.Domain.Entities.Identity.AppRole", b =>
@@ -176,6 +237,26 @@ namespace FoodOrder.Infrastructure.Migrations
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("AspNetRoles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Admin",
+                            NormalizedName = "ADMIN"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Customer",
+                            NormalizedName = "CUSTOMER"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Staff",
+                            NormalizedName = "STAFF"
+                        });
                 });
 
             modelBuilder.Entity("FoodOrder.Domain.Entities.Identity.AppUser", b =>
@@ -199,6 +280,12 @@ namespace FoodOrder.Infrastructure.Migrations
 
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
+
+                    b.Property<string>("FullName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Location")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
@@ -246,6 +333,92 @@ namespace FoodOrder.Infrastructure.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("FoodOrder.Domain.Entities.Identity.Location", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("bit");
+
+                    b.Property<double>("Latitude")
+                        .HasColumnType("float");
+
+                    b.Property<double>("Longitude")
+                        .HasColumnType("float");
+
+                    b.Property<string>("Remarks")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ShortAddress")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Locations");
+                });
+
+            modelBuilder.Entity("FoodOrder.Domain.Entities.Image.Images", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int?>("CategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ComboId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("FoodId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ThumbnailUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId")
+                        .IsUnique()
+                        .HasFilter("[CategoryId] IS NOT NULL");
+
+                    b.HasIndex("ComboId")
+                        .IsUnique()
+                        .HasFilter("[ComboId] IS NOT NULL");
+
+                    b.HasIndex("FoodId")
+                        .IsUnique()
+                        .HasFilter("[FoodId] IS NOT NULL");
+
+                    b.ToTable("Images");
+                });
+
             modelBuilder.Entity("FoodOrder.Domain.Entities.Orders.Cart", b =>
                 {
                     b.Property<int>("CartId")
@@ -254,13 +427,15 @@ namespace FoodOrder.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CartId"));
 
+                    b.Property<bool?>("Temporary")
+                        .HasColumnType("bit");
+
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("CartId");
 
-                    b.HasIndex("UserId")
-                        .IsUnique();
+                    b.HasIndex("UserId");
 
                     b.ToTable("Carts");
                 });
@@ -285,12 +460,6 @@ namespace FoodOrder.Infrastructure.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("TotalPrice")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("UnitPrice")
-                        .HasColumnType("decimal(18,2)");
-
                     b.HasKey("CartItemId");
 
                     b.HasIndex("CartId");
@@ -310,27 +479,57 @@ namespace FoodOrder.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("OrderId"));
 
-                    b.Property<DateTime>("OrderDate")
+                    b.Property<string>("Address")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("OrderDetailId")
-                        .HasColumnType("int");
+                    b.Property<string>("Note")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Status")
+                    b.Property<string>("OrderCode")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("PaymentMethod")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PaymentStatus")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Reason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("ShipFee")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("SubtotalAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<decimal>("TotalAmount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
+                    b.Property<decimal>("VoucherDiscountAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("VoucherId")
+                        .HasColumnType("int");
+
                     b.HasKey("OrderId");
 
-                    b.HasIndex("OrderDetailId");
-
                     b.HasIndex("UserId");
+
+                    b.HasIndex("VoucherId");
 
                     b.ToTable("Orders");
                 });
@@ -346,34 +545,84 @@ namespace FoodOrder.Infrastructure.Migrations
                     b.Property<int?>("ComboId")
                         .HasColumnType("int");
 
+                    b.Property<decimal>("DiscountedPrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<int?>("FoodId")
                         .HasColumnType("int");
 
+                    b.Property<string>("ItemName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("OrderId")
                         .HasColumnType("int");
+
+                    b.Property<decimal>("OriginalPrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
                     b.Property<decimal>("TotalPrice")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("UnitPrice")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("OrderDetailId");
 
-                    b.HasIndex("ComboId")
-                        .IsUnique()
-                        .HasFilter("[ComboId] IS NOT NULL");
+                    b.HasIndex("ComboId");
 
-                    b.HasIndex("FoodId")
-                        .IsUnique()
-                        .HasFilter("[FoodId] IS NOT NULL");
+                    b.HasIndex("FoodId");
 
                     b.HasIndex("OrderId");
 
                     b.ToTable("OrderDetails");
+                });
+
+            modelBuilder.Entity("FoodOrder.Domain.Entities.Orders.Voucher", b =>
+                {
+                    b.Property<int>("VoucherId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("VoucherId"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("DiscountAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("MaxDiscountPrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("MinOrderPrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.HasKey("VoucherId");
+
+                    b.ToTable("Vouchers");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
@@ -487,7 +736,14 @@ namespace FoodOrder.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("FoodOrder.Domain.Entities.Foods.Promotion", "Promotion")
+                        .WithMany("Combos")
+                        .HasForeignKey("PromotionId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.Navigation("FoodCategorys");
+
+                    b.Navigation("Promotion");
                 });
 
             modelBuilder.Entity("FoodOrder.Domain.Entities.Foods.ComboDetail", b =>
@@ -517,14 +773,56 @@ namespace FoodOrder.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("FoodOrder.Domain.Entities.Foods.Promotion", "Promotion")
+                        .WithMany("Foods")
+                        .HasForeignKey("PromotionId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.Navigation("FoodCategory");
+
+                    b.Navigation("Promotion");
+                });
+
+            modelBuilder.Entity("FoodOrder.Domain.Entities.Identity.Location", b =>
+                {
+                    b.HasOne("FoodOrder.Domain.Entities.Identity.AppUser", "Users")
+                        .WithMany("Locations")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Users");
+                });
+
+            modelBuilder.Entity("FoodOrder.Domain.Entities.Image.Images", b =>
+                {
+                    b.HasOne("FoodOrder.Domain.Entities.Foods.FoodCategory", "FoodCategory")
+                        .WithOne("Images")
+                        .HasForeignKey("FoodOrder.Domain.Entities.Image.Images", "CategoryId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("FoodOrder.Domain.Entities.Foods.Combo", "Combos")
+                        .WithOne("Images")
+                        .HasForeignKey("FoodOrder.Domain.Entities.Image.Images", "ComboId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("FoodOrder.Domain.Entities.Foods.Food", "Foods")
+                        .WithOne("Images")
+                        .HasForeignKey("FoodOrder.Domain.Entities.Image.Images", "FoodId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Combos");
+
+                    b.Navigation("FoodCategory");
+
+                    b.Navigation("Foods");
                 });
 
             modelBuilder.Entity("FoodOrder.Domain.Entities.Orders.Cart", b =>
                 {
                     b.HasOne("FoodOrder.Domain.Entities.Identity.AppUser", "AppUser")
-                        .WithOne("Cart")
-                        .HasForeignKey("FoodOrder.Domain.Entities.Orders.Cart", "UserId")
+                        .WithMany("Cart")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -556,28 +854,31 @@ namespace FoodOrder.Infrastructure.Migrations
 
             modelBuilder.Entity("FoodOrder.Domain.Entities.Orders.Order", b =>
                 {
-                    b.HasOne("FoodOrder.Domain.Entities.Orders.OrderDetail", null)
-                        .WithMany("Orders")
-                        .HasForeignKey("OrderDetailId");
-
-                    b.HasOne("FoodOrder.Domain.Entities.Identity.AppUser", "AppUser")
+                    b.HasOne("FoodOrder.Domain.Entities.Identity.AppUser", "Users")
                         .WithMany("Orders")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("AppUser");
+                    b.HasOne("FoodOrder.Domain.Entities.Orders.Voucher", "Voucher")
+                        .WithMany("Orders")
+                        .HasForeignKey("VoucherId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Users");
+
+                    b.Navigation("Voucher");
                 });
 
             modelBuilder.Entity("FoodOrder.Domain.Entities.Orders.OrderDetail", b =>
                 {
                     b.HasOne("FoodOrder.Domain.Entities.Foods.Combo", "Combo")
-                        .WithOne("OrderDetail")
-                        .HasForeignKey("FoodOrder.Domain.Entities.Orders.OrderDetail", "ComboId");
+                        .WithMany("OrderDetails")
+                        .HasForeignKey("ComboId");
 
                     b.HasOne("FoodOrder.Domain.Entities.Foods.Food", "Food")
-                        .WithOne("OrderDetail")
-                        .HasForeignKey("FoodOrder.Domain.Entities.Orders.OrderDetail", "FoodId");
+                        .WithMany("OrderDetails")
+                        .HasForeignKey("FoodId");
 
                     b.HasOne("FoodOrder.Domain.Entities.Orders.Order", "Order")
                         .WithMany("OrderDetails")
@@ -649,7 +950,9 @@ namespace FoodOrder.Infrastructure.Migrations
 
                     b.Navigation("ComboDetails");
 
-                    b.Navigation("OrderDetail");
+                    b.Navigation("Images");
+
+                    b.Navigation("OrderDetails");
                 });
 
             modelBuilder.Entity("FoodOrder.Domain.Entities.Foods.Food", b =>
@@ -658,10 +961,21 @@ namespace FoodOrder.Infrastructure.Migrations
 
                     b.Navigation("ComboDetails");
 
-                    b.Navigation("OrderDetail");
+                    b.Navigation("Images");
+
+                    b.Navigation("OrderDetails");
                 });
 
             modelBuilder.Entity("FoodOrder.Domain.Entities.Foods.FoodCategory", b =>
+                {
+                    b.Navigation("Combos");
+
+                    b.Navigation("Foods");
+
+                    b.Navigation("Images");
+                });
+
+            modelBuilder.Entity("FoodOrder.Domain.Entities.Foods.Promotion", b =>
                 {
                     b.Navigation("Combos");
 
@@ -671,6 +985,8 @@ namespace FoodOrder.Infrastructure.Migrations
             modelBuilder.Entity("FoodOrder.Domain.Entities.Identity.AppUser", b =>
                 {
                     b.Navigation("Cart");
+
+                    b.Navigation("Locations");
 
                     b.Navigation("Orders");
                 });
@@ -685,7 +1001,7 @@ namespace FoodOrder.Infrastructure.Migrations
                     b.Navigation("OrderDetails");
                 });
 
-            modelBuilder.Entity("FoodOrder.Domain.Entities.Orders.OrderDetail", b =>
+            modelBuilder.Entity("FoodOrder.Domain.Entities.Orders.Voucher", b =>
                 {
                     b.Navigation("Orders");
                 });
