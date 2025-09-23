@@ -59,7 +59,7 @@ namespace FoodOrder.WebAPI.Controllers
                 {
                     var token = GenerateToken();
                     _paymentTokens[token] = DateTime.UtcNow.AddMinutes(5);
-                    return Redirect($"http://localhost:5173/checkout-success?token={token}");
+                    return Redirect($"http://localhost:3000/checkout-success?token={token}");
                 }
                 else
                 {
@@ -67,7 +67,7 @@ namespace FoodOrder.WebAPI.Controllers
                     await _orderService.ProcessPaymentFailureAsync(callback.vnp_TxnRef);
                     var failedToken = GenerateToken();
                     _paymentTokens[failedToken] = DateTime.UtcNow.AddMinutes(5);
-                    return Redirect($"http://localhost:5173/checkout-failed?token={failedToken}");
+                    return Redirect($"http://localhost:3000/checkout-failed?token={failedToken}");
                 }
             }
             else
@@ -76,7 +76,7 @@ namespace FoodOrder.WebAPI.Controllers
                 await _orderService.ProcessPaymentFailureAsync(callback.vnp_TxnRef);
                 var failedToken = GenerateToken();
                 _paymentTokens[failedToken] = DateTime.UtcNow.AddMinutes(5);
-                return Redirect($"http://localhost:5173/checkout-failed?token={failedToken}");
+                return Redirect($"http://localhost:3000/checkout-failed?token={failedToken}");
             }
         }
 
