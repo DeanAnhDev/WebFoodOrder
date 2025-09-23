@@ -718,7 +718,17 @@ namespace FoodOrder.Application.Services.Orders
                 var oldStatus = order.Status;
                 order.Status = request.NewStatus;
 
+                if (request.NewStatus == OrderStatus.Cancelled)
+                {
 
+                    order.PaymentStatus = PaymentStatus.Fail;
+
+                        // Rollback số lượng food và combo khi đơn hàng bị hủy
+                        await RollbackInventoryForCancelledOrderAsync(order.OrderId);
+
+                        // Rollback voucher nếu có sử dụng
+                        await RollbackVoucherForCancelledOrderAsync(order);
+                }
 
                 // Update reason if provided or if status is being cancelled
                 if (!string.IsNullOrWhiteSpace(request.Reason) || request.NewStatus == OrderStatus.Cancelled)
@@ -726,10 +736,7 @@ namespace FoodOrder.Application.Services.Orders
                     order.Reason = request.Reason;
                 }
 
-                if(request.NewStatus == OrderStatus.Cancelled)
-                {
-                    order.PaymentStatus = PaymentStatus.Fail;
-                }
+               
 
                 if (request.NewStatus == OrderStatus.Accepted && order.PaymentMethod == PaymentMethod.CashOnDelivery)
                 {
@@ -797,6 +804,94 @@ namespace FoodOrder.Application.Services.Orders
             {
                 Console.WriteLine($"Error getting order by id: {ex.Message}");
                 throw;
+            }
+        }
+
+        /// <summary>
+        /// Rollback inventory (food and combo quantities) when order is cancelled
+        /// </summary>
+        /// <param name="orderId">ID của order bị hủy</param>
+        private async Task RollbackInventoryForCancelledOrderAsync(int orderId)
+        {
+            try
+            {
+                // Lấy order details của đơn hàng bị hủy
+                var orderDetails = await _unitOfWork.OrderDetails.FindAsync(od => od.OrderId == orderId);
+
+                foreach (var orderDetail in orderDetails)
+                {
+                    // Rollback Food quantity
+                    if (orderDetail.FoodId.HasValue)
+                    {
+                        var food = await _unitOfWork.Foods.GetByIdAsync(orderDetail.FoodId.Value);
+                        if (food != null)
+                        {
+                            // Cộng lại số lượng đã bị trừ khi tạo order
+                            food.Quantity += orderDetail.Quantity;
+
+                            // Trừ lại số lượng đã bán (sold)
+                            food.Sold -= orderDetail.Quantity;
+                            if (food.Sold < 0) food.Sold = 0; // Đảm bảo không âm
+
+                            await _unitOfWork.Foods.UpdateAsync(food);
+                            Console.WriteLine($"Rollback Food ID {food.FoodId}: +{orderDetail.Quantity} quantity, -{orderDetail.Quantity} sold");
+                        }
+                    }
+                    // Rollback Combo quantity
+                    else if (orderDetail.ComboId.HasValue)
+                    {
+                        var combo = await _unitOfWork.Combos.GetByIdAsync(orderDetail.ComboId.Value);
+                        if (combo != null)
+                        {
+                            // Cộng lại số lượng đã bị trừ khi tạo order
+                            combo.Quantity += orderDetail.Quantity;
+
+                            // Trừ lại số lượng đã bán (sold)
+                            combo.Sold -= orderDetail.Quantity;
+                            if (combo.Sold < 0) combo.Sold = 0; // Đảm bảo không âm
+
+                            await _unitOfWork.Combos.UpdateAsync(combo);
+                            Console.WriteLine($"Rollback Combo ID {combo.ComboId}: +{orderDetail.Quantity} quantity, -{orderDetail.Quantity} sold");
+                        }
+                    }
+                }
+
+                Console.WriteLine($"Inventory rollback completed for cancelled order {orderId}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error rolling back inventory for order {orderId}: {ex.Message}");
+                // Không throw exception để không làm fail việc hủy order
+                // Chỉ log lỗi để admin có thể xử lý thủ công nếu cần
+            }
+        }
+
+        /// <summary>
+        /// Rollback voucher quantity when order is cancelled
+        /// </summary>
+        /// <param name="order">Order bị hủy</param>
+        private async Task RollbackVoucherForCancelledOrderAsync(Order order)
+        {
+            try
+            {
+                // Nếu order có sử dụng voucher
+                if (order.VoucherId.HasValue && order.VoucherDiscountAmount > 0)
+                {
+                    var voucher = await _unitOfWork.Vouchers.GetByIdAsync(order.VoucherId.Value);
+                    if (voucher != null)
+                    {
+                        // Cộng lại 1 voucher đã bị trừ khi tạo order
+                        voucher.Quantity += 1;
+                        await _unitOfWork.Vouchers.UpdateAsync(voucher);
+
+                        Console.WriteLine($"Rollback Voucher ID {voucher.VoucherId}: +1 quantity (now {voucher.Quantity})");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error rolling back voucher for order {order.OrderId}: {ex.Message}");
+                // Không throw exception để không làm fail việc hủy order
             }
         }
     }
