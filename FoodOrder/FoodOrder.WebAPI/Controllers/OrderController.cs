@@ -1,4 +1,5 @@
 ﻿using FoodOrder.Application.DTOs.Orders;
+using FoodOrder.Application.DTOs.Revenue;
 using FoodOrder.Application.Interfaces;
 using FoodOrder.Domain.Entities.Orders;
 using Microsoft.AspNetCore.Authorization;
@@ -234,6 +235,27 @@ namespace FoodOrder.WebAPI.Controllers
             {
                 Console.WriteLine($"Payment callback error: {ex.Message}");
                 return Redirect("/payment-failed?reason=system_error");
+            }
+        }
+
+        /// <summary>
+        /// Lấy doanh thu của cửa hàng theo ngày/tuần/tháng/năm
+        /// </summary>
+        /// <param name="request">Thông tin yêu cầu lấy doanh thu</param>
+        /// <returns>Dữ liệu doanh thu theo khoảng thời gian</returns>
+        [HttpGet("revenue")]
+        [Authorize(Roles = "Admin,Staff")] // Chỉ Admin và Staff mới xem được doanh thu
+        public async Task<ActionResult<RevenueResponseDto>> GetRevenue([FromQuery] RevenueRequestDto request)
+        {
+            try
+            {
+                var result = await _orderService.GetRevenueAsync(request);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting revenue data: {ex.Message}");
+                return StatusCode(500, new { message = "Có lỗi xảy ra khi lấy dữ liệu doanh thu", error = ex.Message });
             }
         }
     }

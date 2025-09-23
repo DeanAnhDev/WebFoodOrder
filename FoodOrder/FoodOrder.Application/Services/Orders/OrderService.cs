@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using FoodOrder.Application.DTOs.Ahamove;
 using FoodOrder.Application.DTOs.Orders;
+using FoodOrder.Application.DTOs.Revenue;
 using FoodOrder.Application.Interfaces;
 using FoodOrder.Domain.Entities.Orders;
 using FoodOrder.Domain.Interfaces;
@@ -87,7 +88,7 @@ namespace FoodOrder.Application.Services.Orders
                         throw new InvalidOperationException("Voucher đã hết số lượng");
                     }
 
-                    var currentTime = DateTime.UtcNow;
+                    var currentTime = DateTime.Now;
                     if (currentTime < voucher.StartDate)
                     {
                         throw new InvalidOperationException("Voucher chưa có hiệu lực");
@@ -723,11 +724,11 @@ namespace FoodOrder.Application.Services.Orders
 
                     order.PaymentStatus = PaymentStatus.Fail;
 
-                        // Rollback số lượng food và combo khi đơn hàng bị hủy
-                        await RollbackInventoryForCancelledOrderAsync(order.OrderId);
+                    // Rollback số lượng food và combo khi đơn hàng bị hủy
+                    await RollbackInventoryForCancelledOrderAsync(order.OrderId);
 
-                        // Rollback voucher nếu có sử dụng
-                        await RollbackVoucherForCancelledOrderAsync(order);
+                    // Rollback voucher nếu có sử dụng
+                    await RollbackVoucherForCancelledOrderAsync(order);
                 }
 
                 // Update reason if provided or if status is being cancelled
@@ -736,7 +737,7 @@ namespace FoodOrder.Application.Services.Orders
                     order.Reason = request.Reason;
                 }
 
-               
+
 
                 if (request.NewStatus == OrderStatus.Accepted && order.PaymentMethod == PaymentMethod.CashOnDelivery)
                 {
@@ -894,5 +895,177 @@ namespace FoodOrder.Application.Services.Orders
                 // Không throw exception để không làm fail việc hủy order
             }
         }
+
+        #region Revenue API
+
+        public async Task<RevenueResponseDto> GetRevenueAsync(RevenueRequestDto request)
+        {
+            try
+            {
+                // Đơn giản hóa: chỉ query theo ngày, không cần xử lý timezone phức tạp
+                var startDate = request.StartDate?.Date ?? DateTime.Today;
+                DateTime endDate;
+
+                if (request.EndDate.HasValue)
+                {
+                    endDate = request.EndDate.Value.Date;
+                }
+                else
+                {
+                    // Tự động tính theo Period
+                    switch (request.Period.ToLower())
+                    {
+                        case "daily":
+                            endDate = startDate;
+                            break;
+                        case "weekly":
+                            var startOfWeek = startDate.AddDays(-(int)startDate.DayOfWeek + (int)DayOfWeek.Monday);
+                            if (startOfWeek > startDate) startOfWeek = startOfWeek.AddDays(-7);
+                            startDate = startOfWeek;
+                            endDate = startOfWeek.AddDays(6);
+                            break;
+                        case "monthly":
+                            startDate = new DateTime(startDate.Year, startDate.Month, 1);
+                            endDate = startDate.AddMonths(1).AddDays(-1);
+                            break;
+                        case "yearly":
+                            startDate = new DateTime(startDate.Year, 1, 1);
+                            endDate = new DateTime(startDate.Year, 12, 31);
+                            break;
+                        default:
+                            endDate = startDate;
+                            break;
+                    }
+                }
+
+                // Query database - so sánh chỉ theo ngày (bỏ qua giờ)
+                var query = _unitOfWork.Orders.GetQueryable()
+                    .Where(o => o.Status == OrderStatus.Completed && o.PaymentStatus == PaymentStatus.Paid)
+                    .Where(o => o.CreatedAt.Date >= startDate && o.CreatedAt.Date <= endDate);
+
+                var orders = await query.ToListAsync();
+
+                // Tính tổng số liệu (doanh thu = SubtotalAmount - VoucherDiscountAmount)
+                var totalRevenue = orders.Sum(o => o.SubtotalAmount - o.VoucherDiscountAmount);
+                var totalShipping = orders.Sum(o => o.ShipFee);
+                var totalDiscount = orders.Sum(o => o.VoucherDiscountAmount);
+                var totalOrders = orders.Count;
+
+                // Tạo chi tiết theo period - sử dụng ngày đơn giản
+                var details = new List<RevenueDetailDto>();
+
+                switch (request.Period.ToLower())
+                {
+                    case "daily":
+                        details = orders.GroupBy(o => o.CreatedAt.Date)
+                            .Select(g => new RevenueDetailDto
+                            {
+                                Period = g.Key.ToString("yyyy-MM-dd"),
+                                Revenue = g.Sum(o => o.SubtotalAmount - o.VoucherDiscountAmount),
+                                ShippingFee = g.Sum(o => o.ShipFee),
+                                Discount = g.Sum(o => o.VoucherDiscountAmount),
+                                OrderCount = g.Count(),
+                                PeriodStart = g.Key,
+                                PeriodEnd = g.Key.AddDays(1).AddTicks(-1)
+                            }).OrderBy(x => x.PeriodStart).ToList();
+                        break;
+
+                    case "weekly":
+                        var weeklyGroups = orders.GroupBy(o =>
+                        {
+                            var orderDate = o.CreatedAt.Date;
+                            var startOfWeek = orderDate.AddDays(-(int)orderDate.DayOfWeek + (int)DayOfWeek.Monday);
+                            if (startOfWeek > orderDate) startOfWeek = startOfWeek.AddDays(-7);
+                            return startOfWeek;
+                        });
+
+                        details = weeklyGroups.Select(g => new RevenueDetailDto
+                        {
+                            Period = $"{g.Key:yyyy-MM-dd} - {g.Key.AddDays(6):yyyy-MM-dd}",
+                            Revenue = g.Sum(o => o.SubtotalAmount - o.VoucherDiscountAmount),
+                            ShippingFee = g.Sum(o => o.ShipFee),
+                            Discount = g.Sum(o => o.VoucherDiscountAmount),
+                            OrderCount = g.Count(),
+                            PeriodStart = g.Key,
+                            PeriodEnd = g.Key.AddDays(6)
+                        }).OrderBy(x => x.PeriodStart).ToList();
+                        break;
+
+                    case "monthly":
+                        details = orders.GroupBy(o =>
+                        {
+                            var orderDate = o.CreatedAt.Date;
+                            return new DateTime(orderDate.Year, orderDate.Month, 1);
+                        })
+                            .Select(g => new RevenueDetailDto
+                            {
+                                Period = g.Key.ToString("yyyy-MM"),
+                                Revenue = g.Sum(o => o.SubtotalAmount - o.VoucherDiscountAmount),
+                                ShippingFee = g.Sum(o => o.ShipFee),
+                                Discount = g.Sum(o => o.VoucherDiscountAmount),
+                                OrderCount = g.Count(),
+                                PeriodStart = g.Key,
+                                PeriodEnd = g.Key.AddMonths(1).AddDays(-1)
+                            }).OrderBy(x => x.PeriodStart).ToList();
+                        break;
+
+                    case "yearly":
+                        details = orders.GroupBy(o =>
+                        {
+                            var orderDate = o.CreatedAt.Date;
+                            return new DateTime(orderDate.Year, 1, 1);
+                        })
+                            .Select(g => new RevenueDetailDto
+                            {
+                                Period = g.Key.Year.ToString(),
+                                Revenue = g.Sum(o => o.SubtotalAmount - o.VoucherDiscountAmount),
+                                ShippingFee = g.Sum(o => o.ShipFee),
+                                Discount = g.Sum(o => o.VoucherDiscountAmount),
+                                OrderCount = g.Count(),
+                                PeriodStart = g.Key,
+                                PeriodEnd = new DateTime(g.Key.Year, 12, 31)
+                            }).OrderBy(x => x.PeriodStart).ToList();
+                        break;
+                }
+
+                return new RevenueResponseDto
+                {
+                    TotalRevenue = totalRevenue,
+                    TotalShippingFee = totalShipping,
+                    TotalDiscount = totalDiscount,
+                    TotalOrders = totalOrders,
+                    Details = details
+                };
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi lấy dữ liệu doanh thu: {ex.Message}", ex);
+            }
+        }
+
+        /// <summary>
+        /// Lấy tuần thứ mấy trong năm
+        /// </summary>
+        private static int GetWeekOfYear(DateTime date)
+        {
+            var jan1 = new DateTime(date.Year, 1, 1);
+            var daysOffset = (int)jan1.DayOfWeek;
+            var firstWeekDay = jan1.AddDays(-daysOffset);
+            var weekNumber = ((date - firstWeekDay).Days / 7) + 1;
+            return weekNumber;
+        }
+
+        /// <summary>
+        /// Lấy ngày đầu tuần
+        /// </summary>
+        private static DateTime GetStartOfWeek(int year, int week)
+        {
+            var jan1 = new DateTime(year, 1, 1);
+            var daysOffset = (int)jan1.DayOfWeek;
+            var firstWeekDay = jan1.AddDays(-daysOffset);
+            return firstWeekDay.AddDays((week - 1) * 7);
+        }
+
+        #endregion
     }
 }

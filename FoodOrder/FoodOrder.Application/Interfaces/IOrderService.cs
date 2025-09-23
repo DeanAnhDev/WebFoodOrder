@@ -1,5 +1,6 @@
 ﻿
 using FoodOrder.Application.DTOs.Orders;
+using FoodOrder.Application.DTOs.Revenue;
 using FoodOrder.Domain.Entities.Orders;
 
 namespace FoodOrder.Application.Interfaces
@@ -17,5 +18,6 @@ namespace FoodOrder.Application.Interfaces
             PaymentStatus? paymentStatus = null);
         Task<UpdateOrderStatusResponseDto> UpdateOrderStatusAsync(UpdateOrderStatusDto request);
         Task<OrderDto?> GetOrderByIdAsync(int orderId);
+        Task<RevenueResponseDto> GetRevenueAsync(RevenueRequestDto request);
     }
 }

@@ -5,11 +5,11 @@ namespace FoodOrder.Domain.Interfaces
 {
     public interface IRepository<TEntity> where TEntity : class
     {
-
         Task<bool> AddAsync(TEntity entity);
         Task<bool> UpdateAsync(TEntity entity);
         Task<bool> DeleteAsync(dynamic id);
         Task<TEntity?> FirstOrDefaultAsync(Expression<Func<TEntity, bool>> predicate);
         Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate);
+        IQueryable<TEntity> GetQueryable();
     }
 }
