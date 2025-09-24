@@ -237,7 +237,7 @@ namespace FoodOrder.WebAPI.Controllers
         /// <param name="request">Thông tin yêu cầu lấy doanh thu</param>
         /// <returns>Dữ liệu doanh thu theo khoảng thời gian</returns>
         [HttpGet("revenue")]
-        [Authorize(Roles = "Admin,Staff")] // Chỉ Admin và Staff mới xem được doanh thu
+        [Authorize(Roles = "Admin")] // Chỉ Admin và Staff mới xem được doanh thu
         public async Task<ActionResult<RevenueResponseDto>> GetRevenue([FromQuery] RevenueRequestDto request)
         {
             try
