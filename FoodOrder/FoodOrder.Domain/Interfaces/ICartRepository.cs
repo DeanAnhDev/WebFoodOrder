@@ -12,5 +12,8 @@ namespace FoodOrder.Domain.Interfaces
         Task<Cart?> GetCartByIdAsync(int cartId);
         Task<bool> UpdateCartUserIdAsync(int cartId, int userId);
         Task<IEnumerable<Cart>> GetAllTemporaryCartsAsync();
+        Task<bool> DeleteCartByIdAsync(int cartId);
+        Task<CartItem?> GetCartItemByIdAsync(int cartId, int cartItemId);
+        Task<bool> DeleteCartItemAsync(CartItem cartItem);
     }
 }

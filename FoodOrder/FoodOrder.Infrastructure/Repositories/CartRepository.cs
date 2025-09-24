@@ -24,7 +24,7 @@ namespace FoodOrder.Infrastructure.Repositories
                 .Include(c => c.CartItems!)
                     .ThenInclude(ci => ci.Food!)
                         .ThenInclude(f => f.Promotion)
-                .FirstOrDefaultAsync(c => c.UserId == userId);
+                .FirstOrDefaultAsync(c => c.UserId == userId && c.Temporary == null);
         }
 
 
@@ -99,5 +99,30 @@ namespace FoodOrder.Infrastructure.Repositories
                 .Where(c => c.Temporary == true)
                 .ToListAsync();
         }
+
+        public async Task<bool> DeleteCartByIdAsync(int cartId)
+        {
+            var cart = await _dbSet.FindAsync(cartId);
+            if (cart == null)
+                return false;
+
+            _dbSet.Remove(cart);
+            return true;
+        }
+
+        public async Task<CartItem?> GetCartItemByIdAsync(int cartId, int cartItemId)
+        {
+            return await _context.CartItems
+                .Include(ci => ci.Food)
+                .Include(ci => ci.Combo)
+                .FirstOrDefaultAsync(ci => ci.CartId == cartId && ci.CartItemId == cartItemId);
+        }
+
+        public async Task<bool> DeleteCartItemAsync(CartItem cartItem)
+        {
+            _context.CartItems.Remove(cartItem);
+            return await Task.FromResult(true);
+        }
+
     }
 }
