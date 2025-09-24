@@ -84,7 +84,7 @@ namespace FoodOrder.WebAPI.Controllers
                     }
                     else
                     {
-                        return Redirect($"http://localhost:4000/checkout-failed?token={failedToken}");
+                        return Redirect($"http://localhost:3000/checkout-failed?token={failedToken}");
                     }
                        
                 }
@@ -101,7 +101,7 @@ namespace FoodOrder.WebAPI.Controllers
                 }
                 else
                 {
-                    return Redirect($"http://localhost:4000/checkout-failed?token={failedToken}");
+                    return Redirect($"http://localhost:3000/checkout-failed?token={failedToken}");
                 }
             }
         }
