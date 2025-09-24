@@ -477,13 +477,13 @@ namespace FoodOrder.Application.Services.Carts
                 return false;
 
             // Check if the user already has a cart
-            var existingCart = await _unitOfWork.Carts.GetCartByUserIdAsync(userId);
-            if (existingCart != null)
-            {
-                // If user already has a cart, we might want to merge them
-                // But for now, we'll just return false indicating we can't assign
-                return false;
-            }
+            //var existingCart = await _unitOfWork.Carts.GetCartByUserIdAsync(userId);
+            //if (existingCart != null)
+            //{
+            //    // If user already has a cart, we might want to merge them
+            //    // But for now, we'll just return false indicating we can't assign
+            //    return false;
+            //}
 
             // Update the cart with the user ID
             var success = await _unitOfWork.Carts.UpdateCartUserIdAsync(cartId, userId);

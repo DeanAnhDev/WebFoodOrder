@@ -235,5 +235,60 @@ namespace FoodOrder.Application.Services.Identity
             return true;
         }
 
+        public async Task<CustomerDto> CreateCustomerAsync(CreateCustomerDto dto)
+        {
+            // Kiểm tra email đã tồn tại chưa
+            var existingUserByEmail = await _userManager.FindByEmailAsync(dto.Email);
+            if (existingUserByEmail != null)
+            {
+                throw new ArgumentException("Email này đã được sử dụng");
+            }
+
+            // Kiểm tra số điện thoại đã tồn tại chưa
+            var existingUserByPhone = await _userManager.Users
+                .FirstOrDefaultAsync(u => u.PhoneNumber == dto.PhoneNumber);
+            if (existingUserByPhone != null)
+            {
+                throw new ArgumentException("Số điện thoại này đã được sử dụng");
+            }
+
+            // Tạo user mới
+            var newUser = new AppUser
+            {
+                FullName = dto.FullName,
+                Email = dto.Email,
+                UserName = dto.Email, // Username là email
+                PhoneNumber = dto.PhoneNumber,
+                EmailConfirmed = false, // Khách hàng có thể cần xác thực email
+                PhoneNumberConfirmed = false
+            };
+
+            // Tạo user không có password (khách hàng có thể đăng ký sau)
+            var result = await _userManager.CreateAsync(newUser);
+
+            if (!result.Succeeded)
+            {
+                var errors = string.Join("; ", result.Errors.Select(e => e.Description));
+                throw new InvalidOperationException($"Không thể tạo khách hàng: {errors}");
+            }
+
+            // Thêm role Customer cho user (nếu có role này trong hệ thống)
+            try
+            {
+                var roleResult = await _userManager.AddToRoleAsync(newUser, "Customer");
+                if (!roleResult.Succeeded)
+                {
+                    // Log warning nhưng không throw exception vì có thể role Customer chưa tồn tại
+                    // Hoặc có thể tạo role Customer tự động ở đây
+                }
+            }
+            catch
+            {
+                // Ignore role assignment errors for customers
+            }
+
+            return _mapper.Map<CustomerDto>(newUser);
+        }
+
     }
 }

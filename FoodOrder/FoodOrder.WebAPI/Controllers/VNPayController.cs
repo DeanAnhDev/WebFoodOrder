@@ -1,5 +1,7 @@
-﻿using FoodOrder.Application.Interfaces;
+﻿using CloudinaryDotNet.Actions;
+using FoodOrder.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
 using System.Security.Cryptography;
 
 namespace FoodOrder.WebAPI.Controllers
@@ -50,16 +52,25 @@ namespace FoodOrder.WebAPI.Controllers
             //}
 
             // Kiểm tra response code và transaction status
+            var info = callback.vnp_OrderInfo;
             if (callback.vnp_ResponseCode == "00" && callback.vnp_TransactionStatus == "00")
             {
                 // Thanh toán thành công - xóa cart và cập nhật order
                 var success = await _orderService.ProcessPaymentSuccessAsync(callback.vnp_TxnRef);
-
+               
                 if (success)
                 {
                     var token = GenerateToken();
                     _paymentTokens[token] = DateTime.UtcNow.AddMinutes(5);
-                    return Redirect($"http://localhost:3000/checkout-success?token={token}");
+                    if(info.Contains("tại quầy"))
+                    {
+                        return Redirect($"http://localhost:4000/checkout-success?token={token}");
+                    }
+                    else
+                    {
+                        return Redirect($"http://localhost:3000/checkout-success?token={token}");
+                    }
+                       
                 }
                 else
                 {
@@ -67,7 +78,15 @@ namespace FoodOrder.WebAPI.Controllers
                     await _orderService.ProcessPaymentFailureAsync(callback.vnp_TxnRef);
                     var failedToken = GenerateToken();
                     _paymentTokens[failedToken] = DateTime.UtcNow.AddMinutes(5);
-                    return Redirect($"http://localhost:3000/checkout-failed?token={failedToken}");
+                    if (info.Contains("tại quầy"))
+                    {
+                        return Redirect($"http://localhost:4000/checkout-failed?token={failedToken}");
+                    }
+                    else
+                    {
+                        return Redirect($"http://localhost:4000/checkout-failed?token={failedToken}");
+                    }
+                       
                 }
             }
             else
@@ -76,7 +95,14 @@ namespace FoodOrder.WebAPI.Controllers
                 await _orderService.ProcessPaymentFailureAsync(callback.vnp_TxnRef);
                 var failedToken = GenerateToken();
                 _paymentTokens[failedToken] = DateTime.UtcNow.AddMinutes(5);
-                return Redirect($"http://localhost:3000/checkout-failed?token={failedToken}");
+                if (info.Contains("tại quầy"))
+                {
+                    return Redirect($"http://localhost:4000/checkout-failed?token={failedToken}");
+                }
+                else
+                {
+                    return Redirect($"http://localhost:4000/checkout-failed?token={failedToken}");
+                }
             }
         }
 

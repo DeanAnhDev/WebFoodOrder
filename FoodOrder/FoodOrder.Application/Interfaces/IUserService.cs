@@ -12,5 +12,6 @@ namespace FoodOrder.Application.Interfaces
         Task<StaffDto> CreateStaffAsync(CreateStaffDto dto);
         Task<StaffDto> UpdateStaffAsync(int id, UpdateStaffDto dto);
         Task<bool> DeleteStaffAsync(int id);
+        Task<CustomerDto> CreateCustomerAsync(CreateCustomerDto dto);
     }
 }

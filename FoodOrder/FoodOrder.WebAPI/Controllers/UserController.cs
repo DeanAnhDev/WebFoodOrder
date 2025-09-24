@@ -314,14 +314,42 @@ namespace FoodOrder.WebAPI.Controllers
             }
         }
 
+        [HttpPost("customers")]
+        public async Task<IActionResult> CreateCustomer([FromBody] CreateCustomerDto dto)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    var errors = ModelState.Values
+                        .SelectMany(v => v.Errors)
+                        .Select(e => e.ErrorMessage)
+                        .ToList();
+                    return BadRequest(new { message = "Dữ liệu không hợp lệ", errors });
+                }
 
-
-
-
-
+                var customer = await _userService.CreateCustomerAsync(dto);
+                return Ok(new
+                {
+                    message = "Tạo khách hàng thành công",
+                    data = customer
+                });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Lỗi server!", error = ex.Message });
+            }
+        }
 
     }
-
 
 }
 

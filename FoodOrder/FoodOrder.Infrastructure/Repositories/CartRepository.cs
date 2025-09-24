@@ -24,7 +24,7 @@ namespace FoodOrder.Infrastructure.Repositories
                 .Include(c => c.CartItems!)
                     .ThenInclude(ci => ci.Food!)
                         .ThenInclude(f => f.Promotion)
-                .FirstOrDefaultAsync(c => c.UserId == userId && c.Temporary == null);
+                .FirstOrDefaultAsync(c => c.UserId == userId && c.Temporary == true);
         }
 
 
@@ -77,7 +77,7 @@ namespace FoodOrder.Infrastructure.Repositories
                 return false;
 
             cart.UserId = userId;
-            cart.Temporary = false;
+            cart.Temporary = true;
             return true;
         }
 

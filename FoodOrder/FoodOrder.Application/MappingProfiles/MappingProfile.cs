@@ -65,6 +65,8 @@ namespace FoodOrder.Application.MappingProfiles
                 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email));
             CreateMap<UpdateStaffDto, AppUser>()
                 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email));
+            CreateMap<CreateCustomerDto, AppUser>()
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email));
 
             CreateMap<Location, CreateLocationDto>().ReverseMap();
             CreateMap<Location, UpdateLocationDto>().ReverseMap();

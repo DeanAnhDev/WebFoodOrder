@@ -251,7 +251,7 @@ namespace FoodOrder.Application.Services.Orders
 
                     if (voucher.Type == VoucherType.Amount)
                     {
-                        voucherDiscountAmount = Math.Min(voucher.DiscountAmount, voucher.MaxDiscountPrice);
+                        voucherDiscountAmount = voucher.DiscountAmount;
                     }
                     else if (voucher.Type == VoucherType.Percentage)
                     {
@@ -357,6 +357,12 @@ namespace FoodOrder.Application.Services.Orders
                     await _unitOfWork.CompleteAsync();
                 }
 
+                if (!createOrderDto.LocationId.HasValue)
+                {
+                    await _unitOfWork.Carts.DeleteCartByIdAsync(createOrderDto.CartId);
+                    await _unitOfWork.CompleteAsync();
+                }
+
                 // 11. Map order result
                 var orderDto = _mapper.Map<OrderDto>(order);
 
@@ -368,7 +374,12 @@ namespace FoodOrder.Application.Services.Orders
                 {
                     try
                     {
+
                         var orderInfo = $"Thanh toán đơn hàng #{order.OrderCode} - {orderDetails.Count} món";
+                        if (!createOrderDto.LocationId.HasValue)
+                        {
+                            orderInfo = $"Thanh toán đơn hàng #{order.OrderCode} - {orderDetails.Count} món tại quầy";
+                        }
                         paymentUrl = _vnPayService.CreatePaymentUrl(
                             amount: order.TotalAmount,
                             orderId: order.OrderCode,
