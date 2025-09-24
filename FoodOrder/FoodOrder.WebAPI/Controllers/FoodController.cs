@@ -183,5 +183,60 @@ namespace FoodOrder.WebAPI.Controllers
             }
         }
 
+        [HttpGet("all-foods-and-combos")]
+        public async Task<IActionResult> GetAllFoodsAndCombos()
+        {
+            try
+            {
+                var result = await _foodService.GetAllFoodsAndCombosAsync();
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Lấy danh sách food và combo thành công",
+                    data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Có lỗi xảy ra khi lấy danh sách food và combo",
+                    detail = ex.Message
+                });
+            }
+        }
+
+        [HttpGet("search-foods-and-combos")]
+        public async Task<IActionResult> SearchFoodsAndCombos([FromQuery] string? name)
+        {
+            try
+            {
+                var result = await _foodService.GetAllFoodsAndCombosByNameAsync(name);
+
+                string message = string.IsNullOrWhiteSpace(name)
+                    ? "Lấy danh sách food và combo thành công"
+                    : $"Tìm kiếm '{name}' thành công";
+
+                return Ok(new
+                {
+                    success = true,
+                    message = message,
+                    searchTerm = name,
+                    data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Có lỗi xảy ra khi tìm kiếm food và combo",
+                    detail = ex.Message
+                });
+            }
+        }
+
     }
 }

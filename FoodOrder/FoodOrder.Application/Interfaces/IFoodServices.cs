@@ -1,4 +1,5 @@
-﻿using FoodOrder.Application.DTOs.Foods.Food.Commands;
+﻿using FoodOrder.Application.DTOs.Foods;
+using FoodOrder.Application.DTOs.Foods.Food.Commands;
 using FoodOrder.Application.DTOs.Foods.Food.Queries;
 using FoodOrder.Application.Services.Foods.Filter;
 
@@ -14,5 +15,7 @@ namespace FoodOrder.Application.Interfaces
         Task<PagedResult<FoodDto>> GetPagedFoodsAsync(PagedQuery query);
         Task<FoodDto> GetByIdAsync(int id);
         Task<bool> UpdateFoodStatusAsync(int id, bool isActive);
+        Task<FoodAndComboResponse> GetAllFoodsAndCombosAsync();
+        Task<FoodAndComboResponse> GetAllFoodsAndCombosByNameAsync(string? searchName);
     }
 }

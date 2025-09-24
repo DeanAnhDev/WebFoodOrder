@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FoodOrder.Application.DTOs.Foods;
 using FoodOrder.Application.DTOs.Foods.Food.Commands;
 using FoodOrder.Application.DTOs.Foods.Food.Queries;
 using FoodOrder.Application.Interfaces;
@@ -15,7 +16,7 @@ namespace FoodOrder.Application.Services.Foods
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly SlugService _slugService;
-        private readonly IComboServices _comboService; 
+        private readonly IComboServices _comboService;
         public FoodServices(IUnitOfWork unitOfWork, IMapper mapper, SlugService slugService, IComboServices comboService)
         {
             _unitOfWork = unitOfWork;
@@ -277,6 +278,66 @@ namespace FoodOrder.Application.Services.Foods
             var result = await _unitOfWork.CompleteAsync();
 
             return result > 0;
+        }
+
+        public async Task<FoodAndComboResponse> GetAllFoodsAndCombosAsync()
+        {
+            // Lấy tất cả foods với images và promotion
+            var foodsQuery = _unitOfWork.Foods.GetQueryableWithIncludes()
+                .Where(f => f.Status == true); // Chỉ lấy foods đang active
+
+            var foods = await foodsQuery.ToListAsync();
+            var foodDtos = _mapper.Map<List<FoodDto>>(foods);
+
+            // Lấy tất cả combos với images và promotion  
+            var combos = await _comboService.GetAllComboAsync();
+            var activeCombos = combos.Where(c => c.Status == true).ToList(); // Chỉ lấy combos đang active
+
+            return new FoodAndComboResponse
+            {
+                Foods = foodDtos,
+                Combos = activeCombos,
+                TotalFoods = foodDtos.Count,
+                TotalCombos = activeCombos.Count
+            };
+        }
+
+        public async Task<FoodAndComboResponse> GetAllFoodsAndCombosByNameAsync(string? searchName)
+        {
+            // Lấy foods với tìm kiếm theo tên
+            var foodsQuery = _unitOfWork.Foods.GetQueryableWithIncludes()
+                .Where(f => f.Status == true); // Chỉ lấy foods đang active
+
+            // Thêm filter tìm kiếm theo tên nếu có
+            if (!string.IsNullOrWhiteSpace(searchName))
+            {
+                foodsQuery = foodsQuery.Where(f => f.FoodName != null &&
+                    f.FoodName.ToLower().Contains(searchName.ToLower()));
+            }
+
+            var foods = await foodsQuery.ToListAsync();
+            var foodDtos = _mapper.Map<List<FoodDto>>(foods);
+
+            // Lấy tất cả combos và filter theo tên
+            var allCombos = await _comboService.GetAllComboAsync();
+            var activeCombos = allCombos.Where(c => c.Status == true);
+
+            // Filter combos theo tên nếu có
+            if (!string.IsNullOrWhiteSpace(searchName))
+            {
+                activeCombos = activeCombos.Where(c => c.ComboName != null &&
+                    c.ComboName.ToLower().Contains(searchName.ToLower()));
+            }
+
+            var filteredCombos = activeCombos.ToList();
+
+            return new FoodAndComboResponse
+            {
+                Foods = foodDtos,
+                Combos = filteredCombos,
+                TotalFoods = foodDtos.Count,
+                TotalCombos = filteredCombos.Count
+            };
         }
     }
 }

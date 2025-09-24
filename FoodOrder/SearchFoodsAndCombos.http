@@ -1,0 +1,42 @@
+### Search Foods and Combos by Name - Tìm kiếm Food và Combo theo tên
+GET {{host}}/api/food/search-foods-and-combos?name=bánh mì
+Content-Type: application/json
+
+### Search with different keywords
+GET {{host}}/api/food/search-foods-and-combos?name=combo
+Content-Type: application/json
+
+### Search with partial name
+GET {{host}}/api/food/search-foods-and-combos?name=bánh
+Content-Type: application/json
+
+### Search with single character
+GET {{host}}/api/food/search-foods-and-combos?name=c
+Content-Type: application/json
+
+### Search with no results (test case)
+GET {{host}}/api/food/search-foods-and-combos?name=xyz123
+Content-Type: application/json
+
+### Search without name parameter (should return all)
+GET {{host}}/api/food/search-foods-and-combos
+Content-Type: application/json
+
+### Search with empty name parameter (should return all)
+GET {{host}}/api/food/search-foods-and-combos?name=
+Content-Type: application/json
+
+### Search with whitespace only (should return all)
+GET {{host}}/api/food/search-foods-and-combos?name=%20%20%20
+Content-Type: application/json
+
+### Search case insensitive test
+GET {{host}}/api/food/search-foods-and-combos?name=BÁNH MÌ
+Content-Type: application/json
+
+### Compare with get all endpoint
+GET {{host}}/api/food/all-foods-and-combos
+Content-Type: application/json
+
+### Variables
+@host = https://localhost:7001
