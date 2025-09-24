@@ -132,7 +132,7 @@ namespace FoodOrder.WebAPI.Controllers
 
 
 
-        [Authorize(Roles = "Admin")]
+        [Authorize]
         [HttpGet("customers")]
         public async Task<IActionResult> GetCustomers([FromQuery] GetCustomersRequestDto request)
         {
