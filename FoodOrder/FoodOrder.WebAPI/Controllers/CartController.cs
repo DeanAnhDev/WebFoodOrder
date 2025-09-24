@@ -19,6 +19,7 @@ namespace FoodOrder.WebAPI.Controllers
             _cartService = cartService;
         }
 
+        #region tại quầy
         [AllowAnonymous]
         [HttpPost("temporary")]
         public async Task<IActionResult> CreateTemporaryCart()
@@ -72,6 +73,7 @@ namespace FoodOrder.WebAPI.Controllers
             }
         }
 
+        #endregion
         #region
         [Authorize]
         [HttpGet]

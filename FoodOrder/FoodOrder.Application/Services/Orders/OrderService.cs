@@ -38,7 +38,12 @@ namespace FoodOrder.Application.Services.Orders
                     throw new ArgumentException("UserId không hợp lệ", nameof(userId));
 
                 // 1. Validate Cart và lấy thông tin cart
-                var cart = await _unitOfWork.Carts.GetCartByUserIdAsync(userId);
+                //var cart = new Cart;
+                //if (!createOrderDto.LocationId.HasValue)
+                //{
+                   var cart = await _unitOfWork.Carts.GetCartByIdAsync(createOrderDto.CartId);
+                //}
+                // = await _unitOfWork.Carts.GetCartByUserIdAsync(userId);
                 if (cart == null || cart.CartItems == null || !cart.CartItems.Any())
                 {
                     throw new InvalidOperationException("Giỏ hàng trống hoặc không tồn tại");
@@ -487,7 +492,7 @@ namespace FoodOrder.Application.Services.Orders
 
                 // 3. Cập nhật payment status thành công
                 order.PaymentStatus = Domain.Entities.Orders.PaymentStatus.Paid;
-                order.Status = Domain.Entities.Orders.OrderStatus.Processing;
+                order.Status = Domain.Entities.Orders.OrderStatus.Accepted;
                 if (order.Address == "Bán tại quầy")
                 {
                     order.Status = OrderStatus.Completed;
