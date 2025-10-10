@@ -47,7 +47,7 @@ namespace FoodOrder.Infrastructure.Repositories
             if (entity != null)
             {
                 _dbSet.Remove(entity);
-                
+
                 return true;
             }
             return false;
@@ -63,5 +63,9 @@ namespace FoodOrder.Infrastructure.Repositories
             return await _dbSet.Where(predicate).ToListAsync();
         }
 
+        public IQueryable<TEntity> GetQueryable()
+        {
+            return _dbSet.AsQueryable();
+        }
     }
 }

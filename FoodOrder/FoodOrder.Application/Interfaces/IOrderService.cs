@@ -1,12 +1,13 @@
 ﻿
 using FoodOrder.Application.DTOs.Orders;
+using FoodOrder.Application.DTOs.Revenue;
 using FoodOrder.Domain.Entities.Orders;
 
 namespace FoodOrder.Application.Interfaces
 {
     public interface IOrderService
     {
-        Task<CreateOrderResponseDto> CreateOrderAsync(CreateOrderDto createOrderDto, int userId);
+        Task<CreateOrderResponseDto> CreateOrderAsync(CreateOrderDto createOrderDto);
         Task<bool> ProcessPaymentCallbackAsync(string orderCode, string responseData);
         Task<bool> ProcessPaymentSuccessAsync(string orderCode);
         Task<bool> ProcessPaymentFailureAsync(string orderCode);
@@ -17,5 +18,6 @@ namespace FoodOrder.Application.Interfaces
             PaymentStatus? paymentStatus = null);
         Task<UpdateOrderStatusResponseDto> UpdateOrderStatusAsync(UpdateOrderStatusDto request);
         Task<OrderDto?> GetOrderByIdAsync(int orderId);
+        Task<RevenueResponseDto> GetRevenueAsync(RevenueRequestDto request);
     }
 }

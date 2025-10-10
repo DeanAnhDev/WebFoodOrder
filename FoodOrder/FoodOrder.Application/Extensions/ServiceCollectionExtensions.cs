@@ -3,6 +3,7 @@ using FoodOrder.Application.MappingProfiles;
 using FoodOrder.Application.Services;
 using FoodOrder.Application.Services.Auth;
 using FoodOrder.Application.Services.Carts;
+using FoodOrder.Application.Services.Dashboard;
 using FoodOrder.Application.Services.Foods;
 using FoodOrder.Application.Services.Identity;
 using FoodOrder.Application.Services.Orders;
@@ -40,6 +41,8 @@ namespace FoodOrder.Application.Extensions
             services.AddScoped<IPromotionService, PromotionService>();
 
             services.AddScoped<IOrderService, OrderService>();
+
+            services.AddScoped<IDashboardService, DashboardService>();
 
             return services;
         }

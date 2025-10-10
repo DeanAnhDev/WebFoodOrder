@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using FoodOrder.Application.DTOs.Ahamove;
 using FoodOrder.Application.DTOs.Orders;
+using FoodOrder.Application.DTOs.Revenue;
 using FoodOrder.Application.Interfaces;
 using FoodOrder.Domain.Entities.Orders;
 using FoodOrder.Domain.Interfaces;
@@ -24,10 +25,11 @@ namespace FoodOrder.Application.Services.Orders
         }
 
         #region crud 
-        public async Task<CreateOrderResponseDto> CreateOrderAsync(CreateOrderDto createOrderDto, int userId)
+        public async Task<CreateOrderResponseDto> CreateOrderAsync(CreateOrderDto createOrderDto)
         {
             try
             {
+                var userId = createOrderDto.UserId;
                 // 0. Validate input parameters
                 if (createOrderDto == null)
                     throw new ArgumentNullException(nameof(createOrderDto));
@@ -36,7 +38,12 @@ namespace FoodOrder.Application.Services.Orders
                     throw new ArgumentException("UserId không hợp lệ", nameof(userId));
 
                 // 1. Validate Cart và lấy thông tin cart
-                var cart = await _unitOfWork.Carts.GetCartByUserIdAsync(userId);
+                //var cart = new Cart;
+                //if (!createOrderDto.LocationId.HasValue)
+                //{
+                   var cart = await _unitOfWork.Carts.GetCartByIdAsync(createOrderDto.CartId);
+                //}
+                // = await _unitOfWork.Carts.GetCartByUserIdAsync(userId);
                 if (cart == null || cart.CartItems == null || !cart.CartItems.Any())
                 {
                     throw new InvalidOperationException("Giỏ hàng trống hoặc không tồn tại");
@@ -87,7 +94,7 @@ namespace FoodOrder.Application.Services.Orders
                         throw new InvalidOperationException("Voucher đã hết số lượng");
                     }
 
-                    var currentTime = DateTime.UtcNow;
+                    var currentTime = DateTime.Now;
                     if (currentTime < voucher.StartDate)
                     {
                         throw new InvalidOperationException("Voucher chưa có hiệu lực");
@@ -249,7 +256,7 @@ namespace FoodOrder.Application.Services.Orders
 
                     if (voucher.Type == VoucherType.Amount)
                     {
-                        voucherDiscountAmount = Math.Min(voucher.DiscountAmount, voucher.MaxDiscountPrice);
+                        voucherDiscountAmount = voucher.DiscountAmount;
                     }
                     else if (voucher.Type == VoucherType.Percentage)
                     {
@@ -355,6 +362,12 @@ namespace FoodOrder.Application.Services.Orders
                     await _unitOfWork.CompleteAsync();
                 }
 
+                if (!createOrderDto.LocationId.HasValue)
+                {
+                    await _unitOfWork.Carts.DeleteCartByIdAsync(createOrderDto.CartId);
+                    await _unitOfWork.CompleteAsync();
+                }
+
                 // 11. Map order result
                 var orderDto = _mapper.Map<OrderDto>(order);
 
@@ -366,7 +379,12 @@ namespace FoodOrder.Application.Services.Orders
                 {
                     try
                     {
+
                         var orderInfo = $"Thanh toán đơn hàng #{order.OrderCode} - {orderDetails.Count} món";
+                        if (!createOrderDto.LocationId.HasValue)
+                        {
+                            orderInfo = $"Thanh toán đơn hàng #{order.OrderCode} - {orderDetails.Count} món tại quầy";
+                        }
                         paymentUrl = _vnPayService.CreatePaymentUrl(
                             amount: order.TotalAmount,
                             orderId: order.OrderCode,
@@ -474,7 +492,7 @@ namespace FoodOrder.Application.Services.Orders
 
                 // 3. Cập nhật payment status thành công
                 order.PaymentStatus = Domain.Entities.Orders.PaymentStatus.Paid;
-                order.Status = Domain.Entities.Orders.OrderStatus.Processing;
+                order.Status = Domain.Entities.Orders.OrderStatus.Accepted;
                 if (order.Address == "Bán tại quầy")
                 {
                     order.Status = OrderStatus.Completed;
@@ -718,7 +736,17 @@ namespace FoodOrder.Application.Services.Orders
                 var oldStatus = order.Status;
                 order.Status = request.NewStatus;
 
+                if (request.NewStatus == OrderStatus.Cancelled)
+                {
 
+                    order.PaymentStatus = PaymentStatus.Fail;
+
+                    // Rollback số lượng food và combo khi đơn hàng bị hủy
+                    await RollbackInventoryForCancelledOrderAsync(order.OrderId);
+
+                    // Rollback voucher nếu có sử dụng
+                    await RollbackVoucherForCancelledOrderAsync(order);
+                }
 
                 // Update reason if provided or if status is being cancelled
                 if (!string.IsNullOrWhiteSpace(request.Reason) || request.NewStatus == OrderStatus.Cancelled)
@@ -726,10 +754,7 @@ namespace FoodOrder.Application.Services.Orders
                     order.Reason = request.Reason;
                 }
 
-                if(request.NewStatus == OrderStatus.Cancelled)
-                {
-                    order.PaymentStatus = PaymentStatus.Fail;
-                }
+
 
                 if (request.NewStatus == OrderStatus.Accepted && order.PaymentMethod == PaymentMethod.CashOnDelivery)
                 {
@@ -799,5 +824,265 @@ namespace FoodOrder.Application.Services.Orders
                 throw;
             }
         }
+
+        /// <summary>
+        /// Rollback inventory (food and combo quantities) when order is cancelled
+        /// </summary>
+        /// <param name="orderId">ID của order bị hủy</param>
+        private async Task RollbackInventoryForCancelledOrderAsync(int orderId)
+        {
+            try
+            {
+                // Lấy order details của đơn hàng bị hủy
+                var orderDetails = await _unitOfWork.OrderDetails.FindAsync(od => od.OrderId == orderId);
+
+                foreach (var orderDetail in orderDetails)
+                {
+                    // Rollback Food quantity
+                    if (orderDetail.FoodId.HasValue)
+                    {
+                        var food = await _unitOfWork.Foods.GetByIdAsync(orderDetail.FoodId.Value);
+                        if (food != null)
+                        {
+                            // Cộng lại số lượng đã bị trừ khi tạo order
+                            food.Quantity += orderDetail.Quantity;
+
+                            // Trừ lại số lượng đã bán (sold)
+                            food.Sold -= orderDetail.Quantity;
+                            if (food.Sold < 0) food.Sold = 0; // Đảm bảo không âm
+
+                            await _unitOfWork.Foods.UpdateAsync(food);
+                            Console.WriteLine($"Rollback Food ID {food.FoodId}: +{orderDetail.Quantity} quantity, -{orderDetail.Quantity} sold");
+                        }
+                    }
+                    // Rollback Combo quantity
+                    else if (orderDetail.ComboId.HasValue)
+                    {
+                        var combo = await _unitOfWork.Combos.GetByIdAsync(orderDetail.ComboId.Value);
+                        if (combo != null)
+                        {
+                            // Cộng lại số lượng đã bị trừ khi tạo order
+                            combo.Quantity += orderDetail.Quantity;
+
+                            // Trừ lại số lượng đã bán (sold)
+                            combo.Sold -= orderDetail.Quantity;
+                            if (combo.Sold < 0) combo.Sold = 0; // Đảm bảo không âm
+
+                            await _unitOfWork.Combos.UpdateAsync(combo);
+                            Console.WriteLine($"Rollback Combo ID {combo.ComboId}: +{orderDetail.Quantity} quantity, -{orderDetail.Quantity} sold");
+                        }
+                    }
+                }
+
+                Console.WriteLine($"Inventory rollback completed for cancelled order {orderId}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error rolling back inventory for order {orderId}: {ex.Message}");
+                // Không throw exception để không làm fail việc hủy order
+                // Chỉ log lỗi để admin có thể xử lý thủ công nếu cần
+            }
+        }
+
+        /// <summary>
+        /// Rollback voucher quantity when order is cancelled
+        /// </summary>
+        /// <param name="order">Order bị hủy</param>
+        private async Task RollbackVoucherForCancelledOrderAsync(Order order)
+        {
+            try
+            {
+                // Nếu order có sử dụng voucher
+                if (order.VoucherId.HasValue && order.VoucherDiscountAmount > 0)
+                {
+                    var voucher = await _unitOfWork.Vouchers.GetByIdAsync(order.VoucherId.Value);
+                    if (voucher != null)
+                    {
+                        // Cộng lại 1 voucher đã bị trừ khi tạo order
+                        voucher.Quantity += 1;
+                        await _unitOfWork.Vouchers.UpdateAsync(voucher);
+
+                        Console.WriteLine($"Rollback Voucher ID {voucher.VoucherId}: +1 quantity (now {voucher.Quantity})");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error rolling back voucher for order {order.OrderId}: {ex.Message}");
+                // Không throw exception để không làm fail việc hủy order
+            }
+        }
+
+        #region Revenue API
+
+        public async Task<RevenueResponseDto> GetRevenueAsync(RevenueRequestDto request)
+        {
+            try
+            {
+                // Đơn giản hóa: chỉ query theo ngày, không cần xử lý timezone phức tạp
+                var startDate = request.StartDate?.Date ?? DateTime.Today;
+                DateTime endDate;
+
+                if (request.EndDate.HasValue)
+                {
+                    endDate = request.EndDate.Value.Date;
+                }
+                else
+                {
+                    // Tự động tính theo Period
+                    switch (request.Period.ToLower())
+                    {
+                        case "daily":
+                            endDate = startDate;
+                            break;
+                        case "weekly":
+                            var startOfWeek = startDate.AddDays(-(int)startDate.DayOfWeek + (int)DayOfWeek.Monday);
+                            if (startOfWeek > startDate) startOfWeek = startOfWeek.AddDays(-7);
+                            startDate = startOfWeek;
+                            endDate = startOfWeek.AddDays(6);
+                            break;
+                        case "monthly":
+                            startDate = new DateTime(startDate.Year, startDate.Month, 1);
+                            endDate = startDate.AddMonths(1).AddDays(-1);
+                            break;
+                        case "yearly":
+                            startDate = new DateTime(startDate.Year, 1, 1);
+                            endDate = new DateTime(startDate.Year, 12, 31);
+                            break;
+                        default:
+                            endDate = startDate;
+                            break;
+                    }
+                }
+
+                // Query database - so sánh chỉ theo ngày (bỏ qua giờ)
+                var query = _unitOfWork.Orders.GetQueryable()
+                    .Where(o => o.Status == OrderStatus.Completed && o.PaymentStatus == PaymentStatus.Paid)
+                    .Where(o => o.CreatedAt.Date >= startDate && o.CreatedAt.Date <= endDate);
+
+                var orders = await query.ToListAsync();
+
+                // Tính tổng số liệu (doanh thu = SubtotalAmount - VoucherDiscountAmount)
+                var totalRevenue = orders.Sum(o => o.SubtotalAmount - o.VoucherDiscountAmount);
+                var totalShipping = orders.Sum(o => o.ShipFee);
+                var totalDiscount = orders.Sum(o => o.VoucherDiscountAmount);
+                var totalOrders = orders.Count;
+
+                // Tạo chi tiết theo period - sử dụng ngày đơn giản
+                var details = new List<RevenueDetailDto>();
+
+                switch (request.Period.ToLower())
+                {
+                    case "daily":
+                        details = orders.GroupBy(o => o.CreatedAt.Date)
+                            .Select(g => new RevenueDetailDto
+                            {
+                                Period = g.Key.ToString("yyyy-MM-dd"),
+                                Revenue = g.Sum(o => o.SubtotalAmount - o.VoucherDiscountAmount),
+                                ShippingFee = g.Sum(o => o.ShipFee),
+                                Discount = g.Sum(o => o.VoucherDiscountAmount),
+                                OrderCount = g.Count(),
+                                PeriodStart = g.Key,
+                                PeriodEnd = g.Key.AddDays(1).AddTicks(-1)
+                            }).OrderBy(x => x.PeriodStart).ToList();
+                        break;
+
+                    case "weekly":
+                        var weeklyGroups = orders.GroupBy(o =>
+                        {
+                            var orderDate = o.CreatedAt.Date;
+                            var startOfWeek = orderDate.AddDays(-(int)orderDate.DayOfWeek + (int)DayOfWeek.Monday);
+                            if (startOfWeek > orderDate) startOfWeek = startOfWeek.AddDays(-7);
+                            return startOfWeek;
+                        });
+
+                        details = weeklyGroups.Select(g => new RevenueDetailDto
+                        {
+                            Period = $"{g.Key:yyyy-MM-dd} - {g.Key.AddDays(6):yyyy-MM-dd}",
+                            Revenue = g.Sum(o => o.SubtotalAmount - o.VoucherDiscountAmount),
+                            ShippingFee = g.Sum(o => o.ShipFee),
+                            Discount = g.Sum(o => o.VoucherDiscountAmount),
+                            OrderCount = g.Count(),
+                            PeriodStart = g.Key,
+                            PeriodEnd = g.Key.AddDays(6)
+                        }).OrderBy(x => x.PeriodStart).ToList();
+                        break;
+
+                    case "monthly":
+                        details = orders.GroupBy(o =>
+                        {
+                            var orderDate = o.CreatedAt.Date;
+                            return new DateTime(orderDate.Year, orderDate.Month, 1);
+                        })
+                            .Select(g => new RevenueDetailDto
+                            {
+                                Period = g.Key.ToString("yyyy-MM"),
+                                Revenue = g.Sum(o => o.SubtotalAmount - o.VoucherDiscountAmount),
+                                ShippingFee = g.Sum(o => o.ShipFee),
+                                Discount = g.Sum(o => o.VoucherDiscountAmount),
+                                OrderCount = g.Count(),
+                                PeriodStart = g.Key,
+                                PeriodEnd = g.Key.AddMonths(1).AddDays(-1)
+                            }).OrderBy(x => x.PeriodStart).ToList();
+                        break;
+
+                    case "yearly":
+                        details = orders.GroupBy(o =>
+                        {
+                            var orderDate = o.CreatedAt.Date;
+                            return new DateTime(orderDate.Year, 1, 1);
+                        })
+                            .Select(g => new RevenueDetailDto
+                            {
+                                Period = g.Key.Year.ToString(),
+                                Revenue = g.Sum(o => o.SubtotalAmount - o.VoucherDiscountAmount),
+                                ShippingFee = g.Sum(o => o.ShipFee),
+                                Discount = g.Sum(o => o.VoucherDiscountAmount),
+                                OrderCount = g.Count(),
+                                PeriodStart = g.Key,
+                                PeriodEnd = new DateTime(g.Key.Year, 12, 31)
+                            }).OrderBy(x => x.PeriodStart).ToList();
+                        break;
+                }
+
+                return new RevenueResponseDto
+                {
+                    TotalRevenue = totalRevenue,
+                    TotalShippingFee = totalShipping,
+                    TotalDiscount = totalDiscount,
+                    TotalOrders = totalOrders,
+                    Details = details
+                };
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi lấy dữ liệu doanh thu: {ex.Message}", ex);
+            }
+        }
+
+        /// <summary>
+        /// Lấy tuần thứ mấy trong năm
+        /// </summary>
+        private static int GetWeekOfYear(DateTime date)
+        {
+            var jan1 = new DateTime(date.Year, 1, 1);
+            var daysOffset = (int)jan1.DayOfWeek;
+            var firstWeekDay = jan1.AddDays(-daysOffset);
+            var weekNumber = ((date - firstWeekDay).Days / 7) + 1;
+            return weekNumber;
+        }
+
+        /// <summary>
+        /// Lấy ngày đầu tuần
+        /// </summary>
+        private static DateTime GetStartOfWeek(int year, int week)
+        {
+            var jan1 = new DateTime(year, 1, 1);
+            var daysOffset = (int)jan1.DayOfWeek;
+            var firstWeekDay = jan1.AddDays(-daysOffset);
+            return firstWeekDay.AddDays((week - 1) * 7);
+        }
+
+        #endregion
     }
 }
